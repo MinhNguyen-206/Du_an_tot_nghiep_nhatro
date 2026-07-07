@@ -5,16 +5,17 @@
 
 ## 1. Cài đặt phần mềm cần thiết (Windows)
 
-| Phần mềm | Bản khuyến nghị | Link tải |
-|---|---|---|
-| JDK | 17 (Temurin/Eclipse Adoptium) | https://adoptium.net |
-| Maven | 3.9.x (có thể bỏ qua nếu dùng `mvnw` đi kèm project) | https://maven.apache.org/download.cgi |
-| Node.js | LTS 20.x | https://nodejs.org |
-| SQL Server | 2022 Express (miễn phí, đủ dùng cho dự án) | https://www.microsoft.com/vi-vn/sql-server/sql-server-downloads |
-| SQL Server Management Studio (SSMS) | mới nhất — GUI để quản lý DB | https://aka.ms/ssmsfullsetup |
-| Git (tùy chọn) | mới nhất | https://git-scm.com |
+| Phần mềm                            | Bản khuyến nghị                                      | Link tải                                                        |
+| ----------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
+| JDK                                 | 17 (Temurin/Eclipse Adoptium)                        | https://adoptium.net                                            |
+| Maven                               | 3.9.x (có thể bỏ qua nếu dùng `mvnw` đi kèm project) | https://maven.apache.org/download.cgi                           |
+| Node.js                             | LTS 20.x                                             | https://nodejs.org                                              |
+| SQL Server                          | 2022 Express (miễn phí, đủ dùng cho dự án)           | https://www.microsoft.com/vi-vn/sql-server/sql-server-downloads |
+| SQL Server Management Studio (SSMS) | mới nhất — GUI để quản lý DB                         | https://aka.ms/ssmsfullsetup                                    |
+| Git (tùy chọn)                      | mới nhất                                             | https://git-scm.com                                             |
 
 Khi cài SQL Server, chọn kiểu **"Basic"**, và **ghi nhớ**:
+
 - Instance name (mặc định `SQLEXPRESS` hoặc `MSSQLSERVER`)
 - Bật **Mixed Mode Authentication** (nếu được hỏi) và đặt mật khẩu cho user `sa`
   — nếu không bật lúc cài, có thể bật sau trong SSMS: chuột phải server >
@@ -22,12 +23,14 @@ Khi cài SQL Server, chọn kiểu **"Basic"**, và **ghi nhớ**:
   sau đó khởi động lại dịch vụ SQL Server (Windows Services, tìm "SQL Server").
 
 Sau khi cài xong, mở **PowerShell** hoặc **CMD** và kiểm tra:
+
 ```powershell
 java -version
 mvn -version
 node -v
 npm -v
 ```
+
 Riêng SQL Server không kiểm tra bằng lệnh `--version` — mở **SSMS**, thử kết nối
 tới `localhost` là biết cài thành công hay chưa (xem bước 3 bên dưới).
 
@@ -68,11 +71,13 @@ Cách khác: dùng ngay extension **SQL Server (mssql)** trong VSCode — mở f
 ## 4. Cấu hình kết nối Backend → Database
 
 Mở `backend/src/main/resources/application.properties`, sửa lại:
+
 ```properties
 spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=nha_tro_db;encrypt=true;trustServerCertificate=true
 spring.datasource.username=sa
 spring.datasource.password=<mật khẩu SQL Server của bạn>
 ```
+
 Nếu bạn cài SQL Server dạng **Named Instance** (ví dụ `SQLEXPRESS`), thay
 `localhost:1433` bằng `localhost\\SQLEXPRESS` và bỏ số cổng, hoặc bật
 **SQL Server Browser** service để dùng port động.
@@ -117,9 +122,15 @@ dependencies (lần đầu sẽ hơi lâu vì Maven tải các thư viện). Sau
   ```
 
 Nếu chạy thành công, terminal sẽ hiện dòng `Tomcat started on port(s): 8080`.
-Vào trình duyệt gõ `http://localhost:8080` — thấy trang lỗi trắng "Whitelabel
-Error Page" là **bình thường** (vì chưa có endpoint nào), nghĩa là backend đã
-kết nối được DB và chạy ổn.
+
+**Xem toàn bộ API bằng giao diện Swagger** (thay vì vào từng link JSON thô):
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+Trang này liệt kê hết các API, có thể bấm **Try it out** để test trực tiếp
+(gửi GET/POST/PUT/DELETE) ngay trên trình duyệt, không cần Postman.
 
 ## 7. Kiểm tra frontend (khung, chưa có giao diện thật)
 
@@ -128,16 +139,17 @@ cd frontend
 npm install
 npm run dev
 ```
+
 Vite sẽ báo chạy ở `http://localhost:5173`.
 
-## 9. Quy trình làm việc nhóm với Git (Git Workflow)
+## 8. Quy trình làm việc nhóm với Git (Git Workflow)
 
 Vì repo Private trên GitHub Free **không chặn được** việc push thẳng vào
 `main` bằng kỹ thuật (branch protection chỉ hoạt động thật với GitHub Pro/Team),
 nhóm cần **tự giác tuân theo quy trình dưới đây** — không ai push code trực
 tiếp vào `main`, luôn làm việc qua nhánh riêng (branch) + Pull Request.
 
-### 9.1. Nguyên tắc cốt lõi
+### 8.1. Nguyên tắc cốt lõi
 
 - `main` luôn là code **chạy được, đã kiểm tra** — không code dở dang trên đó.
 - Mỗi người/mỗi tính năng làm trên **1 nhánh riêng**, đặt tên rõ ràng:
@@ -146,7 +158,7 @@ tiếp vào `main`, luôn làm việc qua nhánh riêng (branch) + Pull Request.
 - Code xong 1 việc → tạo **Pull Request (PR)** → nhờ 1 bạn khác xem qua → merge
   vào `main`. Không tự merge PR của chính mình nếu nhóm có ≥ 3 người.
 
-### 9.2. Quy trình từng bước khi bắt đầu 1 việc mới
+### 8.2. Quy trình từng bước khi bắt đầu 1 việc mới
 
 ```powershell
 git checkout main
@@ -154,7 +166,7 @@ git pull                                  # lay code moi nhat cua ca nhom
 git checkout -b feature/ten-tinh-nang     # tao nhanh moi TU main moi nhat
 ```
 
-### 9.3. Trong lúc code — lặp lại nhiều lần
+### 8.3. Trong lúc code — lặp lại nhiều lần
 
 ```powershell
 git add .
@@ -165,7 +177,7 @@ git push                                  # lan dau can go: git push -u origin f
 > Chỉ cần `-b` (tạo nhánh) và `-u` (gán nhánh mặc định) **1 lần đầu tiên**
 > cho mỗi nhánh. Các lần push sau chỉ cần `git push`.
 
-### 9.4. Tiếp tục 1 việc dở dang (nhánh đã có sẵn, hôm sau code tiếp)
+### 8.4. Tiếp tục 1 việc dở dang (nhánh đã có sẵn, hôm sau code tiếp)
 
 ```powershell
 git checkout feature/ten-tinh-nang        # khong co -b, vi nhanh da ton tai
@@ -176,7 +188,7 @@ git commit -m "Mo ta"
 git push
 ```
 
-### 9.5. Xong việc — tạo Pull Request
+### 8.5. Xong việc — tạo Pull Request
 
 1. Vào GitHub → tab **Pull requests** → **New pull request**
 2. Base: `main` ← Compare: `feature/ten-tinh-nang`
@@ -185,40 +197,43 @@ git push
 5. Sau khi merge, có thể xoá nhánh đó trên GitHub (nút **Delete branch**
    hiện ngay sau khi merge) để danh sách nhánh gọn gàng.
 
-### 9.6. Xử lý khi `git push` bị từ chối (rejected)
+### 8.6. Xử lý khi `git push` bị từ chối (rejected)
 
 Nghĩa là trên GitHub đã có commit mới hơn máy bạn (ai đó push trước). Chạy:
+
 ```powershell
 git pull
 git push
 ```
+
 Nếu Git báo **conflict** (đụng độ), VSCode sẽ đánh dấu đoạn code xung đột
 ngay trong file (`<<<<<<<`, `=======`, `>>>>>>>`) — sửa lại cho đúng, xoá các
 dấu đó đi, rồi:
+
 ```powershell
 git add .
 git commit -m "Fix conflict"
 git push
 ```
 
-### 9.7. Tóm tắt lệnh hay dùng
+### 8.7. Tóm tắt lệnh hay dùng
 
-| Việc cần làm | Lệnh |
-|---|---|
-| Xem đang ở nhánh nào | `git status` hoặc `git branch` |
-| Chuyển sang `main` | `git checkout main` |
-| Lấy code mới nhất | `git pull` |
-| Tạo nhánh mới | `git checkout -b feature/ten` |
-| Chuyển sang nhánh có sẵn | `git checkout feature/ten` |
-| Lưu thay đổi | `git add .` rồi `git commit -m "..."` |
-| Đẩy lên GitHub (lần đầu của nhánh) | `git push -u origin feature/ten` |
-| Đẩy lên GitHub (các lần sau) | `git push` |
-| Xem lịch sử commit | `git log --oneline --graph --all` |
+| Việc cần làm                       | Lệnh                                  |
+| ---------------------------------- | ------------------------------------- |
+| Xem đang ở nhánh nào               | `git status` hoặc `git branch`        |
+| Chuyển sang `main`                 | `git checkout main`                   |
+| Lấy code mới nhất                  | `git pull`                            |
+| Tạo nhánh mới                      | `git checkout -b feature/ten`         |
+| Chuyển sang nhánh có sẵn           | `git checkout feature/ten`            |
+| Lưu thay đổi                       | `git add .` rồi `git commit -m "..."` |
+| Đẩy lên GitHub (lần đầu của nhánh) | `git push -u origin feature/ten`      |
+| Đẩy lên GitHub (các lần sau)       | `git push`                            |
+| Xem lịch sử commit                 | `git log --oneline --graph --all`     |
 
-## 10. Bước tiếp theo (chưa làm ở bước này)
+## 9. Bước tiếp theo (chưa làm ở bước này)
 
 - Viết Repository, Service, Controller cho từng entity (CRUD REST API).
 - Viết giao diện React gọi API.
 - Thêm entity cho các bảng còn lại (đăng tin, hợp đồng, thanh toán...).
 
-Khi môi trường chạy ổn, nhắn lại để tiếp tục code phần REST API.git
+Khi môi trường chạy ổn, nhắn lại để tiếp tục code phần REST API.
