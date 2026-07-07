@@ -130,10 +130,95 @@ npm run dev
 ```
 Vite sẽ báo chạy ở `http://localhost:5173`.
 
-## 8. Bước tiếp theo (chưa làm ở bước này)
+## 9. Quy trình làm việc nhóm với Git (Git Workflow)
+
+Vì repo Private trên GitHub Free **không chặn được** việc push thẳng vào
+`main` bằng kỹ thuật (branch protection chỉ hoạt động thật với GitHub Pro/Team),
+nhóm cần **tự giác tuân theo quy trình dưới đây** — không ai push code trực
+tiếp vào `main`, luôn làm việc qua nhánh riêng (branch) + Pull Request.
+
+### 9.1. Nguyên tắc cốt lõi
+
+- `main` luôn là code **chạy được, đã kiểm tra** — không code dở dang trên đó.
+- Mỗi người/mỗi tính năng làm trên **1 nhánh riêng**, đặt tên rõ ràng:
+  - `feature/ten-tinh-nang` — khi thêm chức năng mới (vd `feature/crud-dangtin`)
+  - `fix/mo-ta-loi` — khi sửa lỗi (vd `fix/loi-ket-noi-db`)
+- Code xong 1 việc → tạo **Pull Request (PR)** → nhờ 1 bạn khác xem qua → merge
+  vào `main`. Không tự merge PR của chính mình nếu nhóm có ≥ 3 người.
+
+### 9.2. Quy trình từng bước khi bắt đầu 1 việc mới
+
+```powershell
+git checkout main
+git pull                                  # lay code moi nhat cua ca nhom
+git checkout -b feature/ten-tinh-nang     # tao nhanh moi TU main moi nhat
+```
+
+### 9.3. Trong lúc code — lặp lại nhiều lần
+
+```powershell
+git add .
+git commit -m "Mo ta ngan gon thay doi"
+git push                                  # lan dau can go: git push -u origin feature/ten-tinh-nang
+```
+
+> Chỉ cần `-b` (tạo nhánh) và `-u` (gán nhánh mặc định) **1 lần đầu tiên**
+> cho mỗi nhánh. Các lần push sau chỉ cần `git push`.
+
+### 9.4. Tiếp tục 1 việc dở dang (nhánh đã có sẵn, hôm sau code tiếp)
+
+```powershell
+git checkout feature/ten-tinh-nang        # khong co -b, vi nhanh da ton tai
+git pull                                  # phong khi may khac (hoac chinh minh) da push them
+# ... code tiep ...
+git add .
+git commit -m "Mo ta"
+git push
+```
+
+### 9.5. Xong việc — tạo Pull Request
+
+1. Vào GitHub → tab **Pull requests** → **New pull request**
+2. Base: `main` ← Compare: `feature/ten-tinh-nang`
+3. Viết mô tả ngắn đã làm gì → **Create pull request**
+4. Nhờ 1 thành viên khác **Review** → nếu ổn, bấm **Merge pull request**
+5. Sau khi merge, có thể xoá nhánh đó trên GitHub (nút **Delete branch**
+   hiện ngay sau khi merge) để danh sách nhánh gọn gàng.
+
+### 9.6. Xử lý khi `git push` bị từ chối (rejected)
+
+Nghĩa là trên GitHub đã có commit mới hơn máy bạn (ai đó push trước). Chạy:
+```powershell
+git pull
+git push
+```
+Nếu Git báo **conflict** (đụng độ), VSCode sẽ đánh dấu đoạn code xung đột
+ngay trong file (`<<<<<<<`, `=======`, `>>>>>>>`) — sửa lại cho đúng, xoá các
+dấu đó đi, rồi:
+```powershell
+git add .
+git commit -m "Fix conflict"
+git push
+```
+
+### 9.7. Tóm tắt lệnh hay dùng
+
+| Việc cần làm | Lệnh |
+|---|---|
+| Xem đang ở nhánh nào | `git status` hoặc `git branch` |
+| Chuyển sang `main` | `git checkout main` |
+| Lấy code mới nhất | `git pull` |
+| Tạo nhánh mới | `git checkout -b feature/ten` |
+| Chuyển sang nhánh có sẵn | `git checkout feature/ten` |
+| Lưu thay đổi | `git add .` rồi `git commit -m "..."` |
+| Đẩy lên GitHub (lần đầu của nhánh) | `git push -u origin feature/ten` |
+| Đẩy lên GitHub (các lần sau) | `git push` |
+| Xem lịch sử commit | `git log --oneline --graph --all` |
+
+## 10. Bước tiếp theo (chưa làm ở bước này)
 
 - Viết Repository, Service, Controller cho từng entity (CRUD REST API).
 - Viết giao diện React gọi API.
 - Thêm entity cho các bảng còn lại (đăng tin, hợp đồng, thanh toán...).
 
-Khi môi trường chạy ổn, nhắn lại để tiếp tục code phần REST API.
+Khi môi trường chạy ổn, nhắn lại để tiếp tục code phần REST API.git
