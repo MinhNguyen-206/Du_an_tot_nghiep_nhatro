@@ -1,6 +1,7 @@
 package com.nhatro.backend.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -8,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/api/**")
                 // dia chi mac dinh cua Vite (React) khi chay npm run dev
                 .allowedOrigins("http://localhost:5173")
