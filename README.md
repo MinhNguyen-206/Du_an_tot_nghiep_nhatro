@@ -1,4 +1,4 @@
-# Nhà Trọ Project — Spring Boot (BE) + React (FE) + SQL Server
+# Nhà Trọ Project — Spring Boot (BE) + Vue 3 (FE) + SQL Server
 
 Đây là khung dự án (chưa code logic nghiệp vụ đầy đủ). Làm theo hướng dẫn dưới
 để dựng xong môi trường trên **Windows + VSCode**.
@@ -47,7 +47,7 @@ Mở project này trong VSCode, VSCode sẽ tự đề xuất cài các extensio
 - **Spring Boot Dashboard** — để chạy/dừng app bằng nút bấm thay vì gõ lệnh
 - **Lombok Annotations Support**
 - **SQL Server (mssql)** (ms-mssql.mssql) — để kết nối và query SQL Server ngay trong VSCode
-- **Prettier** + **ESLint** — cho phần frontend React
+- **Prettier** + **ESLint** + **Vue - Official** — cho phần frontend Vue 3
 
 ## 3. Tạo database
 
@@ -97,7 +97,7 @@ nha-tro-project/
 │       │   ├── service/         # Khung trống — sẽ code sau
 │       │   └── config/CorsConfig.java
 │       └── resources/application.properties
-├── frontend/                    # React + Vite (khung, chưa code component)
+├── frontend/                    # Vue 3 + Vite (SFC)
 │   ├── package.json
 │   └── src/
 ├── .vscode/
@@ -233,7 +233,7 @@ git push
 ## 9. Bước tiếp theo (chưa làm ở bước này)
 
 - Viết Repository, Service, Controller cho từng entity (CRUD REST API).
-- Viết giao diện React gọi API.
+- Viết giao diện Vue 3 gọi API.
 - Thêm entity cho các bảng còn lại (đăng tin, hợp đồng, thanh toán...).
 
 Khi môi trường chạy ổn, nhắn lại để tiếp tục code phần REST API.
