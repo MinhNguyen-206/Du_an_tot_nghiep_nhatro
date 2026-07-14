@@ -2,7 +2,6 @@ package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.LichSuXemPhong;
 import com.nhatro.backend.entity.DangTin;
-import com.nhatro.backend.entity.PhongTro;
 import com.nhatro.backend.entity.NguoiDung;
 import org.springframework.stereotype.Service;
 

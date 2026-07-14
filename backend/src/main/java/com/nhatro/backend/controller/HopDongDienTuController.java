@@ -2,11 +2,13 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.HopDongDienTu;
 import com.nhatro.backend.service.HopDongDienTuService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Hợp đồng điện tử", description = "Quản lý hợp đồng thuê nhà")
 @RestController
 @RequestMapping("/api/hop-dong")
 public class HopDongDienTuController {

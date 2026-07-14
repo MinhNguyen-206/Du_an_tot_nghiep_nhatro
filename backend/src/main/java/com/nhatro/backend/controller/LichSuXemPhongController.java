@@ -2,11 +2,13 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.LichSuXemPhong;
 import com.nhatro.backend.service.LichSuXemPhongService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Lịch sử xem phòng", description = "Quản lý lịch sử xem phòng")
 @RestController
 @RequestMapping("/api/lich-su-xem-phong")
 public class LichSuXemPhongController {

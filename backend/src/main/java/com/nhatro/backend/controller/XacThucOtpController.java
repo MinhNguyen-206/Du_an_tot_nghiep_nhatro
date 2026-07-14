@@ -2,11 +2,13 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.XacThucOtp;
 import com.nhatro.backend.service.XacThucOtpService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "OTP", description = "Xác thực bằng OTP")
 @RestController
 @RequestMapping("/api/xac-thuc-otp")
 public class XacThucOtpController {

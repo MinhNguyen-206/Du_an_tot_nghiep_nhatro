@@ -1,6 +1,7 @@
 package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.NguoiDung;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,8 +15,10 @@ public class NguoiDungService {
 
     private final List<NguoiDung> danhSach = new CopyOnWriteArrayList<>();
     private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final PasswordEncoder passwordEncoder;
 
-    public NguoiDungService() {
+    public NguoiDungService(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
         themDuLieuMau();
     }
 
@@ -23,7 +26,7 @@ public class NguoiDungService {
         danhSach.add(NguoiDung.builder()
                 .maNguoiDung(idCounter.getAndIncrement())
                 .email("chutro1@gmail.com")
-                .matKhauMaHoa("123456")
+                .matKhauMaHoa(passwordEncoder.encode("123456"))
                 .hoTen("Nguyen Van A")
                 .soDienThoai("0901111111")
                 .vaiTro(2)
@@ -37,7 +40,7 @@ public class NguoiDungService {
         danhSach.add(NguoiDung.builder()
                 .maNguoiDung(idCounter.getAndIncrement())
                 .email("nguoithue1@gmail.com")
-                .matKhauMaHoa("123456")
+                .matKhauMaHoa(passwordEncoder.encode("123456"))
                 .hoTen("Tran Thi B")
                 .soDienThoai("0902222222")
                 .vaiTro(1)
@@ -51,7 +54,7 @@ public class NguoiDungService {
         danhSach.add(NguoiDung.builder()
                 .maNguoiDung(idCounter.getAndIncrement())
                 .email("admin@nhatro.com")
-                .matKhauMaHoa("123456")
+                .matKhauMaHoa(passwordEncoder.encode("123456"))
                 .hoTen("Quan Tri Vien")
                 .vaiTro(3)
                 .trangThaiTaiKhoan(1)
@@ -74,6 +77,9 @@ public class NguoiDungService {
 
     public NguoiDung create(NguoiDung nguoiDung) {
         nguoiDung.setMaNguoiDung(idCounter.getAndIncrement());
+        if (nguoiDung.getMatKhauMaHoa() != null && !nguoiDung.getMatKhauMaHoa().isEmpty()) {
+            nguoiDung.setMatKhauMaHoa(passwordEncoder.encode(nguoiDung.getMatKhauMaHoa()));
+        }
         nguoiDung.setNgayTao(LocalDateTime.now());
         nguoiDung.setNgayCapNhat(LocalDateTime.now());
         danhSach.add(nguoiDung);

@@ -27,6 +27,7 @@ public class NguoiDung {
     @Column(name = "so_dien_thoai", length = 20)
     private String soDienThoai;
 
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     @Column(name = "mat_khau_ma_hoa", nullable = false)
     private String matKhauMaHoa;
 

@@ -2,11 +2,13 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.CauHinhDanhMuc;
 import com.nhatro.backend.service.CauHinhDanhMucService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Cấu hình danh mục", description = "Quản lý cấu hình và danh mục hệ thống")
 @RestController
 @RequestMapping("/api/cau-hinh-danh-muc")
 public class CauHinhDanhMucController {

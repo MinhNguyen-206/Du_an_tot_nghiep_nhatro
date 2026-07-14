@@ -2,11 +2,13 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.BoDieuKhienAi;
 import com.nhatro.backend.service.BoDieuKhienAiService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "AI", description = "Bộ điều khiển AI")
 @RestController
 @RequestMapping("/api/bo-dieu-khien-ai")
 public class BoDieuKhienAiController {

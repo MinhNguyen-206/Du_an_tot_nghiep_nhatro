@@ -2,11 +2,13 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.NguoiDung;
 import com.nhatro.backend.service.NguoiDungService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Người dùng", description = "Quản lý thông tin người dùng")
 @RestController
 @RequestMapping("/api/nguoi-dung")
 public class NguoiDungController {

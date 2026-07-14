@@ -2,11 +2,13 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.BaoCaoViPham;
 import com.nhatro.backend.service.BaoCaoViPhamService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Báo cáo vi phạm", description = "Quản lý báo cáo vi phạm")
 @RestController
 @RequestMapping("/api/bao-cao-vi-pham")
 public class BaoCaoViPhamController {
