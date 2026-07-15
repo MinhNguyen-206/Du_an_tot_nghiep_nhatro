@@ -291,7 +291,7 @@ git push
 
 **Đã xong:**
 
-- ✅ Entity + Service + Controller cho 23 module nghiệp vụ (dùng mock data RAM).
+- ✅ Entity + Service + Controller cho các module nghiệp vụ (dùng mock data RAM).
 - ✅ Đăng nhập + JWT (`AuthController`, `JwtUtil`, `JwtAuthenticationFilter`).
 - ✅ Swagger UI, có nút Authorize test JWT.
 
@@ -304,9 +304,6 @@ git push
   và 25/26 file trong `frontend/src/api/` chưa viết hàm gọi API nào.
 - Phân quyền theo vai trò (`@PreAuthorize("hasRole('ADMIN')")`) — hiện đã đăng
   nhập là gọi được hết API, chưa phân biệt người thuê/chủ trọ/admin.
-- 5 entity cho tính năng Premium (chưa code, chỉ mới có trong class diagram):
-  `Gói Premium`, `Hóa đơn điện tử (Premium)`, `Hợp đồng Premium`,
-  `Đăng ký gói chủ trọ`, `Cảnh báo phòng mới`.
 - Bổ sung entity `Repository` thật (JPA) khi chuyển sang SQL Server.
 
 Khi môi trường chạy ổn, nhắn lại để tiếp tục code phần REST API.
