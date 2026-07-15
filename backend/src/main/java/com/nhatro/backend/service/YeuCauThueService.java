@@ -17,8 +17,12 @@ public class YeuCauThueService {
 
     private final List<YeuCauThue> danhSach = new CopyOnWriteArrayList<>();
     private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final DangTinService dangTinService;
+    private final NguoiDungService nguoiDungService;
 
     public YeuCauThueService(DangTinService dangTinService, NguoiDungService nguoiDungService) {
+        this.dangTinService = dangTinService;
+        this.nguoiDungService = nguoiDungService;
         List<DangTin> dsDangTin = dangTinService.getAll();
         Optional<NguoiDung> nguoiThueMau = nguoiDungService.getAll().stream()
                 .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 1)
@@ -53,6 +57,17 @@ public class YeuCauThueService {
         if (yeuCauThue.getTrangThai() == null) {
             yeuCauThue.setTrangThai(0);
         }
+
+        if (yeuCauThue.getNguoiThue() != null && yeuCauThue.getNguoiThue().getMaNguoiDung() != null) {
+            nguoiDungService.getById(yeuCauThue.getNguoiThue().getMaNguoiDung())
+                    .ifPresent(yeuCauThue::setNguoiThue);
+        }
+
+        if (yeuCauThue.getDangTin() != null && yeuCauThue.getDangTin().getMaDangTin() != null) {
+            dangTinService.getById(yeuCauThue.getDangTin().getMaDangTin())
+                    .ifPresent(yeuCauThue::setDangTin);
+        }
+
         danhSach.add(yeuCauThue);
         return yeuCauThue;
     }

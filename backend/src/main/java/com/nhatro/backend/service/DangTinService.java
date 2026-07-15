@@ -16,8 +16,12 @@ public class DangTinService {
 
     private final List<DangTin> danhSach = new CopyOnWriteArrayList<>();
     private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final PhongTroService phongTroService;
+    private final NguoiDungService nguoiDungService;
 
     public DangTinService(PhongTroService phongTroService, NguoiDungService nguoiDungService) {
+        this.phongTroService = phongTroService;
+        this.nguoiDungService = nguoiDungService;
         List<PhongTro> dsPhong = phongTroService.getAll();
         Optional<NguoiDung> chuTroMau = nguoiDungService.getAll().stream()
                 .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 2)
@@ -77,6 +81,17 @@ public class DangTinService {
         if (dangTin.getSoLuotXem() == null) {
             dangTin.setSoLuotXem(0);
         }
+
+        if (dangTin.getPhong() != null && dangTin.getPhong().getMaPhong() != null) {
+            phongTroService.getById(dangTin.getPhong().getMaPhong())
+                    .ifPresent(dangTin::setPhong);
+        }
+
+        if (dangTin.getNguoiDung() != null && dangTin.getNguoiDung().getMaNguoiDung() != null) {
+            nguoiDungService.getById(dangTin.getNguoiDung().getMaNguoiDung())
+                    .ifPresent(dangTin::setNguoiDung);
+        }
+
         danhSach.add(dangTin);
         return dangTin;
     }
