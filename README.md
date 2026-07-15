@@ -1,6 +1,8 @@
 # Nhà Trọ Project — Spring Boot (BE) + Vue 3 (FE) + SQL Server
 
-Đây là khung dự án (chưa code logic nghiệp vụ đầy đủ). Làm theo hướng dẫn dưới
+Backend đã code xong CRUD cho 23 module nghiệp vụ + đăng nhập JWT (chạy bằng
+dữ liệu mẫu trong RAM, chưa nối SQL Server thật — xem mục 6.1). Frontend mới
+xong trang đăng nhập, các trang còn lại là khung rỗng. Làm theo hướng dẫn dưới
 để dựng xong môi trường trên **Windows + VSCode**.
 
 ## 1. Cài đặt phần mềm cần thiết (Windows)
@@ -91,15 +93,20 @@ nha-tro-project/
 │   └── src/main/
 │       ├── java/com/nhatro/backend/
 │       │   ├── BackendApplication.java
-│       │   ├── entity/          # Đã có: NguoiDung, NhaTro, PhongTro, DangTin
-│       │   ├── repository/      # Khung trống — sẽ code sau
-│       │   ├── controller/      # Khung trống — sẽ code sau
-│       │   ├── service/         # Khung trống — sẽ code sau
-│       │   └── config/CorsConfig.java
+│       │   ├── entity/          # 23 entity nghiệp vụ đã code đủ
+│       │   ├── repository/      # File rỗng — KHÔNG dùng (xem mục 6.1)
+│       │   ├── controller/      # Đã code đủ CRUD cho 23 entity
+│       │   ├── service/         # Đã code đủ, dùng List trong RAM làm mock data
+│       │   ├── security/        # JwtUtil, JwtAuthenticationFilter, SecurityConfig
+│       │   ├── dto/             # AuthRequest, AuthResponse
+│       │   └── config/          # CorsConfig, OpenApiConfig
 │       └── resources/application.properties
 ├── frontend/                    # Vue 3 + Vite (SFC)
 │   ├── package.json
 │   └── src/
+│       ├── pages/                # Chỉ Login.vue đã code, còn lại là khung rỗng
+│       ├── api/                  # Chỉ authApi.js đã code, còn lại là file rỗng
+│       └── stores/authStore.js   # Pinia store cho đăng nhập (Auth)
 ├── .vscode/
 │   ├── settings.json
 │   └── extensions.json
@@ -131,6 +138,56 @@ http://localhost:8080/swagger-ui/index.html
 
 Trang này liệt kê hết các API, có thể bấm **Try it out** để test trực tiếp
 (gửi GET/POST/PUT/DELETE) ngay trên trình duyệt, không cần Postman.
+
+### 6.1. ⚠️ Chế độ hiện tại: dữ liệu mẫu trong RAM (chưa nối SQL Server thật)
+
+Ở giai đoạn hiện tại, backend **chưa kết nối SQL Server thật** — dòng
+`spring.autoconfigure.exclude=...` trong `application.properties` đang tắt
+hẳn DataSource/JPA. Toàn bộ `repository/*.java` là **file rỗng, không dùng
+đến**.
+
+Thay vào đó, mỗi `Service` (`NguoiDungService`, `DangTinService`,
+`ChiSoDienNuocService`...) tự giữ 1 `List` trong bộ nhớ, **tự seed sẵn 1 bản
+ghi mẫu** ngay khi khởi động, và liên kết cascade đúng quan hệ nghiệp vụ
+(VD: `ChiSoDienNuocService` lấy hóa đơn mẫu từ `HoaDonThangService`, cái này
+lấy hợp đồng mẫu từ `HopDongDienTuService`, cứ thế ngược lên tới
+`NguoiDungService`).
+
+**Cần nhớ:**
+
+- Dữ liệu **mất hết khi restart** backend (RAM-only) — mọi thứ POST/PUT/DELETE
+  lúc test sẽ quay về đúng bản mẫu ban đầu sau khi chạy lại `mvn spring-boot:run`.
+- Muốn xem dữ liệu **thật** trên Swagger: bấm **Try it out → Execute**, xem
+  phần **"Response body"** — **không phải** tab "Example Value"/"Schema" phía
+  trên (tab đó chỉ là kiểu dữ liệu Swagger tự sinh, không phải data thật).
+- Khi nào sẵn sàng nối SQL Server thật: xóa dòng `spring.autoconfigure.exclude`
+  trong `application.properties`, cấu hình lại mục 4, và viết lại các
+  `Repository` bằng `JpaRepository` (khi đó có thể bỏ hẳn phần seed trong RAM).
+
+### 6.2. Đăng nhập & JWT — cách dùng nút Authorize trên Swagger
+
+Từ khi có `JwtAuthenticationFilter`, các API **ngoài** `/api/auth/**` và
+`/api/nguoi-dung/**` đều **yêu cầu token hợp lệ**, nếu không sẽ nhận `403`.
+
+**3 tài khoản mẫu có sẵn** (mật khẩu đều `123456`):
+
+| Email                  | Vai trò           |
+| ---------------------- | ----------------- |
+| `nguoithue1@gmail.com` | Người thuê (1)    |
+| `chutro1@gmail.com`    | Chủ trọ (2)       |
+| `admin@nhatro.com`     | Quản trị viên (3) |
+
+_(chưa có API nào giới hạn theo vai trò cụ thể — cả 3 tài khoản dùng được như nhau ở giai đoạn này)_
+
+**Các bước test:**
+
+1. Gọi `POST /api/auth/login` với email/password ở trên → copy giá trị `token` trong response.
+2. Bấm nút **🔒 Authorize** (góc trên Swagger UI) → dán token vào ô (không cần gõ chữ `Bearer`) → **Authorize** → **Close**.
+3. Từ giờ mọi API Execute trên Swagger sẽ tự gắn kèm header `Authorization: Bearer <token>`.
+
+> Lưu ý CORS: nếu gọi API bằng công cụ ngoài Swagger UI có Origin khác
+> (không phải `http://localhost:5173` hoặc `http://localhost:8080`), sẽ bị
+> chặn `403` rỗng do CORS — xem `CorsConfig.java` để thêm origin nếu cần.
 
 ## 7. Kiểm tra frontend (khung, chưa có giao diện thật)
 
@@ -230,10 +287,26 @@ git push
 | Đẩy lên GitHub (các lần sau)       | `git push`                            |
 | Xem lịch sử commit                 | `git log --oneline --graph --all`     |
 
-## 9. Bước tiếp theo (chưa làm ở bước này)
+## 9. Bước tiếp theo
 
-- Viết Repository, Service, Controller cho từng entity (CRUD REST API).
-- Viết giao diện Vue 3 gọi API.
-- Thêm entity cho các bảng còn lại (đăng tin, hợp đồng, thanh toán...).
+**Đã xong:**
+
+- ✅ Entity + Service + Controller cho 23 module nghiệp vụ (dùng mock data RAM).
+- ✅ Đăng nhập + JWT (`AuthController`, `JwtUtil`, `JwtAuthenticationFilter`).
+- ✅ Swagger UI, có nút Authorize test JWT.
+
+**Chưa làm:**
+
+- Nối SQL Server thật (viết lại `Repository` bằng `JpaRepository`, bỏ mock RAM) — xem mục 6.1.
+- Viết giao diện Vue 3 gọi API — hiện chỉ `Login.vue` hoạt động, 9 trang còn lại
+  (`RoomList`, `RoomDetail`, `PostManagement`, `ContractManagement`,
+  `PaymentManagement`, `Profile`, `AdminDashboard`, `Register`...) là khung rỗng,
+  và 25/26 file trong `frontend/src/api/` chưa viết hàm gọi API nào.
+- Phân quyền theo vai trò (`@PreAuthorize("hasRole('ADMIN')")`) — hiện đã đăng
+  nhập là gọi được hết API, chưa phân biệt người thuê/chủ trọ/admin.
+- 5 entity cho tính năng Premium (chưa code, chỉ mới có trong class diagram):
+  `Gói Premium`, `Hóa đơn điện tử (Premium)`, `Hợp đồng Premium`,
+  `Đăng ký gói chủ trọ`, `Cảnh báo phòng mới`.
+- Bổ sung entity `Repository` thật (JPA) khi chuyển sang SQL Server.
 
 Khi môi trường chạy ổn, nhắn lại để tiếp tục code phần REST API.

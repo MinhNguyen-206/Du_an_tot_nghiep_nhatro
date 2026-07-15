@@ -1,8 +1,11 @@
 package com.nhatro.backend.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +14,8 @@ import java.util.Arrays;
 
 @Configuration
 public class OpenApiConfig {
+
+    private static final String SCHEME_NAME = "bearerAuth";
 
     @Bean
     public OpenAPI nhaTroOpenAPI() {
@@ -22,6 +27,15 @@ public class OpenApiConfig {
                         .contact(new Contact()
                                 .name("Nhóm dự án tốt nghiệp Nhà Trọ")
                                 .url("https://nhatro.com")))
+                // Khai bao bearer scheme de nut "Authorize" hien ra va Swagger
+                // tu dong gan header "Authorization: Bearer <token>" vao moi request
+                .components(new Components()
+                        .addSecuritySchemes(SCHEME_NAME, new SecurityScheme()
+                                .name(SCHEME_NAME)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList(SCHEME_NAME))
                 .tags(Arrays.asList(
                         createTag("Xác thực & Đăng nhập", "Đăng nhập, đăng xuất, quản lý token"),
                         createTag("Người dùng", "Quản lý thông tin người dùng"),

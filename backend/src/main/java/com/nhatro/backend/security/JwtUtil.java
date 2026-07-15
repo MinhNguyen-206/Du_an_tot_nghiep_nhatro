@@ -1,5 +1,7 @@
 package com.nhatro.backend.security;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -11,47 +13,42 @@ import java.util.Date;
 public class JwtUtil {
     private static final long EXPIRATION_MS = 86400000;
     private static final String SECRET = "nhatro-secret-key-2026-very-long-password";
+    private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     public String generateToken(String email, Integer role) {
-        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(key)
+                .signWith(KEY)
                 .compact();
     }
 
-    public String extractEmail(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    // Giai ma va kiem tra chu ky/han su dung cua token.
+    // Nem JwtException (het han, sai chu ky, sai dinh dang...) neu token khong hop
+    // le.
+    private Claims parseClaims(String token) {
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(KEY)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
     }
 
-    public Integer extractRole(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("role", Integer.class);
+    public String getEmailFromToken(String token) {
+        return parseClaims(token).getSubject();
     }
 
-    public boolean validateToken(String token) {
+    public Integer getRoleFromToken(String token) {
+        return parseClaims(token).get("role", Integer.class);
+    }
+
+    public boolean isTokenValid(String token) {
         try {
-            SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
-            Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token);
+            parseClaims(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
