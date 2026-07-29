@@ -1,150 +1,169 @@
 ﻿<template>
-  <div class="home">
-    <!-- ================= HERO ================= -->
+  <div class="board">
+    <!-- ================= HERO: BẢNG GHIM ================= -->
     <section class="hero">
       <Header />
-      <div class="hero__overlay"></div>
-      <div class="hero__content">
-        <h1 class="hero__title">ROOM - CONNECT</h1>
-        <p class="hero__tagline">Hỗ trợ tìm trọ - Dễ dàng chọn lựa - Ưu tiên nhu cầu</p>
 
-        <form class="search-bar" @submit.prevent="handleSearch">
-          <input
-            v-model="searchForm.keyword"
-            type="text"
-            class="search-bar__input"
-            placeholder="Từ khóa cần tìm..."
-          />
-          <select v-model="searchForm.category" class="search-bar__select">
-            <option value="">--Danh mục--</option>
-            <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.label }}</option>
-          </select>
-          <select v-model="searchForm.province" class="search-bar__select">
-            <option value="">Toàn quốc</option>
-            <option value="hcm">TP. Hồ Chí Minh</option>
-            <option value="hn">Hà Nội</option>
-            <option value="dn">Đà Nẵng</option>
-          </select>
-          <button type="button" class="search-bar__filter" @click="showFilters = !showFilters">
-            <FilterIcon /> Bộ lọc
-          </button>
-          <button type="submit" class="search-bar__submit">TÌM KIẾM</button>
+      <div class="hero__pins">
+        <img
+          v-for="(p, i) in heroPins"
+          :key="i"
+          :src="p"
+          class="hero__pin"
+          :style="{ '--i': i }"
+          alt=""
+        />
+      </div>
+
+      <div class="hero__content">
+        <span class="hero__eyebrow">Sổ tay tìm trọ &middot; cập nhật mỗi giờ</span>
+        <h1 class="hero__headline">
+          <span class="hero__headline-stamp">TÌM</span> PHÒNG,
+          <br />KHÔNG CẦN
+          <br />DÁN CỘT ĐIỆN
+        </h1>
+        <p class="hero__tagline">
+          Trọ · Ký túc xá · Ở ghép · Chung cư mini — mọi tin đăng thật, gom về một bảng.
+        </p>
+
+        <form class="search-card" @submit.prevent="handleSearch">
+          <div class="search-card__row">
+            <input
+              v-model="searchForm.keyword"
+              type="text"
+              class="search-card__input"
+              placeholder="Tìm theo khu vực, tên đường, trường học..."
+            />
+            <select v-model="searchForm.category" class="search-card__select">
+              <option value="">Danh mục</option>
+              <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.label }}</option>
+            </select>
+            <select v-model="searchForm.province" class="search-card__select">
+              <option value="">Toàn quốc</option>
+              <option value="hcm">TP. Hồ Chí Minh</option>
+              <option value="hn">Hà Nội</option>
+              <option value="dn">Đà Nẵng</option>
+            </select>
+            <button type="submit" class="search-card__submit">TÌM →</button>
+          </div>
         </form>
 
-        <div class="popular-keywords">
-          <span class="popular-keywords__label">Tìm kiếm phổ biến:</span>
+        <div class="ticket-strip">
+          <span><strong>2.400+</strong> phòng đang trống</span>
+          <span class="ticket-strip__dot">•</span>
+          <span><strong>18</strong> quận/huyện</span>
+          <span class="ticket-strip__dot">•</span>
+          <span>cập nhật theo giờ</span>
+        </div>
+
+        <div class="keyword-tags">
           <button
             v-for="kw in popularKeywords"
             :key="kw"
             type="button"
-            class="popular-keywords__pill"
+            class="keyword-tags__tag"
             @click="applyKeyword(kw)"
           >
-            {{ kw }}
+            #{{ kw }}
           </button>
         </div>
       </div>
     </section>
 
-    <!-- ================= DANH MỤC ================= -->
-    <section class="section categories-section">
+    <!-- ================= DANH MỤC: BẢNG GHIM MINI ================= -->
+    <section class="section pinboard-section">
       <div class="section__head">
-        <h2 class="section__title">DANH MỤC</h2>
-        <div class="carousel-nav">
-          <button class="carousel-nav__btn" @click="scrollCategories(-1)" aria-label="Trước">‹</button>
-          <button class="carousel-nav__btn carousel-nav__btn--active" @click="scrollCategories(1)" aria-label="Sau">›</button>
-        </div>
+        <h2 class="section__title">Danh mục</h2>
+        <p class="section__hint">ghim sẵn theo nhu cầu ở của bạn</p>
       </div>
 
-      <div class="categories-track" ref="categoriesTrack">
-        <div v-for="c in categories" :key="c.id" class="category-card">
-          <img :src="c.image" :alt="c.label" class="category-card__img" />
-          <span class="category-card__label">{{ c.label }}</span>
-        </div>
-      </div>
-
-      <div class="dots">
-        <span v-for="n in 3" :key="n" class="dots__item" :class="{ 'is-active': n === 1 }"></span>
+      <div class="pinboard">
+        <router-link
+          v-for="(c, i) in categories"
+          :key="c.id"
+          to="/rooms"
+          class="flyer-card"
+          :style="{ '--tilt': tiltFor(i) }"
+        >
+          <span class="flyer-card__tape tape--kraft"></span>
+          <img :src="c.image" :alt="c.label" class="flyer-card__img" />
+          <span class="flyer-card__label">{{ c.label }}</span>
+        </router-link>
       </div>
     </section>
 
-    <!-- ================= KHU VỰC NỔI BẬT ================= -->
-    <section class="section highlight-section">
+    <!-- ================= KHU VỰC NỔI BẬT: TUYẾN ĐƯỜNG ================= -->
+    <section class="section route-section">
       <div class="section__head">
-        <h2 class="section__title">KHU VỰC NỔI BẬT</h2>
-        <router-link to="/rooms" class="link-map">Xem bản đồ ⚑</router-link>
+        <h2 class="section__title">Khu vực nổi bật</h2>
+        <router-link to="/rooms" class="link-underline">Xem bản đồ khu trọ →</router-link>
       </div>
 
-      <div class="highlight-grid">
-        <div class="highlight-card highlight-card--big">
-          <img src="https://loremflickr.com/700/700/university,campus,dormitory?lock=11" alt="Gần các trường đại học" />
-          <div class="highlight-card__overlay">
-            <strong>Gần các trường đại học</strong>
-            <span>1.240+ tin đăng mới</span>
-          </div>
-        </div>
-
-        <div class="highlight-grid__right">
-          <div class="highlight-card highlight-card--wide">
-            <img src="https://loremflickr.com/700/400/cityscape,skyline,vietnam?lock=15" alt="Trung tâm thành phố" />
-            <div class="highlight-card__overlay">
-              <strong>Trung tâm thành phố</strong>
-            </div>
-          </div>
-          <div class="highlight-grid__pair">
-            <div class="highlight-card">
-              <img src="https://loremflickr.com/350/350/bedroom,budget,simple?lock=60" alt="Phòng giá rẻ" />
-              <div class="highlight-card__overlay">
-                <strong>Phòng giá rẻ</strong>
-              </div>
-            </div>
-            <div class="highlight-card">
-              <img src="https://loremflickr.com/350/350/apartment,service,interior?lock=80" alt="Căn hộ dịch vụ" />
-              <div class="highlight-card__overlay">
-                <strong>Căn hộ dịch vụ</strong>
-              </div>
+      <div class="route-track">
+        <div class="route-line"></div>
+        <div v-for="area in areas" :key="area.code" class="route-stop">
+          <span class="route-stop__code">{{ area.code }}</span>
+          <div class="route-stop__card">
+            <img :src="area.image" :alt="area.name" />
+            <div class="route-stop__info">
+              <strong>{{ area.name }}</strong>
+              <span>{{ area.note }}</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ================= PHÒNG NỔI BẬT TRONG TUẦN ================= -->
-    <section class="section featured-section">
-      <div class="featured-card">
-        <div class="featured-card__image">
-          <span class="featured-card__badge">★ PHÒNG NỔI BẬT TRONG TUẦN</span>
-          <img src="https://loremflickr.com/700/500/apartment,luxury,studio?lock=39" alt="Phòng nổi bật" />
+    <!-- ================= TIN NỔI BẬT: VÉ GIỮ CHỖ ================= -->
+    <section class="section spotlight-section">
+      <div class="ticket">
+        <div class="ticket__image">
+          <img src="https://loremflickr.com/700/560/apartment,studio,luxury?lock=39" alt="Phòng nổi bật" />
+          <span class="ticket__stamp">TIN<br />NỔI BẬT</span>
         </div>
-        <div class="featured-card__body">
-          <span class="tag-premium">Premium Listing</span>
-          <h3 class="featured-card__title">Căn hộ studio cao cấp - View Landmark 81</h3>
-          <p class="featured-card__address">📍 Vinhomes Central Park - Bình Thạnh</p>
-          <p class="featured-card__price">5,5 Tr <span>/tháng</span></p>
-          <div class="featured-card__amenities">
-            <span>🛏 1 PN</span>
-            <span>▭ 35m²</span>
-            <span>🏡 Ban công</span>
+
+        <div class="ticket__notch" aria-hidden="true"></div>
+
+        <div class="ticket__body">
+          <span class="ticket__tag">Premium Listing</span>
+          <h3 class="ticket__title">Căn hộ studio cao cấp — View Landmark 81</h3>
+          <p class="ticket__address">📍 Vinhomes Central Park, Bình Thạnh</p>
+
+          <div class="ticket__price">
+            <span>5,5 Tr</span><small>/tháng</small>
           </div>
-          <router-link to="/rooms" class="btn-dark">XEM CHI TIẾT NGAY →</router-link>
+
+          <ul class="ticket__amenities">
+            <li>🛏 1 phòng ngủ</li>
+            <li>▭ 35 m²</li>
+            <li>🏡 Ban công</li>
+          </ul>
+
+          <router-link to="/rooms" class="btn-stamp">Xem chi tiết ngay →</router-link>
         </div>
       </div>
     </section>
 
-    <!-- ================= BÀI ĐĂNG MỚI NHẤT ================= -->
+    <!-- ================= BÀI ĐĂNG MỚI NHẤT: BẢNG TỜ RƠI ================= -->
     <section class="section latest-section">
       <div class="section__head">
-        <h2 class="section__title">BÀI ĐĂNG MỚI NHẤT</h2>
-        <router-link to="/rooms" class="link-pill">Khám phá tất cả →</router-link>
+        <h2 class="section__title">Bài đăng mới nhất</h2>
+        <router-link to="/rooms" class="link-underline">Khám phá tất cả →</router-link>
       </div>
 
-      <div class="post-list">
-        <article v-for="post in paginatedPosts" :key="post.id" class="post-card">
-          <div class="post-card__image">
-            <span v-if="post.badge" class="post-card__badge" :class="post.badgeClass">{{ post.badge }}</span>
+      <div class="flyer-grid">
+        <article
+          v-for="(post, i) in paginatedPosts"
+          :key="post.id"
+          class="post-flyer"
+          :style="{ '--tilt': tiltFor(i) }"
+        >
+          <span class="flyer-card__tape tape--kraft"></span>
+          <div class="post-flyer__image">
+            <span v-if="post.badge" class="post-flyer__badge" :class="post.badgeClass">{{ post.badge }}</span>
             <img :src="post.image" :alt="post.title" />
             <button
-              class="post-card__fav"
+              class="post-flyer__fav"
               :class="{ 'is-active': post.favorite }"
               @click="toggleFavorite(post)"
               aria-label="Yêu thích"
@@ -152,51 +171,36 @@
               ♥
             </button>
           </div>
-          <div class="post-card__body">
-            <div class="post-card__top">
-              <h3 class="post-card__title">{{ post.title }}</h3>
-              <span class="post-card__price">{{ post.price }}</span>
-            </div>
-            <p class="post-card__address">📍 {{ post.address }}</p>
-            <hr class="post-card__divider" />
-            <div class="post-card__amenities">
-              <span v-if="post.wifi">📶 Wifi</span>
-              <span v-if="post.aircon">❄ Điều hòa</span>
-            </div>
+
+          <h3 class="post-flyer__title">{{ post.title }}</h3>
+          <p class="post-flyer__address">📍 {{ post.address }}</p>
+
+          <div class="post-flyer__footer">
+            <span class="post-flyer__amenities">
+              <span v-if="post.wifi">📶</span>
+              <span v-if="post.aircon">❄</span>
+            </span>
+            <span class="price-tag">{{ post.price }}</span>
           </div>
         </article>
 
-        <p v-if="!paginatedPosts.length" class="empty-state">Chưa có bài đăng nào phù hợp.</p>
+        <p v-if="!paginatedPosts.length" class="empty-note">Bảng tin đang trống — chưa có tin nào phù hợp.</p>
       </div>
 
-      <!-- Phân trang -->
-      <nav v-if="totalPages > 1" class="pagination" aria-label="Phân trang bài đăng">
-        <button
-          class="pagination__btn"
-          :disabled="currentPage === 1"
-          @click="goToPage(currentPage - 1)"
-        >
-          ‹
-        </button>
-
+      <!-- Phân trang kiểu tab sổ tay -->
+      <nav v-if="totalPages > 1" class="notebook-pagination" aria-label="Phân trang bài đăng">
+        <button class="notebook-tab notebook-tab--nav" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">‹</button>
         <button
           v-for="page in pageNumbers"
           :key="page"
-          class="pagination__btn"
+          class="notebook-tab"
           :class="{ 'is-active': page === currentPage }"
           :disabled="page === '...'"
           @click="typeof page === 'number' && goToPage(page)"
         >
           {{ page }}
         </button>
-
-        <button
-          class="pagination__btn"
-          :disabled="currentPage === totalPages"
-          @click="goToPage(currentPage + 1)"
-        >
-          ›
-        </button>
+        <button class="notebook-tab notebook-tab--nav" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">›</button>
       </nav>
     </section>
 
@@ -205,7 +209,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, h } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Header from '../../components/layout/Header.vue'
 import Footer from '../../components/layout/Footer.vue'
@@ -215,7 +219,6 @@ const router = useRouter()
 
 /* ---------------- Tìm kiếm ---------------- */
 const searchForm = reactive({ keyword: '', category: '', province: '' })
-const showFilters = ref(false)
 
 function handleSearch() {
   router.push({
@@ -228,55 +231,54 @@ function handleSearch() {
   })
 }
 
-const popularKeywords = [
-  'Quận 1',
-  'Gần đại học',
-  'Dưới 3 triệu',
-  'Có gác lửng',
-  'Full nội thất',
-  'Ở ghép'
-]
-
+const popularKeywords = ['Quận 1', 'Gần đại học', 'Dưới 3 triệu', 'Có gác lửng', 'Ở ghép']
 function applyKeyword(keyword) {
   searchForm.keyword = keyword
   handleSearch()
 }
 
-const FilterIcon = () =>
-  h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
-    h('line', { x1: 4, y1: 6, x2: 20, y2: 6 }),
-    h('line', { x1: 8, y1: 12, x2: 16, y2: 12 }),
-    h('line', { x1: 11, y1: 18, x2: 13, y2: 18 })
-  ])
-
 /* ---------------- Danh mục ---------------- */
 const categories = [
-  { id: 'ktx', label: 'KÝ TÚC XÁ', image: 'https://loremflickr.com/400/500/dormitory,bunkbed,student?lock=48' },
-  { id: 'phong-tro', label: 'PHÒNG TRỌ GIÁ RẺ', image: 'https://loremflickr.com/400/500/bedroom,rentroom,cheap?lock=54' },
-  { id: 'o-ghep', label: 'TÌM BẠN Ở GHÉP', image: 'https://loremflickr.com/400/500/roommates,sharedhouse,friends?lock=74' },
-  { id: 'chung-cu-mini', label: 'CHUNG CƯ MINI', image: 'https://loremflickr.com/400/500/apartment,minimalist,interior?lock=81' }
+  { id: 'ktx', label: 'Ký túc xá', image: 'https://loremflickr.com/360/440/dormitory,bunkbed,student?lock=48' },
+  { id: 'phong-tro', label: 'Phòng trọ giá rẻ', image: 'https://loremflickr.com/360/440/bedroom,rentroom,cheap?lock=54' },
+  { id: 'o-ghep', label: 'Tìm bạn ở ghép', image: 'https://loremflickr.com/360/440/roommates,sharedhouse,friends?lock=74' },
+  { id: 'chung-cu-mini', label: 'Chung cư mini', image: 'https://loremflickr.com/360/440/apartment,minimalist,interior?lock=81' }
 ]
-const categoriesTrack = ref(null)
-function scrollCategories(direction) {
-  const el = categoriesTrack.value
-  if (!el) return
-  el.scrollBy({ left: direction * 280, behavior: 'smooth' })
+
+// độ nghiêng luân phiên cho hiệu ứng "ghim lệch tay"
+function tiltFor(index) {
+  const angles = [-2.5, 1.5, -1, 2, -1.8, 1]
+  return `${angles[index % angles.length]}deg`
 }
+
+const heroPins = [
+  'https://loremflickr.com/160/160/bedroom,cozy?lock=201',
+  'https://loremflickr.com/160/160/apartment,livingroom?lock=202',
+  'https://loremflickr.com/160/160/studio,interior?lock=203'
+]
+
+/* ---------------- Khu vực nổi bật ---------------- */
+const areas = [
+  { code: 'ĐH', name: 'Gần các trường đại học', note: '1.240+ tin đăng mới', image: 'https://loremflickr.com/240/180/university,campus,dormitory?lock=11' },
+  { code: 'Q1', name: 'Trung tâm thành phố', note: 'Đi lại thuận tiện', image: 'https://loremflickr.com/240/180/cityscape,skyline,vietnam?lock=15' },
+  { code: 'PN', name: 'Phòng giá rẻ', note: 'Dưới 3 triệu/tháng', image: 'https://loremflickr.com/240/180/bedroom,budget,simple?lock=60' },
+  { code: 'TĐ', name: 'Căn hộ dịch vụ', note: 'Full nội thất', image: 'https://loremflickr.com/240/180/apartment,service,interior?lock=80' }
+]
 
 /* ---------------- Bài đăng mới nhất + phân trang ---------------- */
 const mockPosts = [
-  { id: 1, title: 'Phòng Studio Quận 1', price: '3,5 Tr', address: 'Nguyễn Huệ, Quận 1', badge: 'Mới nhất', badgeClass: 'badge--new', wifi: true, aircon: true, favorite: true, image: 'https://loremflickr.com/300/220/studio,apartment,interior?lock=27' },
-  { id: 2, title: 'Phòng gần ĐH FPT', price: '2,8 Tr', address: 'Quận 10, TP. HCM', badge: 'Hot sale', badgeClass: 'badge--hot', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/bedroom,student,dormitory?lock=31' },
-  { id: 3, title: 'Chung cư mini xịn sò', price: '4,0 Tr', address: 'Quận Phú Nhuận', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/apartment,minimalist,cozy?lock=40' },
-  { id: 4, title: 'Chung cư mini xịn sò', price: '4,0 Tr', address: 'Quận Phú Nhuận', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/apartment,cozy,bedroom?lock=41' },
-  { id: 5, title: 'Chung cư mini xịn sò', price: '4,0 Tr', address: 'Quận Phú Nhuận', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/apartment,interior,cozy?lock=42' },
-  { id: 6, title: 'Chung cư mini xịn sò', price: '4,0 Tr', address: 'Quận Phú Nhuận', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/apartment,bedroom,interior?lock=43' },
-  { id: 7, title: 'Chung cư mini xịn sò', price: '4,0 Tr', address: 'Quận Phú Nhuận', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/apartment,cozy,minimalist?lock=44' },
-  { id: 8, title: 'Chung cư mini xịn sò', price: '4,0 Tr', address: 'Quận Phú Nhuận', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/apartment,bedroom,cozy?lock=45' },
-  { id: 9, title: 'Phòng ban công thoáng mát', price: '3,2 Tr', address: 'Quận Bình Thạnh', wifi: true, aircon: false, favorite: false, image: 'https://loremflickr.com/300/220/balcony,apartment,bright?lock=50' },
-  { id: 10, title: 'Căn hộ dịch vụ đầy đủ nội thất', price: '5,0 Tr', address: 'Quận 2, TP. Thủ Đức', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/apartment,furnished,service?lock=52' },
-  { id: 11, title: 'Phòng trọ sinh viên giá rẻ', price: '1,8 Tr', address: 'Quận Thủ Đức', wifi: false, aircon: false, favorite: false, image: 'https://loremflickr.com/300/220/dormitory,student,cheap?lock=55' },
-  { id: 12, title: 'Studio full nội thất', price: '4,5 Tr', address: 'Quận 7, TP. HCM', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/300/220/studio,furnished,apartment?lock=56' }
+  { id: 1, title: 'Phòng Studio Quận 1', price: '3,5 Tr', address: 'Nguyễn Huệ, Quận 1', badge: 'Mới nhất', badgeClass: 'badge--new', wifi: true, aircon: true, favorite: true, image: 'https://loremflickr.com/320/220/studio,apartment,interior?lock=27' },
+  { id: 2, title: 'Phòng gần ĐH FPT', price: '2,8 Tr', address: 'Quận 10, TP. HCM', badge: 'Hot sale', badgeClass: 'badge--hot', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/320/220/bedroom,student,dormitory?lock=31' },
+  { id: 3, title: 'Chung cư mini xịn sò', price: '4,0 Tr', address: 'Quận Phú Nhuận', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/320/220/apartment,minimalist,cozy?lock=40' },
+  { id: 4, title: 'Phòng ban công thoáng mát', price: '3,2 Tr', address: 'Quận Bình Thạnh', wifi: true, aircon: false, favorite: false, image: 'https://loremflickr.com/320/220/balcony,apartment,bright?lock=50' },
+  { id: 5, title: 'Căn hộ dịch vụ đầy đủ nội thất', price: '5,0 Tr', address: 'Quận 2, TP. Thủ Đức', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/320/220/apartment,furnished,service?lock=52' },
+  { id: 6, title: 'Phòng trọ sinh viên giá rẻ', price: '1,8 Tr', address: 'Quận Thủ Đức', wifi: false, aircon: false, favorite: false, image: 'https://loremflickr.com/320/220/dormitory,student,cheap?lock=55' },
+  { id: 7, title: 'Studio full nội thất', price: '4,5 Tr', address: 'Quận 7, TP. HCM', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/320/220/studio,furnished,apartment?lock=56' },
+  { id: 8, title: 'Chung cư mini có thang máy', price: '4,2 Tr', address: 'Quận Gò Vấp', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/320/220/apartment,elevator,modern?lock=58' },
+  { id: 9, title: 'Phòng gần chợ, tiện sinh hoạt', price: '2,5 Tr', address: 'Quận Tân Bình', wifi: true, aircon: false, favorite: false, image: 'https://loremflickr.com/320/220/bedroom,simple,rent?lock=61' },
+  { id: 10, title: 'Ký túc xá sinh viên mới', price: '1,5 Tr', address: 'Quận Thủ Đức', wifi: true, aircon: false, favorite: false, image: 'https://loremflickr.com/320/220/dormitory,newbuilding?lock=62' },
+  { id: 11, title: 'Phòng có gác lửng', price: '3,0 Tr', address: 'Quận Bình Tân', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/320/220/loft,mezzanine,room?lock=63' },
+  { id: 12, title: 'Căn hộ view sông', price: '6,0 Tr', address: 'Quận 2, TP. Thủ Đức', wifi: true, aircon: true, favorite: false, image: 'https://loremflickr.com/320/220/apartment,riverview?lock=64' }
 ]
 
 const posts = ref([...mockPosts])
@@ -299,7 +301,6 @@ async function loadLatestPosts() {
       }))
     }
   } catch (error) {
-    // Chưa kết nối được backend / chưa có dữ liệu -> giữ dữ liệu mẫu để xem giao diện
     console.warn('Không tải được bài đăng mới nhất, dùng dữ liệu mẫu:', error?.message)
   }
 }
@@ -311,27 +312,21 @@ function toggleFavorite(post) {
 
 const postsPerPage = 6
 const currentPage = ref(1)
-
 const totalPages = computed(() => Math.max(1, Math.ceil(posts.value.length / postsPerPage)))
-
 const paginatedPosts = computed(() => {
   const start = (currentPage.value - 1) * postsPerPage
   return posts.value.slice(start, start + postsPerPage)
 })
 
-// Tạo dãy số trang, rút gọn bằng "..." khi có nhiều trang
 const pageNumbers = computed(() => {
   const total = totalPages.value
   const current = currentPage.value
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-
   const pages = [1]
   if (current > 3) pages.push('...')
-
   const start = Math.max(2, current - 1)
   const end = Math.min(total - 1, current + 1)
   for (let p = start; p <= end; p++) pages.push(p)
-
   if (current < total - 2) pages.push('...')
   pages.push(total)
   return pages
@@ -345,305 +340,392 @@ function goToPage(page) {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
 * { box-sizing: border-box; }
-.home { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; background: #fff; }
+
+.board {
+  --paper: #f1e8ce;
+  --paper-dark: #e5d8ae;
+  --ink: #211d17;
+  --pine: #1f4b3f;
+  --pine-dark: #163a30;
+  --brick: #c23b2b;
+  --brick-dark: #a32e20;
+  --mustard: #e4a63a;
+
+  font-family: 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
 
 /* ================= HERO ================= */
 .hero {
   position: relative;
-  min-height: 460px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    linear-gradient(135deg, rgba(44,32,24,0.55) 0%, rgba(28,23,18,0.65) 100%),
-    url('https://loremflickr.com/1600/700/apartment,cozyroom,interior?lock=901') center/cover no-repeat;
+  min-height: 560px;
+  padding: 96px 32px 56px;
   overflow: hidden;
+  background:
+    radial-gradient(rgba(0,0,0,0.05) 1px, transparent 1.4px) 0 0/14px 14px,
+    linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%);
 }
 .hero::before {
   content: '';
   position: absolute; inset: 0;
-  background:
-    radial-gradient(circle at 15% 30%, rgba(255,180,80,0.18), transparent 45%),
-    radial-gradient(circle at 85% 70%, rgba(0,0,0,0.4), transparent 55%);
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 90px);
+  pointer-events: none;
 }
-.hero__overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(8,6,4,0.7) 0%, rgba(8,6,4,0.45) 55%, rgba(8,6,4,0.72) 100%);
-}
-.hero__content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  color: #fff;
-  padding: 100px 20px 48px;
-  width: 100%;
-  max-width: 760px;
-}
-.hero__title { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 3px; }
-.hero__tagline { margin: 8px 0 28px; font-size: 14px; color: rgba(255,255,255,0.85); }
 
-.search-bar {
+.hero__pins {
+  position: absolute;
+  top: 26px;
+  right: 32px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border-radius: 999px;
-  padding: 6px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  gap: 12px;
+  z-index: 3;
 }
-.search-bar__input {
-  flex: 1.4;
-  min-width: 0;
-  border: none;
-  outline: none;
-  padding: 10px 16px;
-  font-size: 14px;
-  border-radius: 999px;
-  color: #1a1a1a;
+.hero__pin {
+  width: 64px; height: 64px;
+  object-fit: cover;
+  border: 4px solid var(--paper);
+  border-radius: 4px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+  transform: rotate(calc(var(--i) * 6deg - 6deg));
+  display: none;
 }
-.search-bar__select {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  border-left: 1px solid #eee;
-  outline: none;
-  padding: 10px 12px;
-  font-size: 13px;
-  color: #444;
-  background: transparent;
-}
-.search-bar__filter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  border-left: 1px solid #eee;
-  background: transparent;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: #444;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.search-bar__submit {
-  border: none;
-  border-radius: 999px;
-  background: #ee6383;
-  color: #fff;
+
+.hero__content { position: relative; z-index: 2; max-width: 620px; margin: 0 auto; text-align: center; }
+.hero__eyebrow {
+  display: inline-block;
+  font-size: 12px;
   font-weight: 700;
-  font-size: 13px;
-  padding: 12px 22px;
-  cursor: pointer;
-  white-space: nowrap;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--mustard);
+  margin-bottom: 18px;
 }
-.search-bar__submit:hover { background: #e14e70; }
-
-.popular-keywords {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 18px;
-}
-.popular-keywords__label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
-  margin-right: 2px;
-}
-.popular-keywords__pill {
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.popular-keywords__pill:hover {
-  background: #ee6383;
-  border-color: #ee6383;
-}
-
-/* ================= SECTION GENERIC ================= */
-.section { max-width: 1200px; margin: 0 auto; padding: 48px 32px; }
-.section__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-.section__title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
-.link-map { font-size: 13px; font-weight: 700; color: #1a1a1a; text-decoration: none; }
-.link-pill {
-  font-size: 13px; font-weight: 700; color: #4d8a2f;
-  background: #e7f7cf; padding: 8px 16px; border-radius: 999px; text-decoration: none;
-}
-
-/* ================= DANH MỤC ================= */
-.categories-section { background: #fff; }
-.carousel-nav { display: flex; gap: 8px; }
-.carousel-nav__btn {
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 16px;
-}
-.carousel-nav__btn--active { background: #ee6383; color: #fff; border-color: #ee6383; }
-
-.categories-track {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  padding-bottom: 8px;
-}
-.categories-track::-webkit-scrollbar { display: none; }
-.category-card {
-  position: relative;
-  flex: 0 0 240px;
-  height: 300px;
-  border-radius: 20px;
-  overflow: hidden;
-}
-.category-card__img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.category-card__label {
-  position: absolute; left: 12px; right: 12px; bottom: 12px;
-  background: rgba(20,20,20,0.65);
-  color: #fff; font-size: 12px; font-weight: 700;
-  text-align: center; padding: 10px; border-radius: 999px;
+.hero__headline {
+  margin: 0 0 14px;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 42px;
+  line-height: 1.12;
+  color: var(--paper);
   letter-spacing: 0.5px;
 }
-.dots { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
-.dots__item { width: 6px; height: 6px; border-radius: 50%; background: #ddd; }
-.dots__item.is-active { background: #ee6383; width: 18px; border-radius: 999px; }
+.hero__headline-stamp {
+  display: inline-block;
+  color: var(--paper);
+  background: var(--brick);
+  padding: 2px 12px;
+  border-radius: 3px;
+  transform: rotate(-3deg);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+}
+.hero__tagline { margin: 0 0 32px; font-size: 15px; color: rgba(241,232,206,0.85); }
 
-/* ================= KHU VỰC NỔI BẬT ================= */
-.highlight-section { background: #f2f2f0; max-width: none; }
-.highlight-section > .section__head,
-.highlight-section > .highlight-grid { max-width: 1200px; margin: 0 auto; }
-.highlight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.highlight-card {
-  position: relative; border-radius: 18px; overflow: hidden; min-height: 180px;
+.search-card {
+  background: var(--paper);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 16px 34px rgba(0,0,0,0.3);
+  transform: rotate(-0.6deg);
 }
-.highlight-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.highlight-card--big { min-height: 380px; }
-.highlight-card__overlay {
-  position: absolute; left: 16px; bottom: 16px; right: 16px;
-  color: #fff; display: flex; flex-direction: column; gap: 2px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-}
-.highlight-card__overlay strong { font-size: 15px; }
-.highlight-card__overlay span { font-size: 12px; opacity: 0.9; }
-.highlight-grid__right { display: flex; flex-direction: column; gap: 20px; }
-.highlight-grid__right .highlight-card--wide { min-height: 180px; }
-.highlight-grid__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.highlight-grid__pair .highlight-card { min-height: 180px; }
-
-/* ================= PHÒNG NỔI BẬT ================= */
-.featured-section { max-width: none; background: #fff; }
-.featured-card {
-  max-width: 1200px; margin: 0 auto;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
-  align-items: center;
-}
-.featured-card__image { position: relative; border-radius: 20px; overflow: hidden; }
-.featured-card__image img { width: 100%; height: 320px; object-fit: cover; display: block; }
-.featured-card__badge {
-  position: absolute; top: 16px; left: 16px;
-  background: #2c3455; color: #ffd76a;
-  font-size: 12px; font-weight: 700;
-  padding: 8px 14px; border-radius: 999px;
-}
-.tag-premium {
-  display: inline-block; font-size: 12px; font-weight: 700; color: #ee6383;
-  background: #fdeaef; padding: 6px 12px; border-radius: 999px; margin-bottom: 12px;
-}
-.featured-card__title { margin: 0 0 8px; font-size: 24px; font-weight: 800; }
-.featured-card__address { margin: 0 0 14px; color: #666; font-size: 14px; }
-.featured-card__price { margin: 0 0 16px; font-size: 30px; font-weight: 800; color: #ee6383; }
-.featured-card__price span { font-size: 14px; font-weight: 500; color: #999; }
-.featured-card__amenities { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
-.featured-card__amenities span {
-  font-size: 12px; background: #f4f4f2; padding: 8px 12px; border-radius: 999px; color: #333;
-}
-.btn-dark {
-  display: inline-block; background: #23304a; color: #fff; text-decoration: none;
-  font-weight: 700; font-size: 13px; padding: 14px 26px; border-radius: 999px;
-}
-.btn-dark:hover { background: #1a2439; }
-
-/* ================= BÀI ĐĂNG MỚI NHẤT ================= */
-.latest-section { max-width: 1200px; }
-.post-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-.post-card {
-  display: grid; grid-template-columns: 160px 1fr;
-  gap: 16px;
-  background: #fdedf1;
-  border-radius: 18px;
-  padding: 14px;
-}
-.post-card__image { position: relative; border-radius: 14px; overflow: hidden; }
-.post-card__image img { width: 100%; height: 140px; object-fit: cover; display: block; }
-.post-card__badge {
-  position: absolute; top: 10px; left: 10px;
-  font-size: 11px; font-weight: 700; color: #fff;
-  padding: 5px 10px; border-radius: 999px;
-}
-.badge--new { background: #f3963e; }
-.badge--hot { background: #e13a4d; }
-.post-card__fav {
-  position: absolute; right: 10px; bottom: 10px;
-  width: 30px; height: 30px; border-radius: 50%;
-  border: none; background: rgba(255,255,255,0.9);
-  cursor: pointer; color: #bbb; font-size: 15px;
-}
-.post-card__fav.is-active { color: #e13a4d; }
-
-.post-card__body { display: flex; flex-direction: column; justify-content: center; }
-.post-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.post-card__title { margin: 0; font-size: 16px; font-weight: 800; color: #3b3fa0; }
-.post-card__price { font-size: 18px; font-weight: 800; color: #e13a4d; white-space: nowrap; }
-.post-card__address { margin: 6px 0 10px; font-size: 13px; color: #666; }
-.post-card__divider { border: none; border-top: 1px dashed #e6c8ce; margin: 0 0 10px; }
-.post-card__amenities { display: flex; gap: 16px; font-size: 13px; color: #444; }
-
-.empty-state { text-align: center; color: #999; padding: 40px 0; }
-
-/* ================= PAGINATION ================= */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 32px;
-}
-.pagination__btn {
-  min-width: 38px; height: 38px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid #e5d7da;
-  background: #fff;
+.search-card__row { display: flex; gap: 6px; flex-wrap: wrap; }
+.search-card__input {
+  flex: 1.6; min-width: 160px;
+  border: none; outline: none;
+  background: var(--paper-dark);
+  border-radius: 6px;
+  padding: 12px 14px;
   font-size: 14px;
-  font-weight: 600;
-  color: #333;
+  font-family: inherit;
+  color: var(--ink);
+}
+.search-card__select {
+  flex: 1; min-width: 110px;
+  border: none; outline: none;
+  background: var(--paper-dark);
+  border-radius: 6px;
+  padding: 12px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+}
+.search-card__submit {
+  border: none;
+  border-radius: 6px;
+  background: var(--brick);
+  color: var(--paper);
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 12px 22px;
   cursor: pointer;
 }
-.pagination__btn:hover:not(:disabled) { background: #fdedf1; }
-.pagination__btn.is-active { background: #23304a; border-color: #23304a; color: #fff; }
-.pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.search-card__submit:hover { background: var(--brick-dark); }
 
-@media (max-width: 720px) {
-  .search-bar { flex-wrap: wrap; border-radius: 20px; }
-  .search-bar__input, .search-bar__select { flex: 1 1 100%; border-left: none; border-top: 1px solid #eee; }
-  .highlight-grid { grid-template-columns: 1fr; }
-  .featured-card { grid-template-columns: 1fr; }
-  .post-list { grid-template-columns: 1fr; }
-  .post-card { grid-template-columns: 1fr; }
+.ticket-strip {
+  margin-top: 22px;
+  font-size: 13px;
+  color: rgba(241,232,206,0.9);
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ticket-strip strong { color: var(--mustard); }
+.ticket-strip__dot { opacity: 0.5; }
+
+.keyword-tags { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.keyword-tags__tag {
+  border: 1px dashed rgba(241,232,206,0.5);
+  background: transparent;
+  color: rgba(241,232,206,0.9);
+  font-size: 12px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.keyword-tags__tag:hover { background: rgba(241,232,206,0.12); }
+
+/* ================= SECTION GENERIC ================= */
+.section { max-width: 1180px; margin: 0 auto; padding: 56px 28px; }
+.section__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 8px; }
+.section__title { margin: 0; font-family: 'Archivo Black', sans-serif; font-size: 22px; letter-spacing: 0.3px; }
+.section__hint { margin: 0; font-size: 13px; color: #6f6650; font-style: italic; }
+.link-underline { font-size: 13px; font-weight: 700; color: var(--pine); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ================= DANH MỤC - PINBOARD ================= */
+.pinboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; }
+.flyer-card {
+  position: relative;
+  display: block;
+  background: var(--paper);
+  border: 1px solid rgba(33,29,23,0.08);
+  border-radius: 6px 10px 8px 12px;
+  padding: 10px 10px 14px;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: 0 10px 20px rgba(33,29,23,0.12);
+  transform: rotate(var(--tilt));
+  transition: transform 0.2s ease;
+}
+.flyer-card:hover { transform: rotate(0deg) translateY(-4px); }
+.flyer-card__tape {
+  position: absolute;
+  top: -10px; left: 50%;
+  width: 62px; height: 22px;
+  margin-left: -31px;
+  transform: rotate(-2deg);
+  clip-path: polygon(6% 0%, 94% 0%, 100% 18%, 90% 32%, 100% 52%, 88% 68%, 100% 86%, 94% 100%, 6% 100%, 14% 84%, 2% 66%, 12% 50%, 0% 30%, 8% 14%);
+  box-shadow: 0 2px 4px rgba(33,29,23,0.15);
+}
+.flyer-card__tape::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(78deg, rgba(255,255,255,0.35) 0 2px, transparent 2px 6px);
+  mix-blend-mode: overlay;
+}
+.tape--kraft { background: rgba(214, 186, 130, 0.55); mix-blend-mode: multiply; }
+.tape--frost { background: rgba(255, 255, 255, 0.55); mix-blend-mode: normal; }
+.flyer-card__img { width: 100%; height: 210px; object-fit: cover; border-radius: 3px; display: block; }
+.flyer-card__label {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.3px;
 }
 
-@media (max-width: 980px) and (min-width: 721px) {
-  .post-card { grid-template-columns: 130px 1fr; }
+/* ================= KHU VỰC NỔI BẬT - ROUTE ================= */
+.route-track { position: relative; display: flex; gap: 40px; overflow-x: auto; padding: 20px 4px 8px; }
+.route-line {
+  position: absolute; left: 0; right: 0; top: 44px; height: 2px;
+  background: repeating-linear-gradient(90deg, var(--ink) 0 8px, transparent 8px 16px);
+  opacity: 0.25;
+}
+.route-stop { position: relative; flex: 0 0 220px; text-align: center; }
+.route-stop__code {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--pine);
+  color: var(--paper);
+  font-weight: 800;
+  font-size: 12px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 12px;
+  box-shadow: 0 0 0 5px var(--paper);
+}
+.route-stop__card { border-radius: 10px; overflow: hidden; box-shadow: 0 10px 20px rgba(33,29,23,0.12); background: #fff; }
+.route-stop__card img { width: 100%; height: 120px; object-fit: cover; display: block; }
+.route-stop__info { padding: 12px; text-align: left; }
+.route-stop__info strong { display: block; font-size: 13.5px; margin-bottom: 2px; }
+.route-stop__info span { font-size: 12px; color: #6f6650; }
+
+/* ================= TICKET SPOTLIGHT ================= */
+.spotlight-section { max-width: none; background: var(--paper-dark); }
+.ticket {
+  max-width: 1000px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1.1fr;
+  align-items: stretch;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(33,29,23,0.15);
+}
+.ticket__image { position: relative; }
+.ticket__image img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 280px; }
+.ticket__stamp {
+  position: absolute; top: 18px; left: 18px;
+  background: var(--brick);
+  color: var(--paper);
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 50%;
+  transform: rotate(-8deg);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.ticket__notch {
+  position: relative;
+  width: 1px;
+  background: repeating-linear-gradient(180deg, var(--paper-dark) 0 10px, transparent 10px 20px);
+}
+.ticket__notch::before, .ticket__notch::after {
+  content: '';
+  position: absolute; left: -11px;
+  width: 22px; height: 22px;
+  background: var(--paper-dark);
+  border-radius: 50%;
+}
+.ticket__notch::before { top: -11px; }
+.ticket__notch::after { bottom: -11px; }
+
+.ticket__body { padding: 32px 34px; }
+.ticket__tag {
+  display: inline-block; font-size: 12px; font-weight: 700; color: var(--brick);
+  border: 1px dashed var(--brick); padding: 5px 12px; border-radius: 999px; margin-bottom: 14px;
+}
+.ticket__title { margin: 0 0 8px; font-family: 'Archivo Black', sans-serif; font-size: 21px; line-height: 1.3; }
+.ticket__address { margin: 0 0 16px; font-size: 13.5px; color: #6f6650; }
+.ticket__price { margin-bottom: 18px; font-family: 'Archivo Black', sans-serif; font-size: 30px; color: var(--brick); }
+.ticket__price small { font-size: 13px; font-family: 'Be Vietnam Pro'; font-weight: 500; color: #6f6650; margin-left: 4px; }
+.ticket__amenities { list-style: none; margin: 0 0 26px; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }
+.ticket__amenities li { font-size: 12.5px; background: var(--paper); padding: 8px 12px; border-radius: 999px; }
+.btn-stamp {
+  display: inline-block;
+  background: var(--pine);
+  color: var(--paper);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 14px 24px;
+  border-radius: 6px;
+}
+.btn-stamp:hover { background: var(--pine-dark); }
+
+/* ================= BÀI ĐĂNG MỚI NHẤT - FLYER GRID ================= */
+.flyer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px 24px; }
+.post-flyer {
+  position: relative;
+  background: #fff;
+  border-radius: 4px 10px 6px 10px;
+  padding: 12px 12px 16px;
+  box-shadow: 0 12px 24px rgba(33,29,23,0.12);
+  transform: rotate(var(--tilt));
+  transition: transform 0.2s ease;
+}
+.post-flyer:hover { transform: rotate(0deg) translateY(-4px); }
+.post-flyer__tape {
+  position: absolute; top: -9px; left: 50%;
+  width: 52px; height: 18px; margin-left: -26px;
+  transform: rotate(1.5deg);
+  clip-path: polygon(6% 0%, 94% 0%, 100% 20%, 88% 34%, 100% 55%, 90% 70%, 100% 88%, 94% 100%, 6% 100%, 14% 82%, 0% 64%, 12% 48%, 2% 28%, 10% 12%);
+  box-shadow: 0 2px 4px rgba(33,29,23,0.15);
+}
+.post-flyer__tape::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(78deg, rgba(255,255,255,0.35) 0 2px, transparent 2px 6px);
+  mix-blend-mode: overlay;
+}
+.post-flyer__image { position: relative; border-radius: 4px; overflow: hidden; }
+.post-flyer__image img { width: 100%; height: 150px; object-fit: cover; display: block; }
+.post-flyer__badge {
+  position: absolute; top: 8px; left: 8px;
+  font-size: 10.5px; font-weight: 700; color: #fff;
+  padding: 4px 9px; border-radius: 3px;
+}
+.badge--new { background: var(--mustard); color: var(--ink); }
+.badge--hot { background: var(--brick); }
+.post-flyer__fav {
+  position: absolute; right: 8px; bottom: 8px;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.92);
+  color: #c9c0aa; font-size: 13px; cursor: pointer;
+}
+.post-flyer__fav.is-active { color: var(--brick); }
+
+.post-flyer__title { margin: 12px 0 4px; font-size: 14.5px; font-weight: 800; color: var(--pine-dark); }
+.post-flyer__address { margin: 0 0 10px; font-size: 12px; color: #6f6650; }
+.post-flyer__footer { display: flex; align-items: center; justify-content: space-between; }
+.post-flyer__amenities { display: flex; gap: 6px; font-size: 13px; }
+.price-tag {
+  position: relative;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 14px;
+  color: var(--paper);
+  background: var(--brick);
+  padding: 5px 12px 5px 10px;
+  border-radius: 3px 8px 8px 3px;
+}
+.price-tag::before {
+  content: '';
+  position: absolute; left: -4px; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--paper-dark);
+}
+
+.empty-note { text-align: center; color: #8a7f65; padding: 40px 0; grid-column: 1 / -1; }
+
+/* ================= PAGINATION - NOTEBOOK TABS ================= */
+.notebook-pagination { display: flex; justify-content: center; gap: 6px; margin-top: 36px; }
+.notebook-tab {
+  min-width: 36px; height: 36px; padding: 0 8px;
+  border: 1px solid rgba(33,29,23,0.15);
+  border-bottom: 3px solid rgba(33,29,23,0.15);
+  border-radius: 4px 4px 0 0;
+  background: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.notebook-tab:hover:not(:disabled) { transform: translateY(-2px); }
+.notebook-tab.is-active { background: var(--pine); border-color: var(--pine); border-bottom-color: var(--mustard); color: var(--paper); }
+.notebook-tab:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ================= RESPONSIVE ================= */
+@media (min-width: 900px) {
+  .hero__pin { display: block; }
+  .hero__headline { font-size: 54px; }
+}
+@media (max-width: 900px) {
+  .pinboard { grid-template-columns: repeat(2, 1fr); }
+  .flyer-grid { grid-template-columns: repeat(2, 1fr); }
+  .ticket { grid-template-columns: 1fr; }
+  .ticket__notch { display: none; }
+}
+@media (max-width: 560px) {
+  .hero { padding-top: 140px; }
+  .pinboard { grid-template-columns: 1fr; }
+  .flyer-grid { grid-template-columns: 1fr; }
+  .search-card__row { flex-direction: column; }
 }
 </style>
