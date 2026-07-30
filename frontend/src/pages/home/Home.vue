@@ -85,7 +85,7 @@
           class="flyer-card"
           :style="{ '--tilt': tiltFor(i) }"
         >
-          <span class="flyer-card__tape tape--kraft"></span>
+          <span class="flyer-card__tape" :class="i % 2 === 0 ? 'tape--kraft' : 'tape--frost'"></span>
           <img :src="c.image" :alt="c.label" class="flyer-card__img" />
           <span class="flyer-card__label">{{ c.label }}</span>
         </router-link>
@@ -139,7 +139,7 @@
             <li>🏡 Ban công</li>
           </ul>
 
-          <router-link to="/rooms" class="btn-stamp">Xem chi tiết ngay →</router-link>
+          <router-link to="/rooms/1" class="btn-stamp">Xem chi tiết ngay →</router-link>
         </div>
       </div>
     </section>
@@ -157,15 +157,16 @@
           :key="post.id"
           class="post-flyer"
           :style="{ '--tilt': tiltFor(i) }"
+          @click="goToRoom(post.id)"
         >
-          <span class="flyer-card__tape tape--kraft"></span>
+          <span class="post-flyer__tape" :class="i % 2 === 0 ? 'tape--kraft' : 'tape--frost'"></span>
           <div class="post-flyer__image">
             <span v-if="post.badge" class="post-flyer__badge" :class="post.badgeClass">{{ post.badge }}</span>
             <img :src="post.image" :alt="post.title" />
             <button
               class="post-flyer__fav"
               :class="{ 'is-active': post.favorite }"
-              @click="toggleFavorite(post)"
+              @click.stop="toggleFavorite(post)"
               aria-label="Yêu thích"
             >
               ♥
@@ -308,6 +309,10 @@ onMounted(loadLatestPosts)
 
 function toggleFavorite(post) {
   post.favorite = !post.favorite
+}
+
+function goToRoom(id) {
+  router.push(`/rooms/${id}`)
 }
 
 const postsPerPage = 6
@@ -640,6 +645,7 @@ function goToPage(page) {
   box-shadow: 0 12px 24px rgba(33,29,23,0.12);
   transform: rotate(var(--tilt));
   transition: transform 0.2s ease;
+  cursor: pointer;
 }
 .post-flyer:hover { transform: rotate(0deg) translateY(-4px); }
 .post-flyer__tape {
