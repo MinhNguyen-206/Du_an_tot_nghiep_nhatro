@@ -7,6 +7,7 @@ const Home = () => import('../pages/home/Home.vue')
 const Login = () => import('../pages/auth/Login.vue')
 const Register = () => import('../pages/auth/Register.vue')
 const OtpVerify = () => import('../pages/auth/OtpVerify.vue')
+const ForgotPassword = () => import('../pages/auth/ForgotPassword.vue')
 const Profile = () => import('../pages/profile/Profile.vue')
 const RoomList = () => import('../pages/room/RoomList.vue')
 const RoomDetail = () => import('../pages/room/RoomDetail.vue')
@@ -48,6 +49,7 @@ const routes = [
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
   { path: '/verify-otp', name: 'OtpVerify', component: OtpVerify },
+  { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword },
 
   { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
 
