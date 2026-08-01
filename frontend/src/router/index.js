@@ -53,8 +53,8 @@ const routes = [
 
   { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
 
-  { path: '/rooms', name: 'RoomList', component: RoomList, meta: { requiresAuth: true } },
-  { path: '/rooms/:id', name: 'RoomDetail', component: RoomDetail, meta: { requiresAuth: true } },
+  { path: '/rooms', name: 'RoomList', component: RoomList },
+  { path: '/rooms/:id', name: 'RoomDetail', component: RoomDetail },
   { path: '/rooms/view-history', name: 'RoomViewHistory', component: RoomViewHistory, meta: { requiresAuth: true } },
   { path: '/rooms/new-alerts', name: 'NewRoomAlert', component: NewRoomAlert, meta: { requiresAuth: true } },
 

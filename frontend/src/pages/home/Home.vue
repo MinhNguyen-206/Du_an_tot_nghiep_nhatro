@@ -18,12 +18,14 @@
       <div class="hero__content">
         <span class="hero__eyebrow">Sổ tay tìm trọ &middot; cập nhật mỗi giờ</span>
         <h1 class="hero__headline">
-          <span class="hero__headline-stamp">TÌM</span> PHÒNG,
-          <br />KHÔNG CẦN
-          <br />DÁN CỘT ĐIỆN
+          <span class="hero__headline-stamp">TÌM TRỌ</span>
+          
+          <br />DỄ DÀNG CHON LỰA
+          <br />ƯU TIÊN NHU CẦU
         </h1>
         <p class="hero__tagline">
-          Trọ · Ký túc xá · Ở ghép · Chung cư mini — mọi tin đăng thật, gom về một bảng.
+          <h3>Trọ · Ký túc xá · Ở ghép · Chung cư mini </h3>
+          
         </p>
 
         <form class="search-card" @submit.prevent="handleSearch">
