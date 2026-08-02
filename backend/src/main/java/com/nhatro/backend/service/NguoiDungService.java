@@ -25,7 +25,7 @@ public class NguoiDungService {
     private void themDuLieuMau() {
         danhSach.add(NguoiDung.builder()
                 .maNguoiDung(idCounter.getAndIncrement())
-                .email("chutro1@gmail.com")
+                .email("chutro@gmail.com")
                 .matKhauMaHoa(passwordEncoder.encode("123456"))
                 .hoTen("Nguyen Van A")
                 .soDienThoai("0901111111")
@@ -39,7 +39,7 @@ public class NguoiDungService {
 
         danhSach.add(NguoiDung.builder()
                 .maNguoiDung(idCounter.getAndIncrement())
-                .email("nguoithue1@gmail.com")
+                .email("nguoithue@gmail.com")
                 .matKhauMaHoa(passwordEncoder.encode("123456"))
                 .hoTen("Tran Thi B")
                 .soDienThoai("0902222222")
@@ -53,7 +53,7 @@ public class NguoiDungService {
 
         danhSach.add(NguoiDung.builder()
                 .maNguoiDung(idCounter.getAndIncrement())
-                .email("admin@nhatro.com")
+                .email("admin@gmail.com")
                 .matKhauMaHoa(passwordEncoder.encode("123456"))
                 .hoTen("Quan Tri Vien")
                 .vaiTro(3)
