@@ -8,7 +8,7 @@
 
     <nav class="rc-nav">
       <router-link
-        v-for="item in navItems"
+        v-for="item in baseNavItems"
         :key="item.to"
         :to="item.to"
         class="rc-nav__tag"
@@ -17,18 +17,62 @@
       >
         {{ item.label }}
       </router-link>
+
+      <!-- Chưa đăng nhập -->
+      <template v-if="!isAuthenticated">
+        <router-link to="/login" class="rc-nav__tag" :style="{ transform: 'rotate(1.5deg)' }">
+          Đăng nhập
+        </router-link>
+        <router-link to="/register" class="rc-nav__tag" :style="{ transform: 'rotate(-1deg)' }">
+          Đăng ký
+        </router-link>
+      </template>
+
+      <!-- Đã đăng nhập -->
+      <template v-else>
+        <router-link :to="accountLink" class="rc-nav__tag rc-nav__tag--user" :style="{ transform: 'rotate(1deg)' }">
+          👤 {{ displayName }}
+        </router-link>
+        <button type="button" class="rc-nav__tag rc-nav__tag--logout" :style="{ transform: 'rotate(-1.5deg)' }" @click="handleLogout">
+          Đăng xuất
+        </button>
+      </template>
     </nav>
   </header>
 </template>
 
 <script setup>
-const navItems = [
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/authStore'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const baseNavItems = [
   { to: '/', label: 'Trang chủ', tilt: -1.5 },
   { to: '/about', label: 'Về chúng tôi', tilt: 1 },
-  { to: '/contact', label: 'Liên hệ', tilt: -1 },
-  { to: '/login', label: 'Đăng nhập', tilt: 1.5 },
-  { to: '/register', label: 'Đăng ký', tilt: -1 }
+  { to: '/contact', label: 'Liên hệ', tilt: -1 }
 ]
+
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const displayName = computed(() => {
+  const name = authStore.user?.hoTen || 'Tài khoản'
+  return name.length > 16 ? name.slice(0, 16) + '…' : name
+})
+
+// Chủ trọ/Admin bấm vào tên sẽ vào khu quản lý, người thuê vào trang hồ sơ cá nhân
+const accountLink = computed(() => {
+  const vaiTro = authStore.user?.vaiTro
+  if (vaiTro === 3) return '/admin'
+  if (vaiTro === 2) return '/admin/houses'
+  return '/profile'
+})
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/login')
+}
 </script>
 
 <style scoped>
@@ -77,6 +121,8 @@ const navItems = [
   border-radius: 3px;
   backdrop-filter: blur(3px);
   transition: background 0.15s ease, transform 0.15s ease;
+  cursor: pointer;
+  font-family: inherit;
 }
 .rc-nav__tag:hover { transform: rotate(0deg) translateY(-2px); }
 .rc-nav__tag.is-active {
@@ -85,6 +131,19 @@ const navItems = [
   border-color: #e4a63a;
   font-weight: 700;
 }
+.rc-nav__tag--user {
+  background: rgba(31, 75, 63, 0.75);
+  border-color: rgba(228, 166, 58, 0.6);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc-nav__tag--logout {
+  background: rgba(194, 59, 43, 0.75);
+  border-color: rgba(241, 232, 206, 0.35);
+}
+.rc-nav__tag--logout:hover { background: rgba(163, 46, 32, 0.9); }
 
 @media (max-width: 720px) {
   .rc-header { flex-direction: column; align-items: flex-start; gap: 12px; left: 16px; right: 16px; top: 16px; }

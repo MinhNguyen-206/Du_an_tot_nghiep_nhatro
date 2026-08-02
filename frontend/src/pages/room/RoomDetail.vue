@@ -1,8 +1,8 @@
 ﻿<template>
   <div class="rd">
-    <Header />
-
-    <div class="rd__topbar"></div>
+    <div class="rd__topbar">
+      <Header />
+    </div>
 
     <div class="rd__wrap">
       <!-- Breadcrumb -->
@@ -321,8 +321,8 @@ function tiltFor(index) {
   background: var(--paper-dark);
 }
 
-.rd__topbar { height: 92px; background: linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%); position: relative; }
-.rd__wrap { max-width: 1180px; margin: -40px auto 0; padding: 0 28px 60px; position: relative; }
+.rd__topbar { height: 110px; background: linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%); position: relative; }
+.rd__wrap { max-width: 1180px; margin: 0 auto; padding: 24px 28px 60px; position: relative; }
 
 .breadcrumb { font-size: 12.5px; color: #6f6650; margin: 18px 0 16px; display: flex; flex-wrap: wrap; gap: 4px; }
 .breadcrumb a { color: var(--pine); text-decoration: none; font-weight: 600; }

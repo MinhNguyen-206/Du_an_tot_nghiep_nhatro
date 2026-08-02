@@ -18,14 +18,12 @@
       <div class="hero__content">
         <span class="hero__eyebrow">Sổ tay tìm trọ &middot; cập nhật mỗi giờ</span>
         <h1 class="hero__headline">
-          <span class="hero__headline-stamp">TÌM TRỌ</span>
-          
-          <br />DỄ DÀNG CHON LỰA
-          <br />ƯU TIÊN NHU CẦU
+          <span class="hero__headline-stamp">TÌM</span> PHÒNG,
+          <br />KHÔNG CẦN
+          <br />DÁN CỘT ĐIỆN
         </h1>
         <p class="hero__tagline">
-          <h3>Trọ · Ký túc xá · Ở ghép · Chung cư mini </h3>
-          
+          Trọ · Ký túc xá · Ở ghép · Chung cư mini — mọi tin đăng thật, gom về một bảng.
         </p>
 
         <form class="search-card" @submit.prevent="handleSearch">
@@ -385,7 +383,7 @@ function goToPage(page) {
 
 .hero__pins {
   position: absolute;
-  top: 26px;
+  top: 92px;
   right: 32px;
   display: flex;
   gap: 12px;
