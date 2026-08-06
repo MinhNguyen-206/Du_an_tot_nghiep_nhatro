@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <header class="rc-header">
     <router-link to="/" class="rc-stamp" aria-label="Room Connect - Trang chủ">
       <span class="rc-stamp__ring">
@@ -65,7 +65,6 @@ const displayName = computed(() => {
 const accountLink = computed(() => {
   const vaiTro = authStore.user?.vaiTro
   if (vaiTro === 3) return '/admin'
-  if (vaiTro === 2) return '/admin/houses'
   return '/profile'
 })
 
