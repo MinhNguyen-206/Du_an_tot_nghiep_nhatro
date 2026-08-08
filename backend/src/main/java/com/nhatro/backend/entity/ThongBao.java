@@ -2,11 +2,12 @@ package com.nhatro.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "thong_bao")
+@Table(name = "THONG_BAO")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,22 +17,24 @@ public class ThongBao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_thong_bao")
-    private Long maThongBao;
+    @Column(name = "maThongBao")
+    private Integer maThongBao;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nguoi_nhan", nullable = false)
-    private NguoiDung nguoiNhan;
+    @JoinColumn(name = "maNguoiDung")
+    private NguoiDung nguoiDung;
 
-    @Column(name = "loai_su_kien")
-    private String loaiSuKien;
+    @Column(name = "tieuDe", length = 255)
+    private String tieuDe;
 
-    @Column(name = "noi_dung", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "noiDung", columnDefinition = "NVARCHAR(MAX)")
     private String noiDung;
 
-    @Column(name = "da_doc", nullable = false)
-    private Boolean daDoc;
+    @Column(name = "daDoc")
+    @Builder.Default
+    private Boolean daDoc = false;
 
-    @Column(name = "thoi_gian")
-    private LocalDateTime thoiGian;
+    @CreationTimestamp
+    @Column(name = "ngayGui", updatable = false)
+    private LocalDateTime ngayGui;
 }

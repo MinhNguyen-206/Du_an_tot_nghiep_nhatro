@@ -1,14 +1,15 @@
 package com.nhatro.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "nguoi_dung")
+@Table(name = "NGUOI_DUNG")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,45 +19,46 @@ public class NguoiDung {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_nguoi_dung")
+    @Column(name = "maNguoiDung")
     private Integer maNguoiDung;
 
-    @Column(name = "email", nullable = false, unique = true, length = 150)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "maVaiTro", nullable = false)
+    private VaiTro vaiTro;
 
-    @Column(name = "so_dien_thoai", length = 20)
-    private String soDienThoai;
-
-    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
-    @Column(name = "mat_khau_ma_hoa", nullable = false)
-    private String matKhauMaHoa;
-
-    @Column(name = "ho_ten", nullable = false, length = 150)
+    @Column(name = "hoTen", nullable = false, length = 255)
     private String hoTen;
 
-    @Column(name = "anh_dai_dien")
-    private String anhDaiDien;
+    @Column(name = "email", nullable = false, unique = true, length = 255)
+    private String email;
 
-    @Column(name = "dia_chi_thuong_tru")
-    private String diaChiThuongTru;
+    @Column(name = "soDienThoai", unique = true, length = 20)
+    private String soDienThoai;
 
-    @Column(name = "vai_tro", nullable = false)
-    private Integer vaiTro;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(name = "matKhau", nullable = false, length = 255)
+    private String matKhau;
 
-    @Column(name = "trang_thai_tai_khoan", nullable = false)
-    private Integer trangThaiTaiKhoan;
+    @Column(name = "avatar", length = 500)
+    private String avatar;
 
-    @Column(name = "da_xac_minh_ekyc", nullable = false)
-    private Boolean daXacMinhEkyc;
+    @Column(name = "gioiTinh")
+    private Boolean gioiTinh;
 
-    @Column(name = "nguon_dang_nhap", length = 30)
-    private String nguonDangNhap;
+    @Column(name = "ngaySinh")
+    private LocalDate ngaySinh;
+
+    @Column(name = "diaChi", length = 500)
+    private String diaChi;
+
+    @Column(name = "trangThai", nullable = false)
+    @Builder.Default
+    private Boolean trangThai = true;
 
     @CreationTimestamp
-    @Column(name = "ngay_tao", updatable = false)
-    private LocalDateTime ngayTao;
+    @Column(name = "ngayDangKy", nullable = false, updatable = false)
+    private LocalDateTime ngayDangKy;
 
-    @UpdateTimestamp
-    @Column(name = "ngay_cap_nhat")
+    @Column(name = "ngayCapNhat")
     private LocalDateTime ngayCapNhat;
 }

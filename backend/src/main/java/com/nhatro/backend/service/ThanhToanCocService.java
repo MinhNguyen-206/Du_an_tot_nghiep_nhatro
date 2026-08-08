@@ -1,65 +1,60 @@
 package com.nhatro.backend.service;
 
-import com.nhatro.backend.entity.HopDongDienTu;
 import com.nhatro.backend.entity.ThanhToanCoc;
+import com.nhatro.backend.repository.ThanhToanCocRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class ThanhToanCocService {
 
-    private final List<ThanhToanCoc> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final ThanhToanCocRepository thanhToanCocRepository;
 
-    public ThanhToanCocService(HopDongDienTuService hopDongDienTuService) {
-        Optional<HopDongDienTu> hopDongMau = hopDongDienTuService.getAll().stream().findFirst();
-
-        hopDongMau.ifPresent(hopDong -> danhSach.add(ThanhToanCoc.builder()
-                .maThanhToan(idCounter.getAndIncrement())
-                .hopDong(hopDong)
-                .nguoiThue(hopDong.getNguoiThue())
-                .chuTro(hopDong.getChuTro())
-                .soTienCoc(new BigDecimal("2500000"))
-                .phuongThucThanhToan("Chuyen khoan")
-                .trangThaiCoc(1)
-                .ngayThanhToan(LocalDateTime.now())
-                .ghiChu("Da chuyen khoan qua Momo")
-                .build()));
+    public ThanhToanCocService(ThanhToanCocRepository thanhToanCocRepository) {
+        Objects.requireNonNull(thanhToanCocRepository, "thanhToanCocRepository must not be null");
+        this.thanhToanCocRepository = thanhToanCocRepository;
     }
 
     public List<ThanhToanCoc> getAll() {
-        return danhSach;
+        return thanhToanCocRepository.findAll();
     }
 
     public Optional<ThanhToanCoc> getById(Integer id) {
-        return danhSach.stream().filter(t -> t.getMaThanhToan().equals(id)).findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return thanhToanCocRepository.findById(id);
     }
 
-    public ThanhToanCoc create(ThanhToanCoc thanhToanCoc) {
-        thanhToanCoc.setMaThanhToan(idCounter.getAndIncrement());
-        if (thanhToanCoc.getTrangThaiCoc() == null) {
-            thanhToanCoc.setTrangThaiCoc(0);
-        }
-        danhSach.add(thanhToanCoc);
-        return thanhToanCoc;
+    public List<ThanhToanCoc> getByHopDong(Integer maHopDong) {
+        Objects.requireNonNull(maHopDong, "maHopDong must not be null");
+        return thanhToanCocRepository.findByHopDong_MaHopDong(maHopDong);
+    }
+
+    public ThanhToanCoc create(ThanhToanCoc thanhToan) {
+        Objects.requireNonNull(thanhToan, "thanhToan must not be null");
+        return thanhToanCocRepository.save(thanhToan);
     }
 
     public Optional<ThanhToanCoc> update(Integer id, ThanhToanCoc duLieuMoi) {
-        return getById(id).map(t -> {
-            t.setTrangThaiCoc(duLieuMoi.getTrangThaiCoc());
-            t.setNgayThanhToan(duLieuMoi.getNgayThanhToan());
-            t.setGhiChu(duLieuMoi.getGhiChu());
-            return t;
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return thanhToanCocRepository.findById(id).map(tt -> {
+            tt.setSoTien(duLieuMoi.getSoTien());
+            tt.setNgayThanhToan(duLieuMoi.getNgayThanhToan());
+            tt.setPhuongThuc(duLieuMoi.getPhuongThuc());
+            tt.setTrangThai(duLieuMoi.getTrangThai());
+            return thanhToanCocRepository.save(tt);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(t -> t.getMaThanhToan().equals(id));
+        Objects.requireNonNull(id, "id must not be null");
+        if (thanhToanCocRepository.existsById(id)) {
+            thanhToanCocRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

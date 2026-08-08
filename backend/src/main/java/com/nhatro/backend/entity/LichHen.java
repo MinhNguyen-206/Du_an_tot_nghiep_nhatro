@@ -3,10 +3,11 @@ package com.nhatro.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
-@Table(name = "lich_hen")
+@Table(name = "LICH_HEN")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,29 +17,30 @@ public class LichHen {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_lich_hen")
+    @Column(name = "maLichHen")
     private Integer maLichHen;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nguoi_thue", nullable = false)
-    private NguoiDung nguoiThue;
+    @JoinColumn(name = "maNguoiDung", nullable = false)
+    private NguoiDung nguoiDung;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_dang_tin", nullable = false)
-    private DangTin dangTin;
+    @JoinColumn(name = "maPhong", nullable = false)
+    private PhongTro phong;
 
-    @Column(name = "ngay_gio_hen", nullable = false)
-    private LocalDateTime ngayGioHen;
+    @Column(name = "ngayHen")
+    private LocalDate ngayHen;
 
-    @Column(name = "so_nguoi_di_cung")
-    private Integer soNguoiDiCung;
+    @Column(name = "gioHen")
+    private LocalTime gioHen;
 
-    @Column(name = "loi_nhan", columnDefinition = "NVARCHAR(MAX)")
-    private String loiNhan;
+    @Column(name = "diaDiem", length = 255)
+    private String diaDiem;
 
-    @Column(name = "ly_do_tu_choi", columnDefinition = "NVARCHAR(MAX)")
-    private String lyDoTuChoi;
+    @Column(name = "ghiChu", length = 1000)
+    private String ghiChu;
 
-    @Column(name = "trang_thai_lich_hen", nullable = false)
-    private Integer trangThaiLichHen;
+    @Column(name = "trangThai")
+    @Builder.Default
+    private Boolean trangThai = false;
 }

@@ -2,12 +2,12 @@ package com.nhatro.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "chi_so_dien_nuoc")
+@Table(name = "CHI_SO_DIEN_NUOC")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,37 +17,32 @@ public class ChiSoDienNuoc {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_chi_so")
+    @Column(name = "maChiSo")
     private Integer maChiSo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_hoa_don", nullable = false)
-    private HoaDonThang hoaDon;
+    @JoinColumn(name = "maPhong", nullable = false)
+    private PhongTro phong;
 
-    @Column(name = "so_dien_cu")
-    private Double soDienCu;
+    @Column(name = "thang")
+    private Integer thang;
 
-    @Column(name = "so_dien_moi")
-    private Double soDienMoi;
+    @Column(name = "nam")
+    private Integer nam;
 
-    @Column(name = "so_nuoc_cu")
-    private Double soNuocCu;
+    @Column(name = "chiSoDienCu")
+    private Integer chiSoDienCu;
 
-    @Column(name = "so_nuoc_moi")
-    private Double soNuocMoi;
+    @Column(name = "chiSoDienMoi")
+    private Integer chiSoDienMoi;
 
-    @Column(name = "tien_dien")
-    private BigDecimal tienDien;
+    @Column(name = "chiSoNuocCu")
+    private Integer chiSoNuocCu;
 
-    @Column(name = "tien_nuoc")
-    private BigDecimal tienNuoc;
+    @Column(name = "chiSoNuocMoi")
+    private Integer chiSoNuocMoi;
 
-    @Column(name = "anh_chi_so_dien")
-    private String anhChiSoDien;
-
-    @Column(name = "anh_chi_so_nuoc")
-    private String anhChiSoNuoc;
-
-    @Column(name = "ngay_ghi_chi_so")
-    private LocalDateTime ngayGhiChiSo;
+    @CreationTimestamp
+    @Column(name = "ngayNhap", updatable = false)
+    private LocalDateTime ngayNhap;
 }

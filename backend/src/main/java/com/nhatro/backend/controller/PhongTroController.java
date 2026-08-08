@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Phòng trọ", description = "Quản lý danh sách phòng trọ")
+@Tag(name = "Phòng trọ", description = "Quản lý phòng trọ")
 @RestController
 @RequestMapping("/api/phong-tro")
 public class PhongTroController {
@@ -20,8 +20,8 @@ public class PhongTroController {
     }
 
     @GetMapping
-    public List<PhongTro> getAll() {
-        return phongTroService.getAll();
+    public ResponseEntity<List<PhongTro>> getAll() {
+        return ResponseEntity.ok(phongTroService.getAll());
     }
 
     @GetMapping("/{id}")
@@ -31,14 +31,24 @@ public class PhongTroController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/nha-tro/{maNhaTro}")
+    public ResponseEntity<List<PhongTro>> getByNhaTro(@PathVariable Integer maNhaTro) {
+        return ResponseEntity.ok(phongTroService.getByNhaTro(maNhaTro));
+    }
+
+    @GetMapping("/trong")
+    public ResponseEntity<List<PhongTro>> getPhongTrong() {
+        return ResponseEntity.ok(phongTroService.getByTrangThai(true));
+    }
+
     @PostMapping
     public ResponseEntity<PhongTro> create(@RequestBody PhongTro phongTro) {
         return ResponseEntity.ok(phongTroService.create(phongTro));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PhongTro> update(@PathVariable Integer id, @RequestBody PhongTro phongTro) {
-        return phongTroService.update(id, phongTro)
+    public ResponseEntity<PhongTro> update(@PathVariable Integer id, @RequestBody PhongTro duLieuMoi) {
+        return phongTroService.update(id, duLieuMoi)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

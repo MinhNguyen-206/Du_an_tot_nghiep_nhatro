@@ -1,64 +1,61 @@
 package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.ChiSoDienNuoc;
-import com.nhatro.backend.entity.HoaDonThang;
+import com.nhatro.backend.repository.ChiSoDienNuocRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class ChiSoDienNuocService {
 
-    private final List<ChiSoDienNuoc> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final ChiSoDienNuocRepository chiSoRepository;
 
-    public ChiSoDienNuocService(HoaDonThangService hoaDonThangService) {
-        Optional<HoaDonThang> hoaDonMau = hoaDonThangService.getAll().stream().findFirst();
-
-        hoaDonMau.ifPresent(hoaDon -> danhSach.add(ChiSoDienNuoc.builder()
-                .maChiSo(idCounter.getAndIncrement())
-                .hoaDon(hoaDon)
-                .soDienCu(100.0)
-                .soDienMoi(150.0)
-                .soNuocCu(20.0)
-                .soNuocMoi(25.0)
-                .tienDien(new BigDecimal("175000"))
-                .tienNuoc(new BigDecimal("75000"))
-                .ngayGhiChiSo(LocalDateTime.now())
-                .build()));
+    public ChiSoDienNuocService(ChiSoDienNuocRepository chiSoRepository) {
+        Objects.requireNonNull(chiSoRepository, "chiSoRepository must not be null");
+        this.chiSoRepository = chiSoRepository;
     }
 
     public List<ChiSoDienNuoc> getAll() {
-        return danhSach;
+        return chiSoRepository.findAll();
     }
 
     public Optional<ChiSoDienNuoc> getById(Integer id) {
-        return danhSach.stream().filter(c -> c.getMaChiSo().equals(id)).findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return chiSoRepository.findById(id);
+    }
+
+    public List<ChiSoDienNuoc> getByPhong(Integer maPhong) {
+        Objects.requireNonNull(maPhong, "maPhong must not be null");
+        return chiSoRepository.findByPhong_MaPhong(maPhong);
     }
 
     public ChiSoDienNuoc create(ChiSoDienNuoc chiSo) {
-        chiSo.setMaChiSo(idCounter.getAndIncrement());
-        chiSo.setNgayGhiChiSo(LocalDateTime.now());
-        danhSach.add(chiSo);
-        return chiSo;
+        Objects.requireNonNull(chiSo, "chiSo must not be null");
+        return chiSoRepository.save(chiSo);
     }
 
     public Optional<ChiSoDienNuoc> update(Integer id, ChiSoDienNuoc duLieuMoi) {
-        return getById(id).map(c -> {
-            c.setSoDienMoi(duLieuMoi.getSoDienMoi());
-            c.setSoNuocMoi(duLieuMoi.getSoNuocMoi());
-            c.setTienDien(duLieuMoi.getTienDien());
-            c.setTienNuoc(duLieuMoi.getTienNuoc());
-            return c;
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return chiSoRepository.findById(id).map(cs -> {
+            cs.setThang(duLieuMoi.getThang());
+            cs.setNam(duLieuMoi.getNam());
+            cs.setChiSoDienCu(duLieuMoi.getChiSoDienCu());
+            cs.setChiSoDienMoi(duLieuMoi.getChiSoDienMoi());
+            cs.setChiSoNuocCu(duLieuMoi.getChiSoNuocCu());
+            cs.setChiSoNuocMoi(duLieuMoi.getChiSoNuocMoi());
+            return chiSoRepository.save(cs);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(c -> c.getMaChiSo().equals(id));
+        if (chiSoRepository.existsById(id)) {
+            chiSoRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

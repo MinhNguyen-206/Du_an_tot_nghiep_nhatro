@@ -1,87 +1,69 @@
 package com.nhatro.backend.service;
 
-import com.nhatro.backend.entity.DangTin;
-import com.nhatro.backend.entity.NguoiDung;
 import com.nhatro.backend.entity.YeuCauThue;
+import com.nhatro.backend.repository.YeuCauThueRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class YeuCauThueService {
 
-    private final List<YeuCauThue> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
-    private final DangTinService dangTinService;
-    private final NguoiDungService nguoiDungService;
+    private final YeuCauThueRepository yeuCauThueRepository;
 
-    public YeuCauThueService(DangTinService dangTinService, NguoiDungService nguoiDungService) {
-        this.dangTinService = dangTinService;
-        this.nguoiDungService = nguoiDungService;
-        List<DangTin> dsDangTin = dangTinService.getAll();
-        Optional<NguoiDung> nguoiThueMau = nguoiDungService.getAll().stream()
-                .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 1)
-                .findFirst();
-
-        if (!dsDangTin.isEmpty() && nguoiThueMau.isPresent()) {
-            danhSach.add(YeuCauThue.builder()
-                    .maYeuCau(idCounter.getAndIncrement())
-                    .nguoiThue(nguoiThueMau.get())
-                    .dangTin(dsDangTin.get(0))
-                    .thoiHanThueMongMuon(6)
-                    .ngayDuKienDonVao(LocalDate.now().plusDays(7))
-                    .trangThai(0)
-                    .trangThaiCoc(0)
-                    .ghiChu("Muon don vao som, mong chu tro phan hoi som")
-                    .ngayTao(LocalDateTime.now())
-                    .build());
-        }
+    public YeuCauThueService(YeuCauThueRepository yeuCauThueRepository) {
+        Objects.requireNonNull(yeuCauThueRepository, "yeuCauThueRepository must not be null");
+        this.yeuCauThueRepository = yeuCauThueRepository;
     }
 
     public List<YeuCauThue> getAll() {
-        return danhSach;
+        return yeuCauThueRepository.findAll();
     }
 
     public Optional<YeuCauThue> getById(Integer id) {
-        return danhSach.stream().filter(y -> y.getMaYeuCau().equals(id)).findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return yeuCauThueRepository.findById(id);
+    }
+
+    public List<YeuCauThue> getByNguoiThue(Integer maNguoiDung) {
+        Objects.requireNonNull(maNguoiDung, "maNguoiDung must not be null");
+        return yeuCauThueRepository.findByNguoiThue_MaNguoiDung(maNguoiDung);
+    }
+
+    public List<YeuCauThue> getByPhong(Integer maPhong) {
+        Objects.requireNonNull(maPhong, "maPhong must not be null");
+        return yeuCauThueRepository.findByPhong_MaPhong(maPhong);
+    }
+
+    public List<YeuCauThue> getByTrangThai(String trangThai) {
+        Objects.requireNonNull(trangThai, "trangThai must not be null");
+        return yeuCauThueRepository.findByTrangThai(trangThai);
     }
 
     public YeuCauThue create(YeuCauThue yeuCauThue) {
-        yeuCauThue.setMaYeuCau(idCounter.getAndIncrement());
-        yeuCauThue.setNgayTao(LocalDateTime.now());
-        if (yeuCauThue.getTrangThai() == null) {
-            yeuCauThue.setTrangThai(0);
-        }
-
-        if (yeuCauThue.getNguoiThue() != null && yeuCauThue.getNguoiThue().getMaNguoiDung() != null) {
-            nguoiDungService.getById(yeuCauThue.getNguoiThue().getMaNguoiDung())
-                    .ifPresent(yeuCauThue::setNguoiThue);
-        }
-
-        if (yeuCauThue.getDangTin() != null && yeuCauThue.getDangTin().getMaDangTin() != null) {
-            dangTinService.getById(yeuCauThue.getDangTin().getMaDangTin())
-                    .ifPresent(yeuCauThue::setDangTin);
-        }
-
-        danhSach.add(yeuCauThue);
-        return yeuCauThue;
+        Objects.requireNonNull(yeuCauThue, "yeuCauThue must not be null");
+        return yeuCauThueRepository.save(yeuCauThue);
     }
 
     public Optional<YeuCauThue> update(Integer id, YeuCauThue duLieuMoi) {
-        return getById(id).map(y -> {
-            y.setTrangThai(duLieuMoi.getTrangThai());
-            y.setTrangThaiCoc(duLieuMoi.getTrangThaiCoc());
-            y.setGhiChu(duLieuMoi.getGhiChu());
-            return y;
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return yeuCauThueRepository.findById(id).map(yc -> {
+            yc.setNgayMuonNhanPhong(duLieuMoi.getNgayMuonNhanPhong());
+            yc.setGhiChu(duLieuMoi.getGhiChu());
+            yc.setTrangThai(duLieuMoi.getTrangThai());
+            return yeuCauThueRepository.save(yc);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(y -> y.getMaYeuCau().equals(id));
+        Objects.requireNonNull(id, "id must not be null");
+        if (yeuCauThueRepository.existsById(id)) {
+            yeuCauThueRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

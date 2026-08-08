@@ -2,11 +2,12 @@ package com.nhatro.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "nhat_ky_hoat_dong")
+@Table(name = "NHAT_KY_HOAT_DONG")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,25 +17,23 @@ public class NhatKyHoatDong {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_nhat_ky")
+    @Column(name = "maNhatKy")
     private Integer maNhatKy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nguoi_dung", nullable = false)
+    @JoinColumn(name = "maNguoiDung")
     private NguoiDung nguoiDung;
 
-    @Column(name = "loai_hoat_dong", nullable = false)
-    private String loaiHoatDong; // Ví dụ: DANG_PHONG, TIM_PHONG, THANH_TOAN, ...
+    @Column(name = "hanhDong", length = 255)
+    private String hanhDong;
 
-    @Column(name = "chi_tiet", columnDefinition = "NVARCHAR(MAX)")
-    private String chiTiet;
+    @Column(name = "doiTuong", length = 255)
+    private String doiTuong;
 
-    @Column(name = "dia_chi_ip")
-    private String diaChiIp;
+    @Column(name = "diaChiIP", length = 50)
+    private String diaChiIP;
 
-    @Column(name = "thoi_gian_tao")
-    private LocalDateTime thoiGianTao;
-
-    @Column(name = "trang_thai")
-    private Integer trangThai; // 0: Bình thường, 1: Cảnh báo, 2: Lỗi
+    @CreationTimestamp
+    @Column(name = "thoiGian", updatable = false)
+    private LocalDateTime thoiGian;
 }

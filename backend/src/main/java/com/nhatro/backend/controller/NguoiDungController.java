@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Người dùng", description = "Quản lý thông tin người dùng")
+@Tag(name = "Người dùng", description = "Quản lý tài khoản người dùng")
 @RestController
 @RequestMapping("/api/nguoi-dung")
 public class NguoiDungController {
@@ -20,8 +20,8 @@ public class NguoiDungController {
     }
 
     @GetMapping
-    public List<NguoiDung> getAll() {
-        return nguoiDungService.getAll();
+    public ResponseEntity<List<NguoiDung>> getAll() {
+        return ResponseEntity.ok(nguoiDungService.getAll());
     }
 
     @GetMapping("/{id}")
@@ -37,8 +37,8 @@ public class NguoiDungController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NguoiDung> update(@PathVariable Integer id, @RequestBody NguoiDung nguoiDung) {
-        return nguoiDungService.update(id, nguoiDung)
+    public ResponseEntity<NguoiDung> update(@PathVariable Integer id, @RequestBody NguoiDung duLieuMoi) {
+        return nguoiDungService.update(id, duLieuMoi)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

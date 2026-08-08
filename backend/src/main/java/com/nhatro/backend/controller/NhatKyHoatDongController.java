@@ -31,14 +31,19 @@ public class NhatKyHoatDongController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/nguoi-dung/{maNguoiDung}")
+    public ResponseEntity<List<NhatKyHoatDong>> getByNguoiDung(@PathVariable Integer maNguoiDung) {
+        return ResponseEntity.ok(nhatKyHoatDongService.getByNguoiDung(maNguoiDung));
+    }
+
     @PostMapping
     public ResponseEntity<NhatKyHoatDong> create(@RequestBody NhatKyHoatDong nhatKyHoatDong) {
         return ResponseEntity.ok(nhatKyHoatDongService.create(nhatKyHoatDong));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NhatKyHoatDong> update(@PathVariable Integer id, @RequestBody NhatKyHoatDong nhatKyHoatDong) {
-        return nhatKyHoatDongService.update(id, nhatKyHoatDong)
+    public ResponseEntity<NhatKyHoatDong> update(@PathVariable Integer id, @RequestBody NhatKyHoatDong duLieuMoi) {
+        return nhatKyHoatDongService.update(id, duLieuMoi)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

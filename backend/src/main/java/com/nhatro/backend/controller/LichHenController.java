@@ -20,8 +20,8 @@ public class LichHenController {
     }
 
     @GetMapping
-    public List<LichHen> getAll() {
-        return lichHenService.getAll();
+    public ResponseEntity<List<LichHen>> getAll() {
+        return ResponseEntity.ok(lichHenService.getAll());
     }
 
     @GetMapping("/{id}")
@@ -31,14 +31,24 @@ public class LichHenController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/nguoi-dung/{maNguoiDung}")
+    public ResponseEntity<List<LichHen>> getByNguoiDung(@PathVariable Integer maNguoiDung) {
+        return ResponseEntity.ok(lichHenService.getByNguoiDung(maNguoiDung));
+    }
+
+    @GetMapping("/phong/{maPhong}")
+    public ResponseEntity<List<LichHen>> getByPhong(@PathVariable Integer maPhong) {
+        return ResponseEntity.ok(lichHenService.getByPhong(maPhong));
+    }
+
     @PostMapping
     public ResponseEntity<LichHen> create(@RequestBody LichHen lichHen) {
         return ResponseEntity.ok(lichHenService.create(lichHen));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LichHen> update(@PathVariable Integer id, @RequestBody LichHen lichHen) {
-        return lichHenService.update(id, lichHen)
+    public ResponseEntity<LichHen> update(@PathVariable Integer id, @RequestBody LichHen duLieuMoi) {
+        return lichHenService.update(id, duLieuMoi)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
