@@ -6,7 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "phong_tro")
+@Table(name = "PHONG_TRO")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,37 +16,41 @@ public class PhongTro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_phong")
+    @Column(name = "maPhong")
     private Integer maPhong;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nha_tro")
+    @JoinColumn(name = "maNhaTro", nullable = false)
     private NhaTro nhaTro;
 
-    @Column(name = "so_phong", nullable = false, length = 20)
-    private String soPhong;
+    @Column(name = "tenPhong", nullable = false, length = 255)
+    private String tenPhong;
 
-    @Column(name = "dien_tich")
-    private Double dienTich;
+    @Column(name = "dienTich", precision = 10, scale = 2)
+    private BigDecimal dienTich;
 
-    @Column(name = "loai_phong", length = 50)
+    @Column(name = "loaiPhong", length = 100)
     private String loaiPhong;
 
-    @Column(name = "ma_trang_thai", nullable = false)
-    private Integer maTrangThai;
+    @Column(name = "soLuongNguoi")
+    private Integer soLuongNguoi;
 
-    @Column(name = "gia_goc", nullable = false)
-    private BigDecimal giaGoc;
+    @Column(name = "giaPhong", precision = 18, scale = 2)
+    private BigDecimal giaPhong;
 
-    @Column(name = "gia_dien")
+    @Column(name = "giaDien", precision = 18, scale = 2)
     private BigDecimal giaDien;
 
-    @Column(name = "gia_nuoc")
+    @Column(name = "giaNuoc", precision = 18, scale = 2)
     private BigDecimal giaNuoc;
 
-    @Column(name = "gia_xe")
-    private BigDecimal giaXe;
+    @Column(name = "giaGuiXe", precision = 18, scale = 2)
+    private BigDecimal giaGuiXe;
 
-    @Column(name = "gia_wifi")
-    private BigDecimal giaWifi;
+    @Column(name = "giaInternet", precision = 18, scale = 2)
+    private BigDecimal giaInternet;
+
+    @Column(name = "trangThai")
+    @Builder.Default
+    private Boolean trangThai = true;
 }

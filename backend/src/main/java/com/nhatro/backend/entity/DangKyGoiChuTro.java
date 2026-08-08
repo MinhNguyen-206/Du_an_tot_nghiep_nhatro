@@ -2,11 +2,12 @@ package com.nhatro.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "dang_ky_goi_chu_tro")
+@Table(name = "DANG_KY_GOI_CHU_TRO")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,33 +17,24 @@ public class DangKyGoiChuTro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_dang_ky")
+    @Column(name = "maDangKy")
     private Integer maDangKy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nguoi_dung", nullable = false)
-    private NguoiDung nguoiDung; // chu tro dang ky goi
+    @JoinColumn(name = "maChuTro", nullable = false)
+    private NguoiDung chuTro;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_goi", nullable = false)
-    private GoiPremium goi;
+    @JoinColumn(name = "maGoi", nullable = false)
+    private GoiDichVu goi;
 
-    // KHONG lien ket toi GiaoDichThanhToan (bang danh cho thanh toan thue phong/coc).
-    // Thanh toan Premium duoc ghi nhan rieng qua HoaDonDienTuPremium de tach biet
-    // hoan toan 2 luong tien: thue phong (nguoi thue <-> chu tro) va Premium (chu tro <-> he thong).
+    @CreationTimestamp
+    @Column(name = "ngayDangKy", updatable = false)
+    private LocalDateTime ngayDangKy;
 
-    @Column(name = "ngay_bat_dau")
-    private LocalDateTime ngayBatDau;
+    @Column(name = "ngayHetHan")
+    private LocalDateTime ngayHetHan;
 
-    @Column(name = "ngay_ket_thuc")
-    private LocalDateTime ngayKetThuc;
-
-    @Column(name = "trang_thai", nullable = false)
-    private Integer trangThai; // 0: Cho thanh toan, 1: Dang hoat dong, 2: Da het han, 3: Da huy
-
-    @Column(name = "so_tin_da_dang")
-    private Integer soTinDaDang;
-
-    @Column(name = "ngay_tao")
-    private LocalDateTime ngayTao;
+    @Column(name = "trangThai", length = 50)
+    private String trangThai;
 }

@@ -25,10 +25,20 @@ public class ThongBaoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ThongBao> getById(@PathVariable Long id) {
+    public ResponseEntity<ThongBao> getById(@PathVariable Integer id) {
         return thongBaoService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/nguoi-dung/{maNguoiDung}")
+    public ResponseEntity<List<ThongBao>> getByNguoiDung(@PathVariable Integer maNguoiDung) {
+        return ResponseEntity.ok(thongBaoService.getByNguoiDung(maNguoiDung));
+    }
+
+    @GetMapping("/nguoi-dung/{maNguoiDung}/chua-doc")
+    public ResponseEntity<List<ThongBao>> getChuaDoc(@PathVariable Integer maNguoiDung) {
+        return ResponseEntity.ok(thongBaoService.getChuaDoc(maNguoiDung));
     }
 
     @PostMapping
@@ -36,15 +46,15 @@ public class ThongBaoController {
         return ResponseEntity.ok(thongBaoService.create(thongBao));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ThongBao> update(@PathVariable Long id, @RequestBody ThongBao thongBao) {
-        return thongBaoService.update(id, thongBao)
+    @PutMapping("/{id}/doc")
+    public ResponseEntity<ThongBao> markAsRead(@PathVariable Integer id) {
+        return thongBaoService.markAsRead(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         return thongBaoService.delete(id)
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();

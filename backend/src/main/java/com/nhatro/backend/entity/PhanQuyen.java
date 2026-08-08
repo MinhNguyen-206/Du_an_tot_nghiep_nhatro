@@ -1,20 +1,28 @@
 package com.nhatro.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.time.LocalDateTime;
-
-@Data
-@Builder
+@Entity
+@Table(name = "PHAN_QUYEN")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PhanQuyen {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "maQuyen")
     private Integer maQuyen;
-    private String tenQuyen; // Ví dụ: ROLE_USER, ROLE_ADMIN, ROLE_CHUTRO
+
+    @Column(name = "tenQuyen", nullable = false, length = 200)
+    private String tenQuyen;
+
+    @Column(name = "maQuyenCode", unique = true, length = 100)
+    private String maQuyenCode;
+
+    @Column(name = "moTa", length = 500)
     private String moTa;
-    private LocalDateTime ngayTao;
-    private LocalDateTime ngayCapNhat;
 }

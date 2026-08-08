@@ -1,112 +1,69 @@
 package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.DangTin;
-import com.nhatro.backend.entity.NguoiDung;
-import com.nhatro.backend.entity.PhongTro;
+import com.nhatro.backend.repository.DangTinRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class DangTinService {
 
-    private final List<DangTin> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
-    private final PhongTroService phongTroService;
-    private final NguoiDungService nguoiDungService;
+    private final DangTinRepository dangTinRepository;
 
-    public DangTinService(PhongTroService phongTroService, NguoiDungService nguoiDungService) {
-        this.phongTroService = phongTroService;
-        this.nguoiDungService = nguoiDungService;
-        List<PhongTro> dsPhong = phongTroService.getAll();
-        Optional<NguoiDung> chuTroMau = nguoiDungService.getAll().stream()
-                .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 2)
-                .findFirst();
-
-        if (!dsPhong.isEmpty() && chuTroMau.isPresent()) {
-            NguoiDung chuTro = chuTroMau.get();
-
-            danhSach.add(DangTin.builder()
-                    .maDangTin(idCounter.getAndIncrement())
-                    .phong(dsPhong.get(0))
-                    .nguoiDung(chuTro)
-                    .tieuDe("Phong tro gia re gan truong, day du tien nghi")
-                    .moTaChiTiet("Phong sach se, an ninh, gio giac tu do, gan truong hoc va cho.")
-                    .toaDoBanDo("10.8412,106.7897")
-                    .trangThaiKiemDuyet(1)
-                    .trangThaiHienThi(1)
-                    .soLuotXem(0)
-                    .isVip(false)
-                    .ngayTao(LocalDateTime.now())
-                    .ngayCapNhat(LocalDateTime.now())
-                    .build());
-
-            if (dsPhong.size() > 1) {
-                danhSach.add(DangTin.builder()
-                        .maDangTin(idCounter.getAndIncrement())
-                        .phong(dsPhong.get(1))
-                        .nguoiDung(chuTro)
-                        .tieuDe("Phong doi rong rai, co gac lung")
-                        .moTaChiTiet("Phong moi xay, co may lanh, tu lanh, ban ghe hoc.")
-                        .toaDoBanDo("10.8500,106.7700")
-                        .trangThaiKiemDuyet(0)
-                        .trangThaiHienThi(1)
-                        .soLuotXem(0)
-                        .isVip(true)
-                        .ngayTao(LocalDateTime.now())
-                        .ngayCapNhat(LocalDateTime.now())
-                        .build());
-            }
-        }
+    public DangTinService(DangTinRepository dangTinRepository) {
+        Objects.requireNonNull(dangTinRepository, "dangTinRepository must not be null");
+        this.dangTinRepository = dangTinRepository;
     }
 
     public List<DangTin> getAll() {
-        return danhSach;
+        return dangTinRepository.findAll();
     }
 
     public Optional<DangTin> getById(Integer id) {
-        return danhSach.stream()
-                .filter(dt -> dt.getMaDangTin().equals(id))
-                .findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return dangTinRepository.findById(id);
+    }
+
+    public List<DangTin> getByNguoiDung(Integer maNguoiDung) {
+        Objects.requireNonNull(maNguoiDung, "maNguoiDung must not be null");
+        return dangTinRepository.findByNguoiDung_MaNguoiDung(maNguoiDung);
+    }
+
+    public List<DangTin> getByPhong(Integer maPhong) {
+        Objects.requireNonNull(maPhong, "maPhong must not be null");
+        return dangTinRepository.findByPhong_MaPhong(maPhong);
+    }
+
+    public List<DangTin> getDangHoatDong() {
+        return dangTinRepository.findByTrangThai(true);
     }
 
     public DangTin create(DangTin dangTin) {
-        dangTin.setMaDangTin(idCounter.getAndIncrement());
-        dangTin.setNgayTao(LocalDateTime.now());
-        dangTin.setNgayCapNhat(LocalDateTime.now());
-        if (dangTin.getSoLuotXem() == null) {
-            dangTin.setSoLuotXem(0);
-        }
-
-        if (dangTin.getPhong() != null && dangTin.getPhong().getMaPhong() != null) {
-            phongTroService.getById(dangTin.getPhong().getMaPhong())
-                    .ifPresent(dangTin::setPhong);
-        }
-
-        if (dangTin.getNguoiDung() != null && dangTin.getNguoiDung().getMaNguoiDung() != null) {
-            nguoiDungService.getById(dangTin.getNguoiDung().getMaNguoiDung())
-                    .ifPresent(dangTin::setNguoiDung);
-        }
-
-        danhSach.add(dangTin);
-        return dangTin;
+        Objects.requireNonNull(dangTin, "dangTin must not be null");
+        return dangTinRepository.save(dangTin);
     }
 
     public Optional<DangTin> update(Integer id, DangTin duLieuMoi) {
-        return getById(id).map(dt -> {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return dangTinRepository.findById(id).map(dt -> {
             dt.setTieuDe(duLieuMoi.getTieuDe());
-            dt.setMoTaChiTiet(duLieuMoi.getMoTaChiTiet());
-            dt.setTrangThaiHienThi(duLieuMoi.getTrangThaiHienThi());
-            dt.setNgayCapNhat(LocalDateTime.now());
-            return dt;
+            dt.setNoiDung(duLieuMoi.getNoiDung());
+            dt.setNgayHetHan(duLieuMoi.getNgayHetHan());
+            dt.setTrangThai(duLieuMoi.getTrangThai());
+            return dangTinRepository.save(dt);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(dt -> dt.getMaDangTin().equals(id));
+        Objects.requireNonNull(id, "id must not be null");
+        if (dangTinRepository.existsById(id)) {
+            dangTinRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "thanh_toan_coc")
+@Table(name = "THANH_TOAN_COC")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,33 +17,22 @@ public class ThanhToanCoc {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_thanh_toan")
-    private Integer maThanhToan;
+    @Column(name = "maThanhToanCoc")
+    private Integer maThanhToanCoc;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_hop_dong", nullable = false)
+    @JoinColumn(name = "maHopDong", nullable = false)
     private HopDongDienTu hopDong;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nguoi_thue", nullable = false)
-    private NguoiDung nguoiThue;
+    @Column(name = "soTien", precision = 18, scale = 2)
+    private BigDecimal soTien;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_chu_tro", nullable = false)
-    private NguoiDung chuTro;
-
-    @Column(name = "so_tien_coc", nullable = false)
-    private BigDecimal soTienCoc;
-
-    @Column(name = "phuong_thuc_thanh_toan")
-    private String phuongThucThanhToan;
-
-    @Column(name = "trang_thai_coc", nullable = false)
-    private Integer trangThaiCoc;
-
-    @Column(name = "ngay_thanh_toan")
+    @Column(name = "ngayThanhToan")
     private LocalDateTime ngayThanhToan;
 
-    @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
-    private String ghiChu;
+    @Column(name = "phuongThuc", length = 100)
+    private String phuongThuc;
+
+    @Column(name = "trangThai", length = 50)
+    private String trangThai;
 }

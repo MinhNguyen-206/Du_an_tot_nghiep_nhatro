@@ -2,11 +2,12 @@ package com.nhatro.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "danh_gia")
+@Table(name = "DANH_GIA")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,29 +17,28 @@ public class DanhGia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_danh_gia")
+    @Column(name = "maDanhGia")
     private Integer maDanhGia;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nguoi_thue", nullable = false)
-    private NguoiDung nguoiThue;
+    @JoinColumn(name = "maNguoiDung", nullable = false)
+    private NguoiDung nguoiDung;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_phong", nullable = false)
+    @JoinColumn(name = "maPhong", nullable = false)
     private PhongTro phong;
 
-    @Column(name = "so_sao", nullable = false)
+    @Column(name = "soSao", nullable = false)
     private Integer soSao;
 
-    @Column(name = "noi_dung_binh_luan", columnDefinition = "NVARCHAR(MAX)")
-    private String noiDungBinhLuan;
+    @Column(name = "noiDung", columnDefinition = "NVARCHAR(MAX)")
+    private String noiDung;
 
-    @Column(name = "anh_thuc_te", columnDefinition = "NVARCHAR(MAX)")
-    private String anhThucTe;
+    @CreationTimestamp
+    @Column(name = "ngayDanhGia", updatable = false)
+    private LocalDateTime ngayDanhGia;
 
-    @Column(name = "trang_thai_kiem_duyet", nullable = false)
-    private Integer trangThaiKiemDuyet;
-
-    @Column(name = "ngay_tao")
-    private LocalDateTime ngayTao;
+    @Column(name = "trangThai")
+    @Builder.Default
+    private Boolean trangThai = true;
 }

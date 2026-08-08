@@ -1,103 +1,71 @@
 package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.NguoiDung;
+import com.nhatro.backend.repository.NguoiDungRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class NguoiDungService {
 
-    private final List<NguoiDung> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final NguoiDungRepository nguoiDungRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public NguoiDungService(PasswordEncoder passwordEncoder) {
+    public NguoiDungService(NguoiDungRepository nguoiDungRepository, PasswordEncoder passwordEncoder) {
+        Objects.requireNonNull(nguoiDungRepository, "nguoiDungRepository must not be null");
+        Objects.requireNonNull(passwordEncoder, "passwordEncoder must not be null");
+        this.nguoiDungRepository = nguoiDungRepository;
         this.passwordEncoder = passwordEncoder;
-        themDuLieuMau();
-    }
-
-    private void themDuLieuMau() {
-        danhSach.add(NguoiDung.builder()
-                .maNguoiDung(idCounter.getAndIncrement())
-                .email("chutro@gmail.com")
-                .matKhauMaHoa(passwordEncoder.encode("123456"))
-                .hoTen("Nguyen Van A")
-                .soDienThoai("0901111111")
-                .vaiTro(2)
-                .trangThaiTaiKhoan(1)
-                .daXacMinhEkyc(true)
-                .nguonDangNhap("local")
-                .ngayTao(LocalDateTime.now())
-                .ngayCapNhat(LocalDateTime.now())
-                .build());
-
-        danhSach.add(NguoiDung.builder()
-                .maNguoiDung(idCounter.getAndIncrement())
-                .email("nguoithue@gmail.com")
-                .matKhauMaHoa(passwordEncoder.encode("123456"))
-                .hoTen("Tran Thi B")
-                .soDienThoai("0902222222")
-                .vaiTro(1)
-                .trangThaiTaiKhoan(1)
-                .daXacMinhEkyc(false)
-                .nguonDangNhap("local")
-                .ngayTao(LocalDateTime.now())
-                .ngayCapNhat(LocalDateTime.now())
-                .build());
-
-        danhSach.add(NguoiDung.builder()
-                .maNguoiDung(idCounter.getAndIncrement())
-                .email("admin@gmail.com")
-                .matKhauMaHoa(passwordEncoder.encode("123456"))
-                .hoTen("Quan Tri Vien")
-                .vaiTro(3)
-                .trangThaiTaiKhoan(1)
-                .daXacMinhEkyc(true)
-                .nguonDangNhap("local")
-                .ngayTao(LocalDateTime.now())
-                .ngayCapNhat(LocalDateTime.now())
-                .build());
     }
 
     public List<NguoiDung> getAll() {
-        return danhSach;
+        return nguoiDungRepository.findAll();
     }
 
     public Optional<NguoiDung> getById(Integer id) {
-        return danhSach.stream()
-                .filter(nd -> nd.getMaNguoiDung().equals(id))
-                .findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return nguoiDungRepository.findById(id);
+    }
+
+    public Optional<NguoiDung> getByEmail(String email) {
+        Objects.requireNonNull(email, "email must not be null");
+        return nguoiDungRepository.findByEmail(email);
     }
 
     public NguoiDung create(NguoiDung nguoiDung) {
-        nguoiDung.setMaNguoiDung(idCounter.getAndIncrement());
-        if (nguoiDung.getMatKhauMaHoa() != null && !nguoiDung.getMatKhauMaHoa().isEmpty()) {
-            nguoiDung.setMatKhauMaHoa(passwordEncoder.encode(nguoiDung.getMatKhauMaHoa()));
+        Objects.requireNonNull(nguoiDung, "nguoiDung must not be null");
+        if (nguoiDung.getMatKhau() != null && !nguoiDung.getMatKhau().isEmpty()) {
+            nguoiDung.setMatKhau(passwordEncoder.encode(nguoiDung.getMatKhau()));
         }
-        nguoiDung.setNgayTao(LocalDateTime.now());
-        nguoiDung.setNgayCapNhat(LocalDateTime.now());
-        danhSach.add(nguoiDung);
-        return nguoiDung;
+        return nguoiDungRepository.save(nguoiDung);
     }
 
     public Optional<NguoiDung> update(Integer id, NguoiDung duLieuMoi) {
-        return getById(id).map(nd -> {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return nguoiDungRepository.findById(id).map(nd -> {
             nd.setHoTen(duLieuMoi.getHoTen());
             nd.setSoDienThoai(duLieuMoi.getSoDienThoai());
-            nd.setDiaChiThuongTru(duLieuMoi.getDiaChiThuongTru());
-            nd.setAnhDaiDien(duLieuMoi.getAnhDaiDien());
+            nd.setDiaChi(duLieuMoi.getDiaChi());
+            nd.setAvatar(duLieuMoi.getAvatar());
+            nd.setGioiTinh(duLieuMoi.getGioiTinh());
+            nd.setNgaySinh(duLieuMoi.getNgaySinh());
             nd.setNgayCapNhat(LocalDateTime.now());
-            return nd;
+            return nguoiDungRepository.save(nd);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(nd -> nd.getMaNguoiDung().equals(id));
+        Objects.requireNonNull(id, "id must not be null");
+        if (nguoiDungRepository.existsById(id)) {
+            nguoiDungRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

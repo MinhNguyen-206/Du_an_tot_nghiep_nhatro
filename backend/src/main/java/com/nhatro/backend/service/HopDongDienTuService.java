@@ -1,82 +1,75 @@
 package com.nhatro.backend.service;
 
-import com.nhatro.backend.entity.*;
+import com.nhatro.backend.entity.HopDongDienTu;
+import com.nhatro.backend.repository.HopDongDienTuRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class HopDongDienTuService {
 
-    private final List<HopDongDienTu> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final HopDongDienTuRepository hopDongRepository;
 
-    public HopDongDienTuService(YeuCauThueService yeuCauThueService,
-            PhongTroService phongTroService,
-            NguoiDungService nguoiDungService) {
-        List<PhongTro> dsPhong = phongTroService.getAll();
-        Optional<YeuCauThue> yeuCauMau = yeuCauThueService.getAll().stream().findFirst();
-        Optional<NguoiDung> chuTroMau = nguoiDungService.getAll().stream()
-                .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 2)
-                .findFirst();
-        Optional<NguoiDung> nguoiThueMau = nguoiDungService.getAll().stream()
-                .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 1)
-                .findFirst();
-
-        if (!dsPhong.isEmpty() && chuTroMau.isPresent() && nguoiThueMau.isPresent()) {
-            danhSach.add(HopDongDienTu.builder()
-                    .maHopDong(idCounter.getAndIncrement())
-                    .yeuCau(yeuCauMau.orElse(null))
-                    .phong(dsPhong.get(0))
-                    .nguoiThue(nguoiThueMau.get())
-                    .chuTro(chuTroMau.get())
-                    .ngayBatDau(LocalDateTime.now())
-                    .ngayKetThuc(LocalDateTime.now().plusMonths(6))
-                    .thoiHanThue(6)
-                    .giaThue(new BigDecimal("2500000"))
-                    .tienCoc(new BigDecimal("2500000"))
-                    .dieuKhoanViPham("Boi thuong 1 thang tien phong neu don ra truoc han khong bao truoc 30 ngay")
-                    .trangThaiHopDong(1)
-                    .ngayCapNhat(LocalDateTime.now())
-                    .build());
-        }
+    public HopDongDienTuService(HopDongDienTuRepository hopDongRepository) {
+        Objects.requireNonNull(hopDongRepository, "hopDongRepository must not be null");
+        this.hopDongRepository = hopDongRepository;
     }
 
     public List<HopDongDienTu> getAll() {
-        return danhSach;
+        return hopDongRepository.findAll();
     }
 
     public Optional<HopDongDienTu> getById(Integer id) {
-        return danhSach.stream().filter(h -> h.getMaHopDong().equals(id)).findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return hopDongRepository.findById(id);
+    }
+
+    public List<HopDongDienTu> getByNguoiThue(Integer maNguoiDung) {
+        Objects.requireNonNull(maNguoiDung, "maNguoiDung must not be null");
+        return hopDongRepository.findByNguoiThue_MaNguoiDung(maNguoiDung);
+    }
+
+    public List<HopDongDienTu> getByChuTro(Integer maNguoiDung) {
+        Objects.requireNonNull(maNguoiDung, "maNguoiDung must not be null");
+        return hopDongRepository.findByChuTro_MaNguoiDung(maNguoiDung);
+    }
+
+    public List<HopDongDienTu> getByPhong(Integer maPhong) {
+        return hopDongRepository.findByPhong_MaPhong(maPhong);
+    }
+
+    public List<HopDongDienTu> getByTrangThai(String trangThai) {
+        return hopDongRepository.findByTrangThai(trangThai);
     }
 
     public HopDongDienTu create(HopDongDienTu hopDong) {
-        hopDong.setMaHopDong(idCounter.getAndIncrement());
-        hopDong.setNgayCapNhat(LocalDateTime.now());
-        if (hopDong.getTrangThaiHopDong() == null) {
-            hopDong.setTrangThaiHopDong(0);
-        }
-        danhSach.add(hopDong);
-        return hopDong;
+        Objects.requireNonNull(hopDong, "hopDong must not be null");
+        return hopDongRepository.save(hopDong);
     }
 
     public Optional<HopDongDienTu> update(Integer id, HopDongDienTu duLieuMoi) {
-        return getById(id).map(h -> {
-            h.setNgayKetThuc(duLieuMoi.getNgayKetThuc());
-            h.setNgayChamDut(duLieuMoi.getNgayChamDut());
-            h.setLyDoChamDut(duLieuMoi.getLyDoChamDut());
-            h.setTrangThaiHopDong(duLieuMoi.getTrangThaiHopDong());
-            h.setNgayCapNhat(LocalDateTime.now());
-            return h;
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return hopDongRepository.findById(id).map(hd -> {
+            hd.setNgayBatDau(duLieuMoi.getNgayBatDau());
+            hd.setNgayKetThuc(duLieuMoi.getNgayKetThuc());
+            hd.setTienCoc(duLieuMoi.getTienCoc());
+            hd.setGiaThue(duLieuMoi.getGiaThue());
+            hd.setFileHopDong(duLieuMoi.getFileHopDong());
+            hd.setTrangThai(duLieuMoi.getTrangThai());
+            hd.setNgayKy(duLieuMoi.getNgayKy());
+            return hopDongRepository.save(hd);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(h -> h.getMaHopDong().equals(id));
+        if (hopDongRepository.existsById(id)) {
+            hopDongRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

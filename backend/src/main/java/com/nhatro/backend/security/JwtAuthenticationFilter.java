@@ -15,11 +15,8 @@ import java.io.IOException;
 import java.util.List;
 
 // Doc header "Authorization: Bearer <token>" tren moi request, kiem tra hop le
-// bang JwtUtil, roi nap thong tin dang nhap vao SecurityContext de
-// anyRequest().authenticated() trong SecurityConfig nhan dien duoc.
-// Neu khong co token hoac token khong hop le -> bo qua, de request di tiep
-// nhu "chua dang nhap" (cac rule permitAll van hoat dong binh thuong,
-// cac rule authenticated() se bi tu choi o buoc sau boi Spring Security).
+// bang JwtUtil, roi nap thong tin dang nhap vao SecurityContext.
+// vaiTro: 1 = Admin, 2 = Chu tro, 3 = Nguoi thue (theo thu tu INSERT VAI_TRO trong schema SQL)
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -44,11 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtUtil.getEmailFromToken(token);
                 Integer role = jwtUtil.getRoleFromToken(token);
 
-                // vaiTro: 1 = nguoi thue, 2 = chu tro, 3 = quan tri vien
+                // maVaiTro: 1 = Admin, 2 = Chu tro, 3 = Nguoi thue
                 String roleName = "ROLE_" + switch (role != null ? role : 0) {
-                    case 1 -> "NGUOI_THUE";
+                    case 1 -> "ADMIN";
                     case 2 -> "CHU_TRO";
-                    case 3 -> "ADMIN";
+                    case 3 -> "NGUOI_THUE";
                     default -> "UNKNOWN";
                 };
 
@@ -59,8 +56,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-            // token khong hop le (het han/sai chu ky) -> khong set Authentication,
-            // request coi nhu chua dang nhap, khong throw loi o day.
         }
 
         filterChain.doFilter(request, response);

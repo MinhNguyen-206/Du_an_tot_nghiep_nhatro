@@ -1,90 +1,60 @@
 package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.GiaoDichThanhToan;
-import com.nhatro.backend.entity.HoaDonThang;
-import com.nhatro.backend.entity.NguoiDung;
+import com.nhatro.backend.repository.GiaoDichThanhToanRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class GiaoDichThanhToanService {
 
-    private final List<GiaoDichThanhToan> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final GiaoDichThanhToanRepository giaoDichRepository;
 
-    public GiaoDichThanhToanService(HoaDonThangService hoaDonThangService, NguoiDungService nguoiDungService) {
-        List<HoaDonThang> dsHoaDon = hoaDonThangService.getAll();
-        Optional<NguoiDung> nguoiThueMau = nguoiDungService.getAll().stream()
-                .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 1)
-                .findFirst();
-
-        if (!dsHoaDon.isEmpty() && nguoiThueMau.isPresent()) {
-            HoaDonThang hoaDon = dsHoaDon.get(0);
-
-            danhSach.add(GiaoDichThanhToan.builder()
-                    .maGiaoDich(idCounter.getAndIncrement())
-                    .hoaDon(hoaDon)
-                    .nguoiThanhToan(nguoiThueMau.get())
-                    .soTien(hoaDon.getTongTien())
-                    .phuongThucThanhToan("CHUYEN_KHOAN")
-                    .maThiamChieu("TXN20260710001")
-                    .trangThaiThanhToan(1) // Đã xác nhận
-                    .ghiChu("Thanh toán hóa đơn tháng 7/2026 qua chuyển khoản")
-                    .thoiGianTao(LocalDateTime.now().minusDays(5))
-                    .thoiGianXacNhan(LocalDateTime.now().minusDays(5).plusHours(2))
-                    .build());
-
-            danhSach.add(GiaoDichThanhToan.builder()
-                    .maGiaoDich(idCounter.getAndIncrement())
-                    .hoaDon(hoaDon)
-                    .nguoiThanhToan(nguoiThueMau.get())
-                    .soTien(new BigDecimal("500000")) // Thanh toán một phần
-                    .phuongThucThanhToan("MOMO")
-                    .maThiamChieu("MOMO20260710002")
-                    .trangThaiThanhToan(1)
-                    .ghiChu("Thanh toán một phần qua Momo")
-                    .thoiGianTao(LocalDateTime.now().minusHours(12))
-                    .thoiGianXacNhan(LocalDateTime.now().minusHours(11))
-                    .build());
-        }
+    public GiaoDichThanhToanService(GiaoDichThanhToanRepository giaoDichRepository) {
+        Objects.requireNonNull(giaoDichRepository, "giaoDichRepository must not be null");
+        this.giaoDichRepository = giaoDichRepository;
     }
 
     public List<GiaoDichThanhToan> getAll() {
-        return danhSach;
+        return giaoDichRepository.findAll();
     }
 
     public Optional<GiaoDichThanhToan> getById(Integer id) {
-        return danhSach.stream().filter(g -> g.getMaGiaoDich().equals(id)).findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return giaoDichRepository.findById(id);
     }
 
-    public GiaoDichThanhToan create(GiaoDichThanhToan giaoDichThanhToan) {
-        giaoDichThanhToan.setMaGiaoDich(idCounter.getAndIncrement());
-        giaoDichThanhToan.setThoiGianTao(LocalDateTime.now());
-        if (giaoDichThanhToan.getTrangThaiThanhToan() == null) {
-            giaoDichThanhToan.setTrangThaiThanhToan(0); // Chưa xác nhận
-        }
-        danhSach.add(giaoDichThanhToan);
-        return giaoDichThanhToan;
+    public List<GiaoDichThanhToan> getByThanhToan(Integer maThanhToan) {
+        Objects.requireNonNull(maThanhToan, "maThanhToan must not be null");
+        return giaoDichRepository.findByThanhToan_MaThanhToan(maThanhToan);
+    }
+
+    public GiaoDichThanhToan create(GiaoDichThanhToan giaoDich) {
+        Objects.requireNonNull(giaoDich, "giaoDich must not be null");
+        return giaoDichRepository.save(giaoDich);
     }
 
     public Optional<GiaoDichThanhToan> update(Integer id, GiaoDichThanhToan duLieuMoi) {
-        return getById(id).map(g -> {
-            g.setTrangThaiThanhToan(duLieuMoi.getTrangThaiThanhToan());
-            g.setGhiChu(duLieuMoi.getGhiChu());
-            if (duLieuMoi.getTrangThaiThanhToan() == 1) {
-                g.setThoiGianXacNhan(LocalDateTime.now());
-            }
-            return g;
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return giaoDichRepository.findById(id).map(gd -> {
+            gd.setMaGiaoDichCongThanhToan(duLieuMoi.getMaGiaoDichCongThanhToan());
+            gd.setNganHang(duLieuMoi.getNganHang());
+            gd.setNoiDung(duLieuMoi.getNoiDung());
+            gd.setNgayGiaoDich(duLieuMoi.getNgayGiaoDich());
+            gd.setTrangThai(duLieuMoi.getTrangThai());
+            return giaoDichRepository.save(gd);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(g -> g.getMaGiaoDich().equals(id));
+        if (giaoDichRepository.existsById(id)) {
+            giaoDichRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

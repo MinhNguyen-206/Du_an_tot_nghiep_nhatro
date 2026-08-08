@@ -1,69 +1,62 @@
 package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.DanhGia;
-import com.nhatro.backend.entity.NguoiDung;
-import com.nhatro.backend.entity.PhongTro;
+import com.nhatro.backend.repository.DanhGiaRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class DanhGiaService {
 
-    private final List<DanhGia> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final DanhGiaRepository danhGiaRepository;
 
-    public DanhGiaService(PhongTroService phongTroService, NguoiDungService nguoiDungService) {
-        List<PhongTro> dsPhong = phongTroService.getAll();
-        Optional<NguoiDung> nguoiThueMau = nguoiDungService.getAll().stream()
-                .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 1)
-                .findFirst();
-
-        if (!dsPhong.isEmpty() && nguoiThueMau.isPresent()) {
-            danhSach.add(DanhGia.builder()
-                    .maDanhGia(idCounter.getAndIncrement())
-                    .nguoiThue(nguoiThueMau.get())
-                    .phong(dsPhong.get(0))
-                    .soSao(5)
-                    .noiDungBinhLuan("Phong sach se, chu tro nhiet tinh, se gioi thieu ban be")
-                    .trangThaiKiemDuyet(1)
-                    .ngayTao(LocalDateTime.now())
-                    .build());
-        }
+    public DanhGiaService(DanhGiaRepository danhGiaRepository) {
+        Objects.requireNonNull(danhGiaRepository, "danhGiaRepository must not be null");
+        this.danhGiaRepository = danhGiaRepository;
     }
 
     public List<DanhGia> getAll() {
-        return danhSach;
+        return danhGiaRepository.findAll();
     }
 
     public Optional<DanhGia> getById(Integer id) {
-        return danhSach.stream().filter(d -> d.getMaDanhGia().equals(id)).findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return danhGiaRepository.findById(id);
+    }
+
+    public List<DanhGia> getByPhong(Integer maPhong) {
+        Objects.requireNonNull(maPhong, "maPhong must not be null");
+        return danhGiaRepository.findByPhong_MaPhong(maPhong);
+    }
+
+    public List<DanhGia> getByNguoiDung(Integer maNguoiDung) {
+        return danhGiaRepository.findByNguoiDung_MaNguoiDung(maNguoiDung);
     }
 
     public DanhGia create(DanhGia danhGia) {
-        danhGia.setMaDanhGia(idCounter.getAndIncrement());
-        danhGia.setNgayTao(LocalDateTime.now());
-        if (danhGia.getTrangThaiKiemDuyet() == null) {
-            danhGia.setTrangThaiKiemDuyet(0);
-        }
-        danhSach.add(danhGia);
-        return danhGia;
+        Objects.requireNonNull(danhGia, "danhGia must not be null");
+        return danhGiaRepository.save(danhGia);
     }
 
     public Optional<DanhGia> update(Integer id, DanhGia duLieuMoi) {
-        return getById(id).map(d -> {
-            d.setSoSao(duLieuMoi.getSoSao());
-            d.setNoiDungBinhLuan(duLieuMoi.getNoiDungBinhLuan());
-            d.setTrangThaiKiemDuyet(duLieuMoi.getTrangThaiKiemDuyet());
-            return d;
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return danhGiaRepository.findById(id).map(dg -> {
+            dg.setSoSao(duLieuMoi.getSoSao());
+            dg.setNoiDung(duLieuMoi.getNoiDung());
+            dg.setTrangThai(duLieuMoi.getTrangThai());
+            return danhGiaRepository.save(dg);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(d -> d.getMaDanhGia().equals(id));
+        if (danhGiaRepository.existsById(id)) {
+            danhGiaRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

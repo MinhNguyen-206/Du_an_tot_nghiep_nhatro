@@ -1,70 +1,66 @@
 package com.nhatro.backend.service;
 
-import com.nhatro.backend.entity.DangTin;
 import com.nhatro.backend.entity.LichHen;
-import com.nhatro.backend.entity.NguoiDung;
+import com.nhatro.backend.repository.LichHenRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class LichHenService {
 
-    private final List<LichHen> danhSach = new CopyOnWriteArrayList<>();
-    private final AtomicInteger idCounter = new AtomicInteger(1);
+    private final LichHenRepository lichHenRepository;
 
-    public LichHenService(DangTinService dangTinService, NguoiDungService nguoiDungService) {
-        List<DangTin> dsDangTin = dangTinService.getAll();
-        Optional<NguoiDung> nguoiThueMau = nguoiDungService.getAll().stream()
-                .filter(nd -> nd.getVaiTro() != null && nd.getVaiTro() == 1)
-                .findFirst();
-
-        if (!dsDangTin.isEmpty() && nguoiThueMau.isPresent()) {
-            danhSach.add(LichHen.builder()
-                    .maLichHen(idCounter.getAndIncrement())
-                    .nguoiThue(nguoiThueMau.get())
-                    .dangTin(dsDangTin.get(0))
-                    .ngayGioHen(LocalDateTime.now().plusDays(2))
-                    .soNguoiDiCung(1)
-                    .loiNhan("Xin xem phong vao buoi chieu")
-                    .trangThaiLichHen(0)
-                    .build());
-        }
+    public LichHenService(LichHenRepository lichHenRepository) {
+        Objects.requireNonNull(lichHenRepository, "lichHenRepository must not be null");
+        this.lichHenRepository = lichHenRepository;
     }
 
     public List<LichHen> getAll() {
-        return danhSach;
+        return lichHenRepository.findAll();
     }
 
     public Optional<LichHen> getById(Integer id) {
-        return danhSach.stream().filter(l -> l.getMaLichHen().equals(id)).findFirst();
+        Objects.requireNonNull(id, "id must not be null");
+        return lichHenRepository.findById(id);
+    }
+
+    public List<LichHen> getByNguoiDung(Integer maNguoiDung) {
+        Objects.requireNonNull(maNguoiDung, "maNguoiDung must not be null");
+        return lichHenRepository.findByNguoiDung_MaNguoiDung(maNguoiDung);
+    }
+
+    public List<LichHen> getByPhong(Integer maPhong) {
+        Objects.requireNonNull(maPhong, "maPhong must not be null");
+        return lichHenRepository.findByPhong_MaPhong(maPhong);
     }
 
     public LichHen create(LichHen lichHen) {
-        lichHen.setMaLichHen(idCounter.getAndIncrement());
-        if (lichHen.getTrangThaiLichHen() == null) {
-            lichHen.setTrangThaiLichHen(0);
-        }
-        danhSach.add(lichHen);
-        return lichHen;
+        Objects.requireNonNull(lichHen, "lichHen must not be null");
+        return lichHenRepository.save(lichHen);
     }
 
     public Optional<LichHen> update(Integer id, LichHen duLieuMoi) {
-        return getById(id).map(l -> {
-            l.setNgayGioHen(duLieuMoi.getNgayGioHen());
-            l.setSoNguoiDiCung(duLieuMoi.getSoNguoiDiCung());
-            l.setLoiNhan(duLieuMoi.getLoiNhan());
-            l.setLyDoTuChoi(duLieuMoi.getLyDoTuChoi());
-            l.setTrangThaiLichHen(duLieuMoi.getTrangThaiLichHen());
-            return l;
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(duLieuMoi, "duLieuMoi must not be null");
+        return lichHenRepository.findById(id).map(lh -> {
+            lh.setNgayHen(duLieuMoi.getNgayHen());
+            lh.setGioHen(duLieuMoi.getGioHen());
+            lh.setDiaDiem(duLieuMoi.getDiaDiem());
+            lh.setGhiChu(duLieuMoi.getGhiChu());
+            lh.setTrangThai(duLieuMoi.getTrangThai());
+            return lichHenRepository.save(lh);
         });
     }
 
     public boolean delete(Integer id) {
-        return danhSach.removeIf(l -> l.getMaLichHen().equals(id));
+        Objects.requireNonNull(id, "id must not be null");
+        if (lichHenRepository.existsById(id)) {
+            lichHenRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

@@ -3,10 +3,10 @@ package com.nhatro.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "nha_tro")
+@Table(name = "NHA_TRO")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,22 +16,22 @@ public class NhaTro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_nha_tro")
+    @Column(name = "maNhaTro")
     private Integer maNhaTro;
 
-    @Column(name = "ten_nha_tro", nullable = false, length = 150)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "maNguoiDung", nullable = false)
+    private NguoiDung nguoiDung;
+
+    @Column(name = "tenNhaTro", nullable = false, length = 255)
     private String tenNhaTro;
 
-    @Column(name = "dia_chi", nullable = false)
+    @Column(name = "diaChi", nullable = false, length = 500)
     private String diaChi;
 
-    @Column(name = "so_tang")
-    private Integer soTang;
+    @Column(name = "soSao", precision = 2, scale = 1)
+    private BigDecimal soSao;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_chu_tro", nullable = false)
-    private NguoiDung chuTro;
-
-    @Column(name = "ngay_tao", insertable = false, updatable = false)
-    private LocalDateTime ngayTao;
+    @Column(name = "moTa", columnDefinition = "NVARCHAR(MAX)")
+    private String moTa;
 }

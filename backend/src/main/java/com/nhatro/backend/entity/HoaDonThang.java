@@ -2,13 +2,14 @@ package com.nhatro.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "hoa_don_thang")
+@Table(name = "HOA_DON_THANG")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,50 +19,27 @@ public class HoaDonThang {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_hoa_don")
+    @Column(name = "maHoaDon")
     private Integer maHoaDon;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_hop_dong", nullable = false)
+    @JoinColumn(name = "maHopDong", nullable = false)
     private HopDongDienTu hopDong;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_phong", nullable = false)
-    private PhongTro phong;
+    @JoinColumn(name = "maChiSo", nullable = false)
+    private ChiSoDienNuoc chiSo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_chu_tro", nullable = false)
-    private NguoiDung chuTro;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_nguoi_thue", nullable = false)
-    private NguoiDung nguoiThue;
-
-    @Column(name = "thang_nam", nullable = false, length = 7)
-    private String thangNam;
-
-    @Column(name = "tien_xe")
-    private BigDecimal tienXe;
-
-    @Column(name = "tien_wifi")
-    private BigDecimal tienWifi;
-
-    @Column(name = "tien_phong")
-    private BigDecimal tienPhong;
-
-    @Column(name = "tong_tien", nullable = false)
+    @Column(name = "tongTien", precision = 18, scale = 2)
     private BigDecimal tongTien;
 
-    @Column(name = "trang_thai_thanh_toan", nullable = false)
-    private Integer trangThaiThanhToan;
+    @CreationTimestamp
+    @Column(name = "ngayLap", updatable = false)
+    private LocalDateTime ngayLap;
 
-    @Column(name = "ngay_tao")
-    private LocalDateTime ngayTao;
+    @Column(name = "hanThanhToan")
+    private LocalDate hanThanhToan;
 
-    @Column(name = "ngay_thanh_toan")
-    private LocalDateTime ngayThanhToan;
-
-    @UpdateTimestamp
-    @Column(name = "ngay_cap_nhat")
-    private LocalDateTime ngayCapNhat;
+    @Column(name = "trangThai", length = 50)
+    private String trangThai;
 }
