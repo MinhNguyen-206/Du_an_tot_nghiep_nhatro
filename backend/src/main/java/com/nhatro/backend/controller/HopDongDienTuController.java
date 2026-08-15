@@ -10,7 +10,7 @@ import java.util.List;
 
 @Tag(name = "Hợp đồng điện tử", description = "Quản lý hợp đồng thuê nhà")
 @RestController
-@RequestMapping("/api/hop-dong")
+@RequestMapping("/api/hop-dong-dien-tu")
 public class HopDongDienTuController {
 
     private final HopDongDienTuService hopDongDienTuService;

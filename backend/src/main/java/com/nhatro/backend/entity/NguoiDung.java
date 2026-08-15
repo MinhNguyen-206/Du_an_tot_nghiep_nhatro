@@ -22,7 +22,7 @@ public class NguoiDung {
     @Column(name = "maNguoiDung")
     private Integer maNguoiDung;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "maVaiTro", nullable = false)
     private VaiTro vaiTro;
 

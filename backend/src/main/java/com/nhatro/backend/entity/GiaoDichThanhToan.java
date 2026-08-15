@@ -1,4 +1,4 @@
-package com.nhatro.backend.entity;
+﻿package com.nhatro.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +19,7 @@ public class GiaoDichThanhToan {
     @Column(name = "maGiaoDich")
     private Integer maGiaoDich;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "maThanhToan", nullable = false)
     private ThanhToanTienTro thanhToan;
 
