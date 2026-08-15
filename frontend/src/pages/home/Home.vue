@@ -1,30 +1,22 @@
-﻿<template>
+<template>
   <div class="board">
-    <!-- ================= HERO: BẢNG GHIM ================= -->
+    <!-- ================= HERO: BANNER ẢNH ================= -->
     <section class="hero">
       <Header />
 
-      <div class="hero__pins">
+      <div class="hero__bg">
         <img
-          v-for="(p, i) in heroPins"
-          :key="i"
-          :src="p"
-          class="hero__pin"
-          :style="{ '--i': i }"
-          alt=""
+          src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1600&auto=format&fit=crop&q=80"
+          alt="Phòng trọ"
+          class="hero__bg-img"
         />
+        <div class="hero__overlay"></div>
       </div>
 
       <div class="hero__content">
-        <span class="hero__eyebrow">Sổ tay tìm trọ &middot; cập nhật mỗi giờ</span>
-        <h1 class="hero__headline">
-          <span class="hero__headline-stamp">TÌM</span> PHÒNG,
-          <br />KHÔNG CẦN
-          <br />DÁN CỘT ĐIỆN
-        </h1>
-        <p class="hero__tagline">
-          Trọ · Ký túc xá · Ở ghép · Chung cư mini — mọi tin đăng thật, gom về một bảng.
-        </p>
+        <span class="hero__eyebrow">Hơn 2.400+ phòng trống · cập nhật mỗi giờ</span>
+        <h1 class="hero__headline">Tìm phòng trọ <br /><span class="hero__headline-highlight">ưng ý, dễ dàng</span></h1>
+        <p class="hero__tagline">Trọ · Ký túc xá · Ở ghép · Chung cư mini — mọi tin đăng thật, gom về một chỗ.</p>
 
         <form class="search-card" @submit.prevent="handleSearch">
           <div class="search-card__row">
@@ -35,7 +27,7 @@
               placeholder="Tìm theo khu vực, tên đường, trường học..."
             />
             <select v-model="searchForm.category" class="search-card__select">
-              <option value="">Danh mục</option>
+              <option value="">-- Danh mục --</option>
               <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.label }}</option>
             </select>
             <select v-model="searchForm.province" class="search-card__select">
@@ -44,17 +36,9 @@
               <option value="hn">Hà Nội</option>
               <option value="dn">Đà Nẵng</option>
             </select>
-            <button type="submit" class="search-card__submit">TÌM →</button>
+            <button type="submit" class="search-card__submit">TÌM KIẾM</button>
           </div>
         </form>
-
-        <div class="ticket-strip">
-          <span><strong>2.400+</strong> phòng đang trống</span>
-          <span class="ticket-strip__dot">•</span>
-          <span><strong>18</strong> quận/huyện</span>
-          <span class="ticket-strip__dot">•</span>
-          <span>cập nhật theo giờ</span>
-        </div>
 
         <div class="keyword-tags">
           <button
@@ -367,80 +351,89 @@ function goToPage(page) {
 /* ================= HERO ================= */
 .hero {
   position: relative;
-  min-height: 560px;
-  padding: 96px 32px 56px;
+  height: 480px;
   overflow: hidden;
-  background:
-    radial-gradient(rgba(0,0,0,0.05) 1px, transparent 1.4px) 0 0/14px 14px,
-    linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%);
-}
-.hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 90px);
-  pointer-events: none;
-}
-
-.hero__pins {
-  position: absolute;
-  top: 92px;
-  right: 32px;
   display: flex;
-  gap: 12px;
-  z-index: 3;
-}
-.hero__pin {
-  width: 64px; height: 64px;
-  object-fit: cover;
-  border: 4px solid var(--paper);
-  border-radius: 4px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
-  transform: rotate(calc(var(--i) * 6deg - 6deg));
-  display: none;
+  align-items: center;
+  justify-content: center;
 }
 
-.hero__content { position: relative; z-index: 2; max-width: 620px; margin: 0 auto; text-align: center; }
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.45) 0%,
+    rgba(0,0,0,0.55) 50%,
+    rgba(0,0,0,0.7) 100%
+  );
+}
+
+.hero__content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+  width: 100%;
+  padding: 80px 24px 32px;
+  text-align: center;
+  margin: 0 auto;
+}
+
 .hero__eyebrow {
   display: inline-block;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--mustard);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
+  background: rgba(255,255,255,0.08);
+  padding: 5px 14px;
+  border-radius: 99px;
+  backdrop-filter: blur(4px);
 }
 .hero__headline {
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   font-family: 'Archivo Black', sans-serif;
-  font-size: 42px;
-  line-height: 1.12;
-  color: var(--paper);
-  letter-spacing: 0.5px;
+  font-size: 38px;
+  line-height: 1.2;
+  color: #ffffff;
+  letter-spacing: 0.3px;
 }
-.hero__headline-stamp {
-  display: inline-block;
-  color: var(--paper);
-  background: var(--brick);
-  padding: 2px 12px;
-  border-radius: 3px;
-  transform: rotate(-3deg);
-  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+.hero__headline-highlight {
+  color: var(--mustard);
 }
-.hero__tagline { margin: 0 0 32px; font-size: 15px; color: rgba(241,232,206,0.85); }
+.hero__tagline {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+}
 
 .search-card {
-  background: var(--paper);
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 16px 34px rgba(0,0,0,0.3);
-  transform: rotate(-0.6deg);
+  background: rgba(255,255,255,0.96);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
 }
 .search-card__row { display: flex; gap: 6px; flex-wrap: wrap; }
 .search-card__input {
   flex: 1.6; min-width: 160px;
   border: none; outline: none;
-  background: var(--paper-dark);
-  border-radius: 6px;
+  background: #f4f6f9;
+  border-radius: 8px;
   padding: 12px 14px;
   font-size: 14px;
   font-family: inherit;
@@ -449,8 +442,8 @@ function goToPage(page) {
 .search-card__select {
   flex: 1; min-width: 110px;
   border: none; outline: none;
-  background: var(--paper-dark);
-  border-radius: 6px;
+  background: #f4f6f9;
+  border-radius: 8px;
   padding: 12px 10px;
   font-size: 13px;
   font-family: inherit;
@@ -458,40 +451,33 @@ function goToPage(page) {
 }
 .search-card__submit {
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--brick);
-  color: var(--paper);
-  font-family: 'Archivo Black', sans-serif;
+  color: #fff;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.5px;
   padding: 12px 22px;
   cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
 }
 .search-card__submit:hover { background: var(--brick-dark); }
 
-.ticket-strip {
-  margin-top: 22px;
-  font-size: 13px;
-  color: rgba(241,232,206,0.9);
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.ticket-strip strong { color: var(--mustard); }
-.ticket-strip__dot { opacity: 0.5; }
-
-.keyword-tags { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.keyword-tags { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .keyword-tags__tag {
-  border: 1px dashed rgba(241,232,206,0.5);
-  background: transparent;
-  color: rgba(241,232,206,0.9);
+  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.9);
   font-size: 12px;
-  padding: 6px 13px;
+  padding: 5px 13px;
   border-radius: 999px;
   cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
 }
-.keyword-tags__tag:hover { background: rgba(241,232,206,0.12); }
+.keyword-tags__tag:hover { background: rgba(255,255,255,0.2); }
 
 /* ================= SECTION GENERIC ================= */
 .section { max-width: 1180px; margin: 0 auto; padding: 56px 28px; }
