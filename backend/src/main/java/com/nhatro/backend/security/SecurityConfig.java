@@ -2,6 +2,7 @@ package com.nhatro.backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -50,9 +51,14 @@ public class SecurityConfig {
         return source;
     }
 
+    // ===========================================================================
+    // Filter Chain 1: REST API (/api/**) - JWT Stateless (giu nguyen logic cu)
+    // ===========================================================================
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
+                .securityMatcher("/api/**")
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session
@@ -66,7 +72,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml",
-                                "/error")            // Bat buoc: Spring Boot forward ve /error khi co exception
+                                "/error")
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/nguoi-dung").permitAll()
                         .requestMatchers(HttpMethod.GET,
@@ -124,6 +130,53 @@ public class SecurityConfig {
                         // Tat ca nhung gi con lai: bat buoc phai dang nhap
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    // ===========================================================================
+    // Filter Chain 2: JSP Web Pages - Session-based authentication
+    // ===========================================================================
+    @Bean
+    @Order(2)
+    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/**")
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .authorizeHttpRequests(auth -> auth
+                        // Cong khai: trang dang nhap, dang ky, tai nguyen tinh, swagger
+                        .requestMatchers(
+                                "/login",
+                                "/register",
+                                "/forgot-password",
+                                "/otp-verify",
+                                "/static/**",
+                                "/favicon.ico",
+                                "/error",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**")
+                        .permitAll()
+
+                        // Trang admin: chi ADMIN
+                        .requestMatchers("/admin/**")
+                        .hasAuthority(ADMIN)
+
+                        // Tat ca cac trang JSP con lai: cho phep (kiem soat phan quyen o Controller)
+                        .anyRequest().permitAll())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/do-login")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error=true")
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll());
 
         return http.build();
     }
