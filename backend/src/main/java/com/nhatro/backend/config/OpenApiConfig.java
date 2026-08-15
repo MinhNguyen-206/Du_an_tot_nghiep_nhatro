@@ -35,7 +35,9 @@ public class OpenApiConfig {
                                                                 .type(SecurityScheme.Type.HTTP)
                                                                 .scheme("bearer")
                                                                 .bearerFormat("JWT")))
-                                .addSecurityItem(new SecurityRequirement().addList(SCHEME_NAME))
+                                // Khong dung addSecurityItem() global - de tranh Swagger tu dong gan
+                                // "Authorization: Bearer " rong vao /api/auth/login gay ra loi 403.
+                                // Bam nut "Authorize" trong Swagger UI va nhap token sau khi dang nhap.
                                 .tags(Arrays.asList(
                                                 createTag("Xác thực & Đăng nhập",
                                                                 "Đăng nhập, đăng xuất, quản lý token"),
