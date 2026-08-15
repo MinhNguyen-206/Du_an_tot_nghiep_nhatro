@@ -1,16 +1,14 @@
 # Backend (Maven / Java)
-backend/target/
-backend/.mvn/
-backend/mvnw
-backend/mvnw.cmd
+Quan-Ly-Nha-Tro/target/
+Quan-Ly-Nha-Tro/.mvn/
+Quan-Ly-Nha-Tro/mvnw
+Quan-Ly-Nha-Tro/mvnw.cmd
 *.class
 *.jar
 !*.gitkeep
 
-# Frontend (Node)
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
+# Cau hinh chua thong tin nhay cam (giu ban mau .example, bo qua ban that)
+Quan-Ly-Nha-Tro/src/main/resources/application-local.properties
 
 # IDE
 .idea/
