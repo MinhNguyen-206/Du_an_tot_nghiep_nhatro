@@ -1,0 +1,203 @@
+From 6977682035fbe758da672e94c48b32f01e0d82cd Mon Sep 17 00:00:00 2001
+From: Claude Assistant <assistant@example.com>
+Date: Sat, 15 Aug 2026 17:47:52 +0000
+Subject: [PATCH] fix: cap nhat gitignore, go target khoi git, tach config nhay
+ cam, them README
+
+---
+ .gitignore                                    | 14 ++--
+ .../application-local.properties.example      | 11 +++
+ .../src/main/resources/application.properties |  9 ++-
+ .../target/classes/application.properties     | 26 -------
+ .../com/nhatro/backend/controller/.gitkeep    |  0
+ .../com/nhatro/backend/repository/.gitkeep    |  0
+ .../com/nhatro/backend/service/.gitkeep       |  0
+ README.md                                     | 68 +++++++++++++++++++
+ 8 files changed, 91 insertions(+), 37 deletions(-)
+ create mode 100644 Quan-Ly-Nha-Tro/src/main/resources/application-local.properties.example
+ delete mode 100644 Quan-Ly-Nha-Tro/target/classes/application.properties
+ delete mode 100644 Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/controller/.gitkeep
+ delete mode 100644 Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/repository/.gitkeep
+ delete mode 100644 Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/service/.gitkeep
+ create mode 100644 README.md
+
+diff --git a/.gitignore b/.gitignore
+index 4f50ec6..d42d7dd 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,16 +1,14 @@
+ # Backend (Maven / Java)
+-backend/target/
+-backend/.mvn/
+-backend/mvnw
+-backend/mvnw.cmd
++Quan-Ly-Nha-Tro/target/
++Quan-Ly-Nha-Tro/.mvn/
++Quan-Ly-Nha-Tro/mvnw
++Quan-Ly-Nha-Tro/mvnw.cmd
+ *.class
+ *.jar
+ !*.gitkeep
+ 
+-# Frontend (Node)
+-frontend/node_modules/
+-frontend/dist/
+-frontend/.vite/
++# Cau hinh chua thong tin nhay cam (giu ban mau .example, bo qua ban that)
++Quan-Ly-Nha-Tro/src/main/resources/application-local.properties
+ 
+ # IDE
+ .idea/
+diff --git a/Quan-Ly-Nha-Tro/src/main/resources/application-local.properties.example b/Quan-Ly-Nha-Tro/src/main/resources/application-local.properties.example
+new file mode 100644
+index 0000000..465b360
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/resources/application-local.properties.example
+@@ -0,0 +1,11 @@
++# Copy file nay thanh "application-local.properties" (cung thu muc) roi dien
++# mat khau that cua ban. File application-local.properties da duoc .gitignore,
++# se khong bao gio bi commit len GitHub.
++#
++# Cach dung: chay app voi profile "local"
++#   mvn spring-boot:run -Dspring-boot.run.profiles=local
++# hoac set bien moi truong DB_URL / DB_USERNAME / DB_PASSWORD truoc khi chay.
++
++DB_URL=jdbc:sqlserver://localhost:1433;databaseName=QuanLyNhaTro;encrypt=true;trustServerCertificate=true
++DB_USERNAME=sa
++DB_PASSWORD=your_real_password_here
+diff --git a/Quan-Ly-Nha-Tro/src/main/resources/application.properties b/Quan-Ly-Nha-Tro/src/main/resources/application.properties
+index 5413fd7..065cbd6 100644
+--- a/Quan-Ly-Nha-Tro/src/main/resources/application.properties
++++ b/Quan-Ly-Nha-Tro/src/main/resources/application.properties
+@@ -1,7 +1,10 @@
+ # ===================== KET NOI DATABASE (SQL SERVER) =====================
+-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=QuanLyNhaTro;encrypt=true;trustServerCertificate=true
+-spring.datasource.username=sa
+-spring.datasource.password=123456
++# Gia tri lay tu bien moi truong, co fallback cho may local cua ban de tien dev.
++# KHONG commit mat khau that len Git. Xem application-local.properties.example
++# de tao file rieng application-local.properties (da duoc gitignore).
++spring.datasource.url=${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=QuanLyNhaTro;encrypt=true;trustServerCertificate=true}
++spring.datasource.username=${DB_USERNAME:sa}
++spring.datasource.password=${DB_PASSWORD:changeme}
+ spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+ 
+ # ===================== JPA / HIBERNATE =====================
+diff --git a/Quan-Ly-Nha-Tro/target/classes/application.properties b/Quan-Ly-Nha-Tro/target/classes/application.properties
+deleted file mode 100644
+index 5413fd7..0000000
+--- a/Quan-Ly-Nha-Tro/target/classes/application.properties
++++ /dev/null
+@@ -1,26 +0,0 @@
+-# ===================== KET NOI DATABASE (SQL SERVER) =====================
+-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=QuanLyNhaTro;encrypt=true;trustServerCertificate=true
+-spring.datasource.username=sa
+-spring.datasource.password=123456
+-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+-
+-# ===================== JPA / HIBERNATE =====================
+-# Schema da duoc tao san bang file SQL. Dung "none" de Hibernate khong tu y sua cau truc bang.
+-spring.jpa.hibernate.ddl-auto=none
+-spring.jpa.database-platform=org.hibernate.dialect.SQLServerDialect
+-spring.jpa.show-sql=true
+-spring.jpa.properties.hibernate.format_sql=true
+-spring.jpa.open-in-view=false
+-
+-# ===================== SERVER =====================
+-server.port=8080
+-
+-# ===================== JSP VIEW RESOLVER =====================
+-# Controller tra ve ten view (VD: "auth/login") se duoc resolve thanh
+-# /WEB-INF/jsp/auth/login.jsp
+-spring.mvc.view.prefix=/WEB-INF/jsp/
+-spring.mvc.view.suffix=.jsp
+-
+-# ===================== JACKSON (format ngay thang JSON tra ve FE) =====================
+-spring.jackson.date-format=yyyy-MM-dd'T'HH:mm:ss
+-spring.jackson.time-zone=Asia/Ho_Chi_Minh
+diff --git a/Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/controller/.gitkeep b/Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/controller/.gitkeep
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/repository/.gitkeep b/Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/repository/.gitkeep
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/service/.gitkeep b/Quan-Ly-Nha-Tro/target/classes/com/nhatro/backend/service/.gitkeep
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..5fd1c9a
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,68 @@
++# Đồ án tốt nghiệp – Hệ thống Quản lý Nhà trọ
++
++Ứng dụng web quản lý cho thuê nhà trọ / phòng trọ, xây dựng bằng **Spring Boot 3 (Java 21)**, giao diện render phía server bằng **JSP + JSTL**, cơ sở dữ liệu **SQL Server**.
++
++## Cấu trúc thư mục
++
++```
++Quan-Ly-Nha-Tro/
++├── pom.xml
++├── src/
++│   ├── main/
++│   │   ├── java/com/nhatro/backend/
++│   │   │   ├── controller/     # REST + Web controllers
++│   │   │   ├── service/        # Business logic
++│   │   │   ├── repository/     # Spring Data JPA repositories
++│   │   │   ├── entity/         # JPA entities
++│   │   │   ├── dto/            # Request/response DTOs
++│   │   │   ├── security/       # JWT filter, Spring Security config
++│   │   │   ├── config/         # CORS, OpenAPI/Swagger config
++│   │   │   └── exception/      # Global exception handling
++│   │   ├── resources/
++│   │   │   └── application.properties
++│   │   └── webapp/
++│   │       ├── WEB-INF/jsp/    # Giao diện JSP theo từng module
++│   │       └── resources/js/   # JS tĩnh (gọi API)
++│   └── test/                   # Unit test
++└── target/                     # Build output (không commit)
++```
++
++## Các module chức năng chính
++
++Xác thực (Auth) · Người dùng & phân quyền · Nhà trọ / Phòng trọ · Đăng tin · Hợp đồng điện tử & Premium · Hoá đơn tháng / Premium · Thanh toán cọc & giao dịch thanh toán · Chỉ số điện nước · Yêu cầu thuê · Lịch hẹn · Đánh giá · Tin nhắn · Thông báo · Xác thực eKYC · Nhật ký hoạt động · Báo cáo · Cấu hình danh mục · Gói dịch vụ & đăng ký gói chủ trọ.
++
++## Yêu cầu môi trường
++
++- JDK 21
++- Maven 3.9+
++- SQL Server (đã tạo sẵn database `QuanLyNhaTro` theo schema, project dùng `ddl-auto=none`)
++
++## Cài đặt & chạy
++
++1. Clone repo:
++   ```bash
++   git clone https://github.com/MinhNguyen-206/Du_an_tot_nghiep_nhatro.git
++   cd Du_an_tot_nghiep_nhatro/Quan-Ly-Nha-Tro
++   ```
++
++2. Cấu hình kết nối database — **không sửa trực tiếp `application.properties`**, thay vào đó:
++   - Copy `src/main/resources/application-local.properties.example` thành `application-local.properties` rồi điền thông tin thật, **hoặc**
++   - Set biến môi trường trước khi chạy:
++     ```bash
++     export DB_URL="jdbc:sqlserver://localhost:1433;databaseName=QuanLyNhaTro;encrypt=true;trustServerCertificate=true"
++     export DB_USERNAME=sa
++     export DB_PASSWORD=your_password
++     ```
++
++3. Build & chạy:
++   ```bash
++   mvn spring-boot:run
++   ```
++   Ứng dụng chạy tại `http://localhost:8080`.
++
++4. Swagger UI (tài liệu API): `http://localhost:8080/swagger-ui.html`
++
++## Ghi chú
++
++- File cấu hình chứa mật khẩu thật (`application-local.properties`) đã được `.gitignore`, tuyệt đối không commit lên Git.
++- Thư mục `target/` là build output, không nên commit — đã được thêm vào `.gitignore`.
+-- 
+2.43.0
+
