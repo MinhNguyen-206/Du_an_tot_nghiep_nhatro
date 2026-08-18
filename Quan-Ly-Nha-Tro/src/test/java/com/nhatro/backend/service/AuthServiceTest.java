@@ -26,7 +26,8 @@ class AuthServiceTest {
 
         // Mock NguoiDungService
         NguoiDungService nguoiDungService = mock(NguoiDungService.class);
-        AuthService authService = new AuthService(nguoiDungService, jwtUtil, passwordEncoder);
+        MailService mailService = mock(MailService.class);
+        AuthService authService = new AuthService(nguoiDungService, jwtUtil, passwordEncoder, mailService);
 
         // Tao NguoiDung mau co mat khau ma hoa sai
         VaiTro vaiTro = VaiTro.builder().maVaiTro(3).tenVaiTro("Người thuê").trangThai(true).build();

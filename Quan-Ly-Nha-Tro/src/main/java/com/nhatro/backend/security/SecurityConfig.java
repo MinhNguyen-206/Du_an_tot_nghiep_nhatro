@@ -6,10 +6,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -46,6 +46,24 @@ public class SecurityConfig {
                                                                 "/api/auth/**",
                                                                 "/swagger-ui/**",
                                                                 "/v3/api-docs/**")
+                                                .permitAll()
+                                                // ===================== CAC TRANG JSP (giao dien web,
+                                                // khong can dang nhap de xem) =====================
+                                                .requestMatchers(HttpMethod.GET,
+                                                                "/",
+                                                                "/login",
+                                                                "/register",
+                                                                "/forgot-password",
+                                                                "/reset-password",
+                                                                "/rooms",
+                                                                "/rooms/**",
+                                                                "/resources/**",
+                                                                // Spring MVC forward noi bo toi day de render JSP
+                                                                // (vi du: return "home/home" -> forward toi
+                                                                // /WEB-INF/jsp/home/home.jsp). Spring Security kiem
+                                                                // tra lai tu dau khi forward, nen phai permitAll
+                                                                // luon duong dan JSP thuc te nay.
+                                                                "/WEB-INF/**")
                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/api/nguoi-dung").permitAll()
                                                 .requestMatchers(HttpMethod.GET,

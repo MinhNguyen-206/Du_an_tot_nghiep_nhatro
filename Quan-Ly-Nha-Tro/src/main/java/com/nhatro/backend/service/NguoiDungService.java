@@ -68,4 +68,15 @@ public class NguoiDungService {
         }
         return false;
     }
+
+    // Dung rieng cho luong "quen mat khau": ma hoa va ghi de mat khau moi.
+    public void updatePassword(Integer id, String matKhauMoi) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(matKhauMoi, "matKhauMoi must not be null");
+        NguoiDung nd = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Người dùng không tồn tại"));
+        nd.setMatKhau(passwordEncoder.encode(matKhauMoi));
+        nd.setNgayCapNhat(LocalDateTime.now());
+        nguoiDungRepository.save(nd);
+    }
 }
