@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
 
@@ -433,3 +434,21 @@
 
 </body>
 </html>
+=======
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>${tieuDe} - Room Connect</title>
+</head>
+<body>
+
+<%-- Vi du: bien "tieuDe" duoc PageController.java truyen sang qua Model --%>
+<h1>${tieuDe}</h1>
+
+<%-- TODO: noi dung trang Trang chủ --%>
+
+</body>
+</html>
+>>>>>>> 1d4d66bcf64b749d3a09fd66a4d5bf639a706a85
