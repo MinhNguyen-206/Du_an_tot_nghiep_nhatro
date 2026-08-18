@@ -1,0 +1,25 @@
+# Backend (Maven / Java)
+Quan-Ly-Nha-Tro/target/
+Quan-Ly-Nha-Tro/.mvn/
+Quan-Ly-Nha-Tro/mvnw
+Quan-Ly-Nha-Tro/mvnw.cmd
+*.class
+*.jar
+!*.gitkeep
+
+# Cau hinh chua thong tin nhay cam (giu ban mau .example, bo qua ban that)
+Quan-Ly-Nha-Tro/src/main/resources/application-local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.local
+*.log
