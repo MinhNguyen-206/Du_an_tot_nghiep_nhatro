@@ -36,6 +36,16 @@ public class PageController {
         return "auth/register";
     }
 
+    @GetMapping("/forgot-password")
+    public String quenMatKhau() {
+        return "auth/forgotPassword";
+    }
+
+    @GetMapping("/reset-password")
+    public String datLaiMatKhau() {
+        return "auth/resetPassword";
+    }
+
     @GetMapping("/rooms")
     public String danhSachPhong() {
         return "room/roomList";

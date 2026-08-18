@@ -47,6 +47,30 @@ async function apiFetch(path, options = {}) {
 // ---- Vi du cac ham goi API cu the (tuong duong cac file api/*.js ben Vue) ----
 const AuthApi = {
   login: (email, password) => apiFetch("/auth/login", { method: "POST", body: { email, password } }),
+
+  // Chua co AuthController.register() rieng ben BE, nen dung tam endpoint
+  // POST /api/nguoi-dung (NguoiDungController.create) - endpoint nay da
+  // permitAll trong SecurityConfig va da tu hash mat khau trong
+  // NguoiDungService.create(). maVaiTro: 2 = Chu tro, 3 = Nguoi thue.
+  register: ({ hoTen, email, soDienThoai, matKhau, maVaiTro }) =>
+    apiFetch("/nguoi-dung", {
+      method: "POST",
+      body: {
+        hoTen,
+        email,
+        soDienThoai,
+        matKhau,
+        vaiTro: { maVaiTro },
+      },
+    }),
+
+  // Gui yeu cau khoi phuc mat khau - BE se gui email chua link dat lai mat khau
+  // (xem AuthController.forgotPassword / MailService).
+  forgotPassword: (email) => apiFetch("/auth/forgot-password", { method: "POST", body: { email } }),
+
+  // Dat lai mat khau bang token lay tu link trong email (query param ?token=...)
+  resetPassword: (token, matKhauMoi) =>
+    apiFetch("/auth/reset-password", { method: "POST", body: { token, matKhauMoi } }),
 };
 
 const PhongTroApi = {
