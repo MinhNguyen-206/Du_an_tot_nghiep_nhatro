@@ -311,3 +311,60 @@ body.auth-body {
         padding: 32px 24px;
     }
 }
+/* ===== Divider "hoặc" ===== */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.auth-divider span {
+    padding: 0 12px;
+}
+
+/* ===== Nút đăng nhập Google ===== */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    color: #3c4043;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.15);
+    border-color: #d2d5d9;
+}
+
+.btn-google:active {
+    background-color: #f1f3f4;
+}
+
+.btn-google .google-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}

@@ -17,7 +17,7 @@ public class HomeController {
      * TRANG CHỦ
      * ============================================================
      */
-    @GetMapping({"/", "/home"})
+    @GetMapping({"/home"})
     public String home() {
         return "home/home";
     }
