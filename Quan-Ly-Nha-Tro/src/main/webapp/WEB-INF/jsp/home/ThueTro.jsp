@@ -1,9 +1,3 @@
-<%@ page language="java"
-         contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8"%>
-
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <!DOCTYPE html>
 
 <html lang="vi">
@@ -12,13 +6,11 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Thuê Phòng Trọ - ROOM - CONNECT</title>
 
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -37,7 +29,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -240,7 +232,7 @@
 
         .card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }
 
         .card-img {
@@ -376,37 +368,86 @@
             }
 
         }
-
     </style>
 
 </head>
 
 <body>
 
-<nav class="navbar">
+    <nav class="navbar">
 
-    <a href="${pageContext.request.contextPath}/thue-tro"
-       class="logo">
+        <a href="${pageContext.request.contextPath}/thue-tro" class="logo">
 
-        ROOM - CONNECT
-
-    </a>
-
-    <div class="nav-links">
-
-        <a href="${pageContext.request.contextPath}/thue-tro"
-           class="active">
-
-            Thuê trọ
+            ROOM - CONNECT
 
         </a>
 
-        <a href="${pageContext.request.contextPath}/thue-can-ho">
+        <div class="nav-links">
 
-            Thuê căn hộ
+            <a href="${pageContext.request.contextPath}/thue-tro" class="active">
 
+                Thuê trọ
+
+            </a>
+
+            <a href="${pageContext.request.contextPath}/thue-can-ho">
+
+                Thuê căn hộ
+
+            </a>
+
+            <a href="#">
+
+                Về chúng tôi
+
+            </a>
+
+            <a href="#">
+
+                Liên hệ
+
+            </a>
+
+        </div>
+
+        <div class="search-bar-top">
+
+            🔍
+
+            <input type="text" placeholder="Tìm kiếm phòng trọ...">
+
+        </div>
+
+        <div class="user-actions">
+
+            <span>🔔</span>
+
+            <button class="user-btn">
+
+                Khách
+
+            </button>
+
+        </div>
+
+    </nav>
+
+
+    <div class="promo-banner">
+
+        Đăng ký & Xác Minh Chủ Trọ:
+        Miễn Phí 30 Ngày Premium Bạc
+
+<<<<<<< HEAD
+        <a href="#">
+            Đăng ký ngay
         </a>
 
+        |
+
+        <a href="#">
+            Điều khoản
+=======
         <a href="${pageContext.request.contextPath}/gioi-thieu">
 
             Về chúng tôi
@@ -417,326 +458,279 @@
 
             Liên hệ
 
+>>>>>>> origin/main
         </a>
 
     </div>
 
-    <div class="search-bar-top">
 
-        🔍
+    <div class="container">
 
-        <input type="text"
-               placeholder="Tìm kiếm phòng trọ...">
+        <div class="page-header">
 
-    </div>
+            <h1 class="page-title">
 
-    <div class="user-actions">
+                ${pageTitle}
 
-        <span>🔔</span>
+                <span>
+                    (Hiển thị ${resultCount} kết quả)
+                </span>
 
-        <button class="user-btn">
+            </h1>
 
-            Khách
+            <div>
 
-        </button>
+                Sắp xếp theo:
 
-    </div>
+                <select style="padding:5px;border-radius:6px;">
 
-</nav>
+                    <option>Gợi ý</option>
+                    <option>Giá thấp đến cao</option>
+                    <option>Giá cao đến thấp</option>
 
+                </select>
 
-<div class="promo-banner">
+            </div>
 
-    Đăng ký & Xác Minh Chủ Trọ:
-    Miễn Phí 30 Ngày Premium Bạc
-
-    <a href="#">
-        Đăng ký ngay
-    </a>
-
-    |
-
-    <a href="#">
-        Điều khoản
-    </a>
-
-</div>
+        </div>
 
 
-<div class="container">
+        <div class="layout-grid">
 
-    <div class="page-header">
 
-        <h1 class="page-title">
+            <!-- FILTER -->
 
-            ${pageTitle}
+            <aside class="filter-sidebar">
 
-            <span>
-                (Hiển thị ${resultCount} kết quả)
-            </span>
+                <div class="filter-group">
 
-        </h1>
+                    <div class="filter-title">
+                        Khu vực
+                    </div>
 
-        <div>
+                    <select class="filter-select">
 
-            Sắp xếp theo:
+                        <option>TP. Hồ Chí Minh</option>
+                        <option>Hà Nội</option>
+                        <option>Đà Nẵng</option>
 
-            <select style="padding:5px;border-radius:6px;">
+                    </select>
 
-                <option>Gợi ý</option>
-                <option>Giá thấp đến cao</option>
-                <option>Giá cao đến thấp</option>
+                </div>
 
-            </select>
+
+                <div class="filter-group">
+
+                    <div class="filter-title">
+                        Khoảng giá
+                    </div>
+
+                    <div class="range-inputs">
+
+                        <input type="text" class="filter-input" placeholder="Thấp nhất">
+
+                        <span>-</span>
+
+                        <input type="text" class="filter-input" placeholder="Cao nhất">
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-group">
+
+                    <div class="filter-title">
+                        Loại phòng
+                    </div>
+
+                    <div class="checkbox-group">
+
+                        <label>
+                            <input type="checkbox">
+                            Chung cư mini
+                        </label>
+
+                        <label>
+                            <input type="checkbox">
+                            Kí túc xá
+                        </label>
+
+                        <label>
+                            <input type="checkbox">
+                            Phòng trọ
+                        </label>
+
+                        <label>
+                            <input type="checkbox">
+                            Studio
+                        </label>
+
+                        <label>
+                            <input type="checkbox">
+                            Nhà nguyên căn
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-group">
+
+                    <div class="filter-title">
+                        Tiện ích
+                    </div>
+
+                    <div class="pill-group">
+
+                        <span class="pill-btn active">
+                            Wifi ✔
+                        </span>
+
+                        <span class="pill-btn active">
+                            Điều hòa ✔
+                        </span>
+
+                        <span class="pill-btn">
+                            Giữ xe
+                        </span>
+
+                        <span class="pill-btn">
+                            Camera
+                        </span>
+
+                        <span class="pill-btn">
+                            Nuôi thú
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+
+            <!-- DANH SÁCH PHÒNG -->
+
+            <main class="cards-grid">
+
+                <c:forEach var="room" items="${rooms}">
+
+                    <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${room.id}" class="card">
+
+                        <span class="card-tag">
+                            Nổi bật
+                        </span>
+
+                        <span class="card-heart">
+                            ♡
+                        </span>
+
+                        <img class="card-img" src="${room.image}" alt="${room.title}">
+
+                        <div class="card-body">
+
+                            <div class="card-category">
+
+                                ${room.category}
+
+                            </div>
+
+                            <h2 class="card-title">
+
+                                ${room.title}
+
+                            </h2>
+
+                            <div class="card-location">
+
+                                📍 ${room.location}
+
+                            </div>
+
+                            <div class="card-amenities">
+
+                                <span class="card-amenity">
+                                    📶 Wifi
+                                </span>
+
+                                <span class="card-amenity">
+                                    ❄ Điều hòa
+                                </span>
+
+                            </div>
+
+                            <div class="card-price">
+
+                                ${room.price}
+
+                                <span>
+                                    VND/Tháng
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </a>
+
+                </c:forEach>
+
+            </main>
+
+        </div>
+
+
+        <div class="pagination">
+
+            <a href="#" class="page-num">
+                &lt;
+            </a>
+
+            <a href="#" class="page-num active">
+                1
+            </a>
+
+            <a href="#" class="page-num">
+                2
+            </a>
+
+            <a href="#" class="page-num">
+                3
+            </a>
+
+            <a href="#" class="page-num">
+                ...
+            </a>
+
+            <a href="#" class="page-num">
+                12
+            </a>
+
+            <a href="#" class="page-num">
+                &gt;
+            </a>
 
         </div>
 
     </div>
 
 
-    <div class="layout-grid">
+    <footer class="footer">
 
+        <div class="footer-logo">
+            Room connect
+        </div>
 
-        <!-- FILTER -->
+        <p style="font-size:12px;color:#ccc;">
 
-        <aside class="filter-sidebar">
+            Nền tảng tìm kiếm phòng trọ thế hệ mới.
+            Hiện đại và tiện dụng cho tất cả mọi người.
 
-            <div class="filter-group">
+        </p>
 
-                <div class="filter-title">
-                    Khu vực
-                </div>
-
-                <select class="filter-select">
-
-                    <option>TP. Hồ Chí Minh</option>
-                    <option>Hà Nội</option>
-                    <option>Đà Nẵng</option>
-
-                </select>
-
-            </div>
-
-
-            <div class="filter-group">
-
-                <div class="filter-title">
-                    Khoảng giá
-                </div>
-
-                <div class="range-inputs">
-
-                    <input type="text"
-                           class="filter-input"
-                           placeholder="Thấp nhất">
-
-                    <span>-</span>
-
-                    <input type="text"
-                           class="filter-input"
-                           placeholder="Cao nhất">
-
-                </div>
-
-            </div>
-
-
-            <div class="filter-group">
-
-                <div class="filter-title">
-                    Loại phòng
-                </div>
-
-                <div class="checkbox-group">
-
-                    <label>
-                        <input type="checkbox">
-                        Chung cư mini
-                    </label>
-
-                    <label>
-                        <input type="checkbox">
-                        Kí túc xá
-                    </label>
-
-                    <label>
-                        <input type="checkbox">
-                        Phòng trọ
-                    </label>
-
-                    <label>
-                        <input type="checkbox">
-                        Studio
-                    </label>
-
-                    <label>
-                        <input type="checkbox">
-                        Nhà nguyên căn
-                    </label>
-
-                </div>
-
-            </div>
-
-
-            <div class="filter-group">
-
-                <div class="filter-title">
-                    Tiện ích
-                </div>
-
-                <div class="pill-group">
-
-                    <span class="pill-btn active">
-                        Wifi ✔
-                    </span>
-
-                    <span class="pill-btn active">
-                        Điều hòa ✔
-                    </span>
-
-                    <span class="pill-btn">
-                        Giữ xe
-                    </span>
-
-                    <span class="pill-btn">
-                        Camera
-                    </span>
-
-                    <span class="pill-btn">
-                        Nuôi thú
-                    </span>
-
-                </div>
-
-            </div>
-
-        </aside>
-
-
-        <!-- DANH SÁCH PHÒNG -->
-
-        <main class="cards-grid">
-
-            <c:forEach var="room" items="${rooms}">
-
-                <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${room.id}"
-                   class="card">
-
-                    <span class="card-tag">
-                        Nổi bật
-                    </span>
-
-                    <span class="card-heart">
-                        ♡
-                    </span>
-
-                    <img class="card-img"
-                         src="${room.image}"
-                         alt="${room.title}">
-
-                    <div class="card-body">
-
-                        <div class="card-category">
-
-                                ${room.category}
-
-                        </div>
-
-                        <h2 class="card-title">
-
-                                ${room.title}
-
-                        </h2>
-
-                        <div class="card-location">
-
-                            📍 ${room.location}
-
-                        </div>
-
-                        <div class="card-amenities">
-
-                            <span class="card-amenity">
-                                📶 Wifi
-                            </span>
-
-                            <span class="card-amenity">
-                                ❄ Điều hòa
-                            </span>
-
-                        </div>
-
-                        <div class="card-price">
-
-                                ${room.price}
-
-                            <span>
-                                VND/Tháng
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </a>
-
-            </c:forEach>
-
-        </main>
-
-    </div>
-
-
-    <div class="pagination">
-
-        <a href="#" class="page-num">
-            &lt;
-        </a>
-
-        <a href="#" class="page-num active">
-            1
-        </a>
-
-        <a href="#" class="page-num">
-            2
-        </a>
-
-        <a href="#" class="page-num">
-            3
-        </a>
-
-        <a href="#" class="page-num">
-            ...
-        </a>
-
-        <a href="#" class="page-num">
-            12
-        </a>
-
-        <a href="#" class="page-num">
-            &gt;
-        </a>
-
-    </div>
-
-</div>
-
-
-<footer class="footer">
-
-    <div class="footer-logo">
-        Room connect
-    </div>
-
-    <p style="font-size:12px;color:#ccc;">
-
-        Nền tảng tìm kiếm phòng trọ thế hệ mới.
-        Hiện đại và tiện dụng cho tất cả mọi người.
-
-    </p>
-
-</footer>
+    </footer>
 
 </body>
 

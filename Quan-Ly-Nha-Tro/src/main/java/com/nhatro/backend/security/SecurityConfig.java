@@ -6,6 +6,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -17,22 +20,14 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+                            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
+  
     // =====================================================
-    // PASSWORD ENCODER
-    // =====================================================
-
-//     @Bean
-//     public PasswordEncoder passwordEncoder() {
-//         return new BCryptPasswordEncoder();
-//     }
-
-    // =====================================================
-    // ROLE
+    // ROLES CONSTANTS
     // =====================================================
 
     private static final String ADMIN = "ROLE_ADMIN";
@@ -44,160 +39,82 @@ public class SecurityConfig {
     // =====================================================
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-
-                // =================================================
-                // CORS
-                // =================================================
-
+                // 1. CORS & CSRF & SESSION STATELESS
                 .cors(Customizer.withDefaults())
-
-                // =================================================
-                // JWT -> TẮT CSRF
-                // =================================================
-
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // =================================================
-                // PHÂN QUYỀN REQUEST
-                // =================================================
-
+                // 2. PHÂN QUYỀN REQUEST
                 .authorizeHttpRequests(auth -> auth
 
-                        // =================================================
-                        // 1. OPTIONS
-                        // =================================================
+                        // Cross-Origin Preflight Request
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // Static resources & WEB-INF
                         .requestMatchers(
-                                HttpMethod.OPTIONS,
-                                "/**"
+                                "/resources/**",
+                                "/static/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/img/**",
+                                "/favicon.ico",
+                                "/WEB-INF/**"
                         ).permitAll()
 
-                        // =================================================
-                        // 2. API AUTH + SWAGGER
-                        // =================================================
-
+                        // Auth API, OAuth2 & Swagger Documentation
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/swagger-ui/**",
+                                "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // =================================================
-                        // 3. TRANG JSP CÔNG KHAI
-                        // =================================================
-
+                        // Các trang View JSP công khai
                         .requestMatchers(
-                                HttpMethod.GET,
-
-                                // -----------------------------
-                                // Trang chủ
-                                // -----------------------------
-
                                 "/",
                                 "/home",
-
-                                // -----------------------------
-                                // Login / Register
-                                // -----------------------------
-
                                 "/login",
                                 "/register",
                                 "/forgot-password",
                                 "/reset-password",
                                 "/chon-vai-tro",
                                 "/oauth2-redirect",
-
-                                // -----------------------------
-                                // Về chúng tôi / Liên hệ
-                                // -----------------------------
-
+                                "/logout",
                                 "/gioi-thieu",
                                 "/lien-he",
-
-                                // -----------------------------
-                                // Danh mục
-                                // -----------------------------
-
                                 "/thue-tro",
                                 "/thue-can-ho",
-
-                                // -----------------------------
-                                // Chi tiết phòng
-                                // -----------------------------
-
                                 "/chi-tiet-phong",
                                 "/chi-tiet-phong/**",
-
-                                // -----------------------------
-                                // Danh sách phòng
-                                // -----------------------------
-
                                 "/rooms",
-                                "/rooms/**",
-
-                                // -----------------------------
-                                // Static
-                                // -----------------------------
-
-                                "/resources/**",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/img/**",
-                                "/static/**",
-
-                                // -----------------------------
-                                // JSP
-                                // -----------------------------
-
-                                "/WEB-INF/**"
-
+                                "/rooms/**"
                         ).permitAll()
 
-                        // =================================================
-                        // 4. API ĐĂNG KÝ
-                        // =================================================
+                        // Admin Dashboard (view JSP)
+                        .requestMatchers("/admin/**").permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/nguoi-dung"
-                        ).permitAll()
+                        // API Đăng ký tài khoản & Form liên hệ công khai
+                        .requestMatchers(HttpMethod.POST, "/api/nguoi-dung").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/lien-he").permitAll()
 
-                        // =================================================
-                        // 4b. API FORM LIÊN HỆ (CÔNG KHAI)
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/lien-he"
-                        ).permitAll()
-
-                        // =================================================
-                        // 5. API XEM DỮ LIỆU CÔNG KHAI
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.GET,
-
+                        // API xem dữ liệu công khai (GET)
+                        .requestMatchers(HttpMethod.GET,
                                 "/api/phong-tro/**",
                                 "/api/dang-tin/**",
                                 "/api/nha-tro/**",
                                 "/api/danh-gia/**",
                                 "/api/goi-dich-vu/**",
                                 "/api/hinh-anh/**"
-
                         ).permitAll()
 
-                        // =================================================
-                        // 6. CHỈ ADMIN
-                        // =================================================
-
+                        // Quản trị viên (ADMIN)
                         .requestMatchers(
                                 "/api/phan-quyen/**",
                                 "/api/vai-tro/**",
@@ -207,91 +124,29 @@ public class SecurityConfig {
                                 "/api/bo-dieu-khien-ai/**",
                                 "/api/bao-cao/**",
                                 "/api/xac-thuc-ekyc/**"
-
                         ).hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.PUT, "/api/nguoi-dung/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.DELETE, "/api/nguoi-dung/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/api/nguoi-dung").hasAuthority(ADMIN)
 
-                        // =================================================
-                        // ADMIN SỬA NGƯỜI DÙNG
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/nguoi-dung/**"
-
-                        ).hasAuthority(ADMIN)
-
-                        // =================================================
-                        // ADMIN XÓA NGƯỜI DÙNG
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/nguoi-dung/**"
-
-                        ).hasAuthority(ADMIN)
-
-                        // =================================================
-                        // ADMIN XEM DANH SÁCH NGƯỜI DÙNG
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/nguoi-dung"
-
-                        ).hasAuthority(ADMIN)
-
-                        // =================================================
-                        // 7. CHỦ TRỌ + ADMIN
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-
+                        // Chủ trọ & Admin (Tạo / Sửa / Xóa Bài đăng, Nhà trọ, Phòng trọ)
+                        .requestMatchers(HttpMethod.POST,
                                 "/api/nha-tro/**",
                                 "/api/phong-tro/**",
                                 "/api/dang-tin/**"
-
-                        ).hasAnyAuthority(
-                                CHU_TRO,
-                                ADMIN
-                        )
-
-                        // =================================================
-                        // SỬA
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.PUT,
-
+                        ).hasAnyAuthority(CHU_TRO, ADMIN)
+                        .requestMatchers(HttpMethod.PUT,
                                 "/api/nha-tro/**",
                                 "/api/phong-tro/**",
                                 "/api/dang-tin/**"
-
-                        ).hasAnyAuthority(
-                                CHU_TRO,
-                                ADMIN
-                        )
-
-                        // =================================================
-                        // XÓA
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-
+                        ).hasAnyAuthority(CHU_TRO, ADMIN)
+                        .requestMatchers(HttpMethod.DELETE,
                                 "/api/nha-tro/**",
                                 "/api/phong-tro/**",
                                 "/api/dang-tin/**"
+                        ).hasAnyAuthority(CHU_TRO, ADMIN)
 
-                        ).hasAnyAuthority(
-                                CHU_TRO,
-                                ADMIN
-                        )
-
-                        // =================================================
-                        // 8. CHỨC NĂNG CHỦ TRỌ
-                        // =================================================
-
+                        // Chức năng quản lý nghiệp vụ Chủ trọ
                         .requestMatchers(
                                 "/api/chi-so-dien-nuoc/**",
                                 "/api/hoa-don-thang/**",
@@ -299,57 +154,30 @@ public class SecurityConfig {
                                 "/api/hop-dong-premium/**",
                                 "/api/hoa-don-premium/**",
                                 "/api/gia-han-hop-dong/**"
+                        ).hasAnyAuthority(CHU_TRO, ADMIN)
 
-                        ).hasAnyAuthority(
-                                CHU_TRO,
-                                ADMIN
-                        )
-
-                        // =================================================
-                        // 9. NGƯỜI THUÊ + CHỦ TRỌ + ADMIN
-                        // =================================================
-
+                        // Yêu cầu thuê & Lịch hẹn
                         .requestMatchers(
                                 "/api/yeu-cau-thue/**",
                                 "/api/lich-hen/**"
+                        ).hasAnyAuthority(NGUOI_THUE, CHU_TRO, ADMIN)
 
-                        ).hasAnyAuthority(
-                                NGUOI_THUE,
-                                CHU_TRO,
-                                ADMIN
-                        )
+                        // Thông tin người dùng cá nhân
+                        .requestMatchers(HttpMethod.GET, "/api/nguoi-dung/**").authenticated()
 
-                        // =================================================
-                        // 10. THÔNG TIN NGƯỜI DÙNG
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/nguoi-dung/**"
-
-                        ).authenticated()
-
-                        // =================================================
-                        // 11. CÒN LẠI
-                        // =================================================
-
+                        // Tất cả các request còn lại yêu cầu đăng nhập
                         .anyRequest().authenticated()
                 )
 
-                // =====================================================
-                // JWT FILTER
-                // =====================================================
+                // 3. JWT FILTER
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                )
-
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureUrl("/login?error=google")
-                );
+                // // 4. OAUTH2 LOGIN
+                // .oauth2Login(oauth2 -> oauth2
+                //         .loginPage("/login")
+                //         .successHandler(oAuth2LoginSuccessHandler)
+                //         .failureUrl("/login?error=google")
+                // );
 
         return http.build();
     }

@@ -1,9 +1,3 @@
-<%@ page language="java"
-         contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8"%>
-
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <!DOCTYPE html>
 
 <html lang="vi">
@@ -12,13 +6,11 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>${room.title} - ROOM - CONNECT</title>
 
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -118,7 +110,7 @@
         .gallery-more-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -358,7 +350,6 @@
             }
 
         }
-
     </style>
 
 </head>
@@ -366,537 +357,527 @@
 <body>
 
 
-<!-- NAVBAR -->
+    <!-- NAVBAR -->
 
-<nav class="navbar">
+    <nav class="navbar">
 
-    <a href="${pageContext.request.contextPath}/thue-tro"
-       class="logo">
+        <a href="${pageContext.request.contextPath}/thue-tro" class="logo">
 
-        ROOM - CONNECT
-
-    </a>
-
-
-    <div class="nav-links">
-
-        <a href="${pageContext.request.contextPath}/thue-tro">
-
-            Thuê trọ
+            ROOM - CONNECT
 
         </a>
 
-        <a href="${pageContext.request.contextPath}/thue-can-ho">
 
-            Thuê căn hộ
+        <div class="nav-links">
 
-        </a>
+            <a href="${pageContext.request.contextPath}/thue-tro">
 
-        <a href="#">
+                Thuê trọ
 
-            Về chúng tôi
+            </a>
 
-        </a>
+            <a href="${pageContext.request.contextPath}/thue-can-ho">
 
-        <a href="#">
+                Thuê căn hộ
 
-            Liên hệ
+            </a>
 
-        </a>
+            <a href="#">
 
-    </div>
+                Về chúng tôi
 
-</nav>
+            </a>
 
+            <a href="#">
 
-<div class="container">
+                Liên hệ
 
+            </a>
 
-    <!-- BREADCRUMB -->
+        </div>
 
-    <div class="breadcrumb">
-
-        <a href="${pageContext.request.contextPath}/thue-tro">
-            Trang chủ
-        </a>
-
-        ›
-
-        <a href="#">
-            Hồ Chí Minh
-        </a>
-
-        ›
-
-        <a href="#">
-            ${room.location}
-        </a>
-
-        ›
-
-        <b>
-            ${room.title}
-        </b>
-
-    </div>
+    </nav>
 
 
-    <!-- GALLERY -->
+    <div class="container">
 
-    <div class="gallery">
 
-        <div class="gallery-main">
+        <!-- BREADCRUMB -->
 
-            <img src="${room.image}"
-                 alt="${room.title}">
+        <div class="breadcrumb">
+
+            <a href="${pageContext.request.contextPath}/thue-tro">
+                Trang chủ
+            </a>
+
+            ›
+
+            <a href="#">
+                Hồ Chí Minh
+            </a>
+
+            ›
+
+            <a href="#">
+                ${room.location}
+            </a>
+
+            ›
+
+            <b>
+                ${room.title}
+            </b>
 
         </div>
 
 
-        <div class="gallery-sub">
+        <!-- GALLERY -->
 
-            <img src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=500&q=80"
-                 alt="Bếp">
+        <div class="gallery">
 
-            <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=500&q=80"
-                 alt="Nhà vệ sinh">
+            <div class="gallery-main">
 
-            <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=500&q=80"
-                 alt="Phòng khách">
+                <img src="${room.image}" alt="${room.title}">
 
-            <div class="gallery-more">
+            </div>
 
-                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&q=80"
-                     alt="Góc khác">
 
-                <div class="gallery-more-overlay">
+            <div class="gallery-sub">
 
-                    <span>▦</span>
+                <img src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=500&q=80"
+                    alt="Bếp">
 
-                    <span>
-                        Xem tất cả 12 ảnh
+                <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=500&q=80"
+                    alt="Nhà vệ sinh">
+
+                <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=500&q=80"
+                    alt="Phòng khách">
+
+                <div class="gallery-more">
+
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&q=80"
+                        alt="Góc khác">
+
+                    <div class="gallery-more-overlay">
+
+                        <span>▦</span>
+
+                        <span>
+                            Xem tất cả 12 ảnh
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- DETAIL -->
+
+        <div class="detail-layout">
+
+
+            <div class="main-info">
+
+
+                <div class="tags">
+
+                    <span class="tag">
+                        CHO THUÊ
+                    </span>
+
+                    <span class="tag red">
+                        ${room.category}
                     </span>
 
                 </div>
 
-            </div>
 
-        </div>
+                <h1 class="title">
 
-    </div>
+                    ${room.title}
 
-
-    <!-- DETAIL -->
-
-    <div class="detail-layout">
+                </h1>
 
 
-        <div class="main-info">
+                <div class="location">
 
-
-            <div class="tags">
-
-                <span class="tag">
-                    CHO THUÊ
-                </span>
-
-                <span class="tag red">
-                    ${room.category}
-                </span>
-
-            </div>
-
-
-            <h1 class="title">
-
-                ${room.title}
-
-            </h1>
-
-
-            <div class="location">
-
-                📍 ${room.address}
-
-            </div>
-
-
-            <!-- SPECS -->
-
-            <div class="specs-bar">
-
-
-                <div class="spec-item">
-
-                    <div class="spec-label">
-                        Giá thuê
-                    </div>
-
-                    <div class="spec-value">
-                        ${room.price}
-                    </div>
+                    📍 ${room.address}
 
                 </div>
 
 
-                <div class="spec-item">
+                <!-- SPECS -->
 
-                    <div class="spec-label">
-                        Diện tích
-                    </div>
+                <div class="specs-bar">
 
-                    <div class="spec-value"
-                         style="color:#333;">
 
-                        ${room.area}
+                    <div class="spec-item">
+
+                        <div class="spec-label">
+                            Giá thuê
+                        </div>
+
+                        <div class="spec-value">
+                            ${room.price}
+                        </div>
 
                     </div>
 
-                </div>
 
+                    <div class="spec-item">
 
-                <div class="spec-item">
+                        <div class="spec-label">
+                            Diện tích
+                        </div>
 
-                    <div class="spec-label">
-                        Tiền cọc
-                    </div>
+                        <div class="spec-value" style="color:#333;">
 
-                    <div class="spec-value"
-                         style="color:#333;">
+                            ${room.area}
 
-                        ${room.deposit}
-
-                    </div>
-
-                </div>
-
-
-                <div class="spec-item">
-
-                    <div class="spec-label">
-                        Trạng thái
-                    </div>
-
-                    <div class="spec-value"
-                         style="color:#333;">
-
-                        ${room.status}
+                        </div>
 
                     </div>
 
+
+                    <div class="spec-item">
+
+                        <div class="spec-label">
+                            Tiền cọc
+                        </div>
+
+                        <div class="spec-value" style="color:#333;">
+
+                            ${room.deposit}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="spec-item">
+
+                        <div class="spec-label">
+                            Trạng thái
+                        </div>
+
+                        <div class="spec-value" style="color:#333;">
+
+                            ${room.status}
+
+                        </div>
+
+                    </div>
+
+
                 </div>
 
 
-            </div>
+                <!-- TIỆN ÍCH -->
 
-
-            <!-- TIỆN ÍCH -->
-
-            <div class="section-title">
-                Tiện ích căn hộ
-            </div>
-
-
-            <div class="amenities-grid">
-
-                <div class="amenity-chip">
-                    📶 Wifi
+                <div class="section-title">
+                    Tiện ích căn hộ
                 </div>
 
-                <div class="amenity-chip">
-                    ❄ Điều hòa
+
+                <div class="amenities-grid">
+
+                    <div class="amenity-chip">
+                        📶 Wifi
+                    </div>
+
+                    <div class="amenity-chip">
+                        ❄ Điều hòa
+                    </div>
+
+                    <div class="amenity-chip">
+                        🧺 Máy giặt
+                    </div>
+
+                    <div class="amenity-chip">
+                        🛡 An ninh 24/7
+                    </div>
+
+                    <div class="amenity-chip">
+                        📹 Camera
+                    </div>
+
+                    <div class="amenity-chip">
+                        🌿 Balcony
+                    </div>
+
+                    <div class="amenity-chip">
+                        🛵 Bãi xe
+                    </div>
+
+                    <div class="amenity-chip">
+                        🧹 Tự do
+                    </div>
+
                 </div>
 
-                <div class="amenity-chip">
-                    🧺 Máy giặt
+
+                <!-- DESCRIPTION -->
+
+                <div class="section-title">
+
+                    Thông tin chi tiết
+
                 </div>
 
-                <div class="amenity-chip">
-                    🛡 An ninh 24/7
+
+                <div class="description-text">
+
+                    ${room.description}
+
+                    <br>
+                    <br>
+
+                    • <b>Giờ giấc:</b>
+                    Tự do (khóa vân tay)
+
+                    <br>
+
+                    • <b>Số người ở tối đa:</b>
+                    Tối đa 2 người.
+
+                    <br>
+
+                    • <b>Hợp đồng tối thiểu:</b>
+                    Cam kết ở tối thiểu 1 năm.
+
+                    <br>
+
+                    • <b>Nuôi thú cưng:</b>
+                    Cho phép nuôi thú cưng nhỏ.
+
                 </div>
 
-                <div class="amenity-chip">
-                    📹 Camera
+
+                <!-- MAP -->
+
+                <div class="section-title">
+
+                    Vị trí trên bản đồ
+
                 </div>
 
-                <div class="amenity-chip">
-                    🌿 Balcony
-                </div>
 
-                <div class="amenity-chip">
-                    🛵 Bãi xe
-                </div>
+                <div class="map-box">
 
-                <div class="amenity-chip">
-                    🧹 Tự do
-                </div>
-
-            </div>
-
-
-            <!-- DESCRIPTION -->
-
-            <div class="section-title">
-
-                Thông tin chi tiết
-
-            </div>
-
-
-            <div class="description-text">
-
-                ${room.description}
-
-                <br>
-                <br>
-
-                • <b>Giờ giấc:</b>
-                Tự do (khóa vân tay)
-
-                <br>
-
-                • <b>Số người ở tối đa:</b>
-                Tối đa 2 người.
-
-                <br>
-
-                • <b>Hợp đồng tối thiểu:</b>
-                Cam kết ở tối thiểu 1 năm.
-
-                <br>
-
-                • <b>Nuôi thú cưng:</b>
-                Cho phép nuôi thú cưng nhỏ.
-
-            </div>
-
-
-            <!-- MAP -->
-
-            <div class="section-title">
-
-                Vị trí trên bản đồ
-
-            </div>
-
-
-            <div class="map-box">
-
-                <iframe
+                    <iframe
                         src="https://www.openstreetmap.org/export/embed.html?bbox=106.690%2C10.760%2C106.705%2C10.775&layer=mapnik&marker=10.768%2C106.697">
-                </iframe>
+                    </iframe>
+
+                </div>
+
 
             </div>
 
 
-        </div>
+            <!-- SIDEBAR -->
+
+            <aside class="sidebar">
 
 
-        <!-- SIDEBAR -->
-
-        <aside class="sidebar">
+                <div class="sidebar-card">
 
 
-            <div class="sidebar-card">
+                    <div class="owner-profile">
 
+                        <img class="owner-avatar" src="${room.ownerAvatar}" alt="${room.ownerName}">
 
-                <div class="owner-profile">
+                        <div>
 
-                    <img class="owner-avatar"
-                         src="${room.ownerAvatar}"
-                         alt="${room.ownerName}">
+                            <div class="owner-name">
 
-                    <div>
+                                ${room.ownerName}
 
-                        <div class="owner-name">
+                            </div>
 
-                            ${room.ownerName}
+                            <div style="font-size:11px;color:#28a745;">
 
-                        </div>
+                                ✓ Đã xác thực
 
-                        <div style="font-size:11px;color:#28a745;">
-
-                            ✓ Đã xác thực
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
+
+                    <button class="btn-action btn-call">
+
+                        📞 ${room.ownerPhone}
+
+                    </button>
 
 
-                <button class="btn-action btn-call">
+                    <button class="btn-action btn-chat">
 
-                    📞 ${room.ownerPhone}
+                        💬 Nhắn tin ngay
 
-                </button>
-
-
-                <button class="btn-action btn-chat">
-
-                    💬 Nhắn tin ngay
-
-                </button>
+                    </button>
 
 
-                <button class="btn-action btn-book">
+                    <button class="btn-action btn-book">
 
-                    📅 Đặt lịch xem phòng
+                        📅 Đặt lịch xem phòng
 
-                </button>
+                    </button>
 
 
-                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <div style="display:flex;gap:10px;margin-top:10px;">
 
-                    <button
+                        <button
                             style="flex:1;padding:10px;border-radius:6px;border:1px solid #ccc;background:#6c757d;color:#fff;font-size:12px;font-weight:bold;cursor:pointer;">
 
-                        Đặt cọc
+                            Đặt cọc
 
-                    </button>
+                        </button>
 
 
-                    <button
+                        <button
                             style="flex:1;padding:10px;border-radius:6px;border:none;background:#ff3345;color:white;font-size:12px;font-weight:bold;cursor:pointer;">
 
-                        Thuê phòng
+                            Thuê phòng
 
-                    </button>
+                        </button>
 
-                </div>
-
-            </div>
-
-
-            <!-- COST -->
-
-            <div class="cost-table">
-
-
-                <div class="cost-row">
-
-                    <span>
-                        ⚡ Tiền điện
-                    </span>
-
-                    <span class="cost-price">
-                        ${room.electricity}
-                    </span>
+                    </div>
 
                 </div>
 
 
-                <div class="cost-row">
+                <!-- COST -->
 
-                    <span>
-                        💧 Tiền nước
-                    </span>
+                <div class="cost-table">
 
-                    <span class="cost-price">
-                        ${room.water}
-                    </span>
+
+                    <div class="cost-row">
+
+                        <span>
+                            ⚡ Tiền điện
+                        </span>
+
+                        <span class="cost-price">
+                            ${room.electricity}
+                        </span>
+
+                    </div>
+
+
+                    <div class="cost-row">
+
+                        <span>
+                            💧 Tiền nước
+                        </span>
+
+                        <span class="cost-price">
+                            ${room.water}
+                        </span>
+
+                    </div>
+
+
+                    <div class="cost-row">
+
+                        <span>
+                            🛡 Phí quản lý / dịch vụ
+                        </span>
+
+                        <span class="cost-price">
+                            ${room.serviceFee}
+                        </span>
+
+                    </div>
+
+
+                    <div class="cost-row">
+
+                        <span>
+                            📶 Tiền Internet / Wifi
+                        </span>
+
+                        <span class="cost-price">
+                            ${room.internet}
+                        </span>
+
+                    </div>
+
 
                 </div>
 
 
-                <div class="cost-row">
+            </aside>
 
-                    <span>
-                        🛡 Phí quản lý / dịch vụ
-                    </span>
-
-                    <span class="cost-price">
-                        ${room.serviceFee}
-                    </span>
-
-                </div>
-
-
-                <div class="cost-row">
-
-                    <span>
-                        📶 Tiền Internet / Wifi
-                    </span>
-
-                    <span class="cost-price">
-                        ${room.internet}
-                    </span>
-
-                </div>
-
-
-            </div>
-
-
-        </aside>
-
-
-    </div>
-
-
-    <!-- PHÒNG TƯƠNG TỰ -->
-
-    <div style="margin-top:40px;">
-
-        <div class="section-title">
-
-            Phòng tương tự
 
         </div>
 
 
-        <div class="similar-grid">
+        <!-- PHÒNG TƯƠNG TỰ -->
+
+        <div style="margin-top:40px;">
+
+            <div class="section-title">
+
+                Phòng tương tự
+
+            </div>
 
 
-            <c:forEach var="similar"
-                       items="${similarRooms}">
+            <div class="similar-grid">
 
 
-                <a class="similar-card"
-                   href="${pageContext.request.contextPath}/chi-tiet-phong?id=${similar.id}">
+                <c:forEach var="similar" items="${similarRooms}">
 
 
-                    <img src="${similar.image}"
-                         alt="${similar.title}">
+                    <a class="similar-card" href="${pageContext.request.contextPath}/chi-tiet-phong?id=${similar.id}">
 
 
-                    <div class="similar-body">
+                        <img src="${similar.image}" alt="${similar.title}">
 
-                        <div style="font-size:13px;font-weight:bold;">
+
+                        <div class="similar-body">
+
+                            <div style="font-size:13px;font-weight:bold;">
 
                                 ${similar.title}
 
-                        </div>
+                            </div>
 
 
-                        <div style="font-size:11px;color:#777;margin:4px 0;">
+                            <div style="font-size:11px;color:#777;margin:4px 0;">
 
-                            📍 ${similar.location}
+                                📍 ${similar.location}
 
-                        </div>
+                            </div>
 
 
-                        <div style="font-size:14px;font-weight:bold;color:#ff3345;">
+                            <div style="font-size:14px;font-weight:bold;color:#ff3345;">
 
                                 ${similar.price}
-                            VND/Tháng
+                                VND/Tháng
+
+                            </div>
 
                         </div>
 
-                    </div>
-
-                </a>
+                    </a>
 
 
-            </c:forEach>
+                </c:forEach>
 
+
+            </div>
 
         </div>
 
+
     </div>
-
-
-</div>
 
 
 </body>
