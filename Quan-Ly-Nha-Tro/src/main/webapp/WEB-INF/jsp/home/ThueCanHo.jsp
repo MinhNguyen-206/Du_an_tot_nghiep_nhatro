@@ -441,6 +441,7 @@
         Đăng ký & Xác Minh Chủ Căn Hộ:
         Miễn Phí 30 Ngày Premium Bạc
 
+<<<<<<< HEAD
         <a href="#">
             Đăng ký ngay
         </a>
@@ -449,6 +450,18 @@
 
         <a href="#">
             Điều khoản
+=======
+        <a href="${pageContext.request.contextPath}/gioi-thieu">
+
+            Về chúng tôi
+
+        </a>
+
+        <a href="${pageContext.request.contextPath}/lien-he">
+
+            Liên hệ
+
+>>>>>>> origin/main
         </a>
 
     </div>

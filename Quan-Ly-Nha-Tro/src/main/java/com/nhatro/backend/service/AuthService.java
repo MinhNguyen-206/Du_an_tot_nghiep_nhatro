@@ -1,13 +1,19 @@
 package com.nhatro.backend.service;
 
-import com.nhatro.backend.dto.AuthResponse;
-import com.nhatro.backend.entity.NguoiDung;
-import com.nhatro.backend.security.JwtUtil;
-import io.jsonwebtoken.JwtException;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Objects;
+
+import com.nhatro.backend.dto.AuthResponse;
+import com.nhatro.backend.entity.NguoiDung;
+import com.nhatro.backend.entity.VaiTro;
+import com.nhatro.backend.repository.VaiTroRepository;
+import com.nhatro.backend.security.JwtUtil;
+
+import io.jsonwebtoken.JwtException;
 
 @Service
 public class AuthService {
@@ -16,20 +22,23 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final VaiTroRepository vaiTroRepository;
 
     @Value("${app.reset-password.base-url}")
     private String resetPasswordBaseUrl;
 
     public AuthService(NguoiDungService nguoiDungService, JwtUtil jwtUtil, PasswordEncoder passwordEncoder,
-            MailService mailService) {
+            MailService mailService, VaiTroRepository vaiTroRepository) {
         Objects.requireNonNull(nguoiDungService, "nguoiDungService must not be null");
         Objects.requireNonNull(jwtUtil, "jwtUtil must not be null");
         Objects.requireNonNull(passwordEncoder, "passwordEncoder must not be null");
         Objects.requireNonNull(mailService, "mailService must not be null");
+        Objects.requireNonNull(vaiTroRepository, "vaiTroRepository must not be null");
         this.nguoiDungService = nguoiDungService;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
+        this.vaiTroRepository = vaiTroRepository;
     }
 
     public NguoiDung login(String email, String password) {
@@ -87,5 +96,33 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Tài khoản không tồn tại"));
 
         nguoiDungService.updatePassword(nguoiDung.getMaNguoiDung(), matKhauMoi);
+    }
+        // Hoan tat dang ky tai khoan cho user dang nhap Google LAN DAU: tao
+    // NguoiDung moi voi mat khau ngau nhien (an, khong tra ve cho user), gan
+    // vai tro nguoi dung chon o trang "chon vai tro".
+    public AuthResponse completeGoogleRegistration(String email, String hoTen, String avatar, Integer maVaiTro) {
+        Objects.requireNonNull(email, "email must not be null");
+        Objects.requireNonNull(maVaiTro, "maVaiTro must not be null");
+
+        if (nguoiDungService.getByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("Email đã được đăng ký");
+        }
+
+        VaiTro vaiTro = vaiTroRepository.findById(maVaiTro)
+                .orElseThrow(() -> new IllegalArgumentException("Vai trò không hợp lệ"));
+
+        String matKhauNgauNhien = UUID.randomUUID().toString();
+
+        NguoiDung nguoiDung = NguoiDung.builder()
+                .email(email)
+                .hoTen(hoTen != null ? hoTen : email)
+                .avatar(avatar)
+                .matKhau(matKhauNgauNhien) // duoc ma hoa ben trong nguoiDungService.create()
+                .vaiTro(vaiTro)
+                .trangThai(true)
+                .build();
+
+        NguoiDung daLuu = nguoiDungService.create(nguoiDung);
+        return buildAuthResponse(daLuu);
     }
 }

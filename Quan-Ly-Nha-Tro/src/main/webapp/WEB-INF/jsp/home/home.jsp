@@ -1,3 +1,43 @@
+<<<<<<< HEAD
+=======
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.*" %>
+
+<%
+    List<Map<String, String>> roomList = new ArrayList<>();
+
+    Map<String, String> room1 = new HashMap<>();
+    room1.put("title", "Phòng trọ cao cấp full nội thất gần Đại học FPT, giờ giấc tự do");
+    room1.put("price", "3.2 Triệu/tháng");
+    room1.put("area", "25 m²");
+    room1.put("location", "Quận 9, TP. Hồ Chí Minh");
+    room1.put("img", "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=500&q=80");
+    room1.put("tag", "Xác minh eKYC");
+    room1.put("time", "15 phút trước");
+    roomList.add(room1);
+
+    Map<String, String> room2 = new HashMap<>();
+    room2.put("title", "Căn hộ Studio mới 100%, không chung chủ, có ban công thoáng mát");
+    room2.put("price", "4.5 Triệu/tháng");
+    room2.put("area", "35 m²");
+    room2.put("location", "Quận Bình Thạnh, TP. Hồ Chí Minh");
+    room2.put("img", "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=500&q=80");
+    room2.put("tag", "Chủ trọ Premium");
+    room2.put("time", "1 giờ trước");
+    roomList.add(room2);
+
+    Map<String, String> room3 = new HashMap<>();
+    room3.put("title", "Ký túc xá cao cấp cho sinh viên, free điện nước wifi, thang máy");
+    room3.put("price", "1.5 Triệu/tháng");
+    room3.put("area", "18 m²");
+    room3.put("location", "Quận Cầu Giấy, Hà Nội");
+    room3.put("img", "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=500&q=80");
+    room3.put("tag", "Xác minh eKYC");
+    room3.put("time", "3 giờ trước");
+    roomList.add(room3);
+%>
+
+>>>>>>> origin/main
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -341,6 +381,7 @@
 </body>
 
 </html>
+<<<<<<< HEAD
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
     <!DOCTYPE html>
     <html lang="vi">
@@ -360,3 +401,5 @@
     </body>
 
     </html>
+=======
+>>>>>>> origin/main
