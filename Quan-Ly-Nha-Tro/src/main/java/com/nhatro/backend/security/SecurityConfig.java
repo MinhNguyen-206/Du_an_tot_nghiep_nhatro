@@ -25,15 +25,7 @@ public class SecurityConfig {
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
-    // =====================================================
-    // PASSWORD ENCODER
-    // =====================================================
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
+  
     // =====================================================
     // ROLES CONSTANTS
     // =====================================================
@@ -178,14 +170,14 @@ public class SecurityConfig {
                 )
 
                 // 3. JWT FILTER
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-                // 4. OAUTH2 LOGIN
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureUrl("/login?error=google")
-                );
+                // // 4. OAUTH2 LOGIN
+                // .oauth2Login(oauth2 -> oauth2
+                //         .loginPage("/login")
+                //         .successHandler(oAuth2LoginSuccessHandler)
+                //         .failureUrl("/login?error=google")
+                // );
 
         return http.build();
     }
