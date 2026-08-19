@@ -56,4 +56,13 @@ public class PageController {
         model.addAttribute("maPhong", id);
         return "room/roomDetail";
     }
+      @GetMapping("/chon-vai-tro")
+    public String chonVaiTro() {
+        return "auth/chon-vai-tro";
+    }
+
+    @GetMapping("/oauth2-redirect")
+    public String oauth2Redirect() {
+        return "auth/oauth2-redirect";
+    }
 }

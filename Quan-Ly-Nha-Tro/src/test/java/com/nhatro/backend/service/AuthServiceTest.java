@@ -2,6 +2,7 @@ package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.NguoiDung;
 import com.nhatro.backend.entity.VaiTro;
+import com.nhatro.backend.repository.VaiTroRepository;
 import com.nhatro.backend.security.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,7 +28,8 @@ class AuthServiceTest {
         // Mock NguoiDungService
         NguoiDungService nguoiDungService = mock(NguoiDungService.class);
         MailService mailService = mock(MailService.class);
-        AuthService authService = new AuthService(nguoiDungService, jwtUtil, passwordEncoder, mailService);
+        VaiTroRepository vaiTroRepository = mock(VaiTroRepository.class);
+        AuthService authService = new AuthService(nguoiDungService, jwtUtil, passwordEncoder, mailService, vaiTroRepository);
 
         // Tao NguoiDung mau co mat khau ma hoa sai
         VaiTro vaiTro = VaiTro.builder().maVaiTro(3).tenVaiTro("Người thuê").trangThai(true).build();

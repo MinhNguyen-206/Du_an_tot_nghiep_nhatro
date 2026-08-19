@@ -54,7 +54,11 @@
                 </div>
                 <button type="submit" class="btn-submit" id="loginSubmitBtn">Đăng nhập</button>
             </form>
+            <div class="auth-divider"><span>hoặc</span></div>
 
+<a href="${pageContext.request.contextPath}/oauth2/authorization/google" class="btn-google">
+    <i class="fa-brands fa-google"></i> Đăng nhập bằng Google
+</a>
             <div class="switch-link">
                 Bạn chưa có tài khoản?
                 <a href="${pageContext.request.contextPath}/register">Đăng ký ngay</a>
