@@ -410,13 +410,13 @@
 
         </a>
 
-        <a href="#">
+        <a href="${pageContext.request.contextPath}/gioi-thieu">
 
             Về chúng tôi
 
         </a>
 
-        <a href="#">
+        <a href="${pageContext.request.contextPath}/lien-he">
 
             Liên hệ
 

@@ -114,6 +114,13 @@ public class SecurityConfig {
                                 "/oauth2-redirect",
 
                                 // -----------------------------
+                                // Về chúng tôi / Liên hệ
+                                // -----------------------------
+
+                                "/gioi-thieu",
+                                "/lien-he",
+
+                                // -----------------------------
                                 // Danh mục
                                 // -----------------------------
 
@@ -160,6 +167,15 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/nguoi-dung"
+                        ).permitAll()
+
+                        // =================================================
+                        // 4b. API FORM LIÊN HỆ (CÔNG KHAI)
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/lien-he"
                         ).permitAll()
 
                         // =================================================
@@ -328,17 +344,12 @@ public class SecurityConfig {
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
-                                                .oauth2Login(oauth2 -> oauth2
+
+                .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .successHandler(oAuth2LoginSuccessHandler)
                         .failureUrl("/login?error=google")
-                )
-
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
                 );
-                
 
         return http.build();
     }
