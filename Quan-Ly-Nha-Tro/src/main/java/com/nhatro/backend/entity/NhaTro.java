@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Entity
 @Table(name = "NHA_TRO")
@@ -34,4 +35,22 @@ public class NhaTro {
 
     @Column(name = "moTa", columnDefinition = "NVARCHAR(MAX)")
     private String moTa;
+
+    @Column(name = "giaPhong")
+    private BigDecimal giaPhong;
+
+    @Column(name = "loaiPhong", length = 100)
+    private String loaiPhong;
+
+    @Column(name = "hinhAnh", columnDefinition = "VARCHAR(MAX)")
+    private String hinhAnh;
+
+    // Quan hệ nhiều-nhiều với tiện ích, dùng cho chức năng lọc theo tiện ích
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "NHA_TRO_TIEN_ICH",
+        joinColumns = @JoinColumn(name = "maNhaTro"),
+        inverseJoinColumns = @JoinColumn(name = "maTienIch")
+    )
+    private Set<TienIch> danhSachTienIch;
 }

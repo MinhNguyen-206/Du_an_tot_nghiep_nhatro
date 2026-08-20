@@ -1,6 +1,14 @@
 package com.nhatro.backend.controller;
 
+import com.nhatro.backend.entity.NhaTro;
 import com.nhatro.backend.model.Room;
+import com.nhatro.backend.repository.NhaTroRepository;
+import com.nhatro.backend.repository.specification.NhaTroSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +19,12 @@ import java.util.List;
 
 @Controller
 public class HomeController {
+
+    private final NhaTroRepository nhaTroRepository;
+
+    public HomeController(NhaTroRepository nhaTroRepository) {
+        this.nhaTroRepository = nhaTroRepository;
+    }
 
     /*
      * ============================================================
@@ -25,20 +39,69 @@ public class HomeController {
 
     /*
      * ============================================================
-     * TRANG THUÊ PHÒNG TRỌ
+     * TRANG THUÊ PHÒNG TRỌ (đã gộp chức năng bộ lọc: khu vực, khoảng
+     * giá, loại phòng, tiện ích wifi/điều hòa/giữ xe/camera/nuôi thú,
+     * sắp xếp theo giá, phân trang)
      *
      * URL:
      * /thue-tro
      * ============================================================
      */
     @GetMapping("/thue-tro")
-    public String thueTro(Model model) {
+    public String thueTro(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) String sort,
+            @RequestParam(name = "type", required = false) String[] types,
+            @RequestParam(required = false) Boolean wifi,
+            @RequestParam(required = false) Boolean ac,
+            @RequestParam(required = false) Boolean parking,
+            @RequestParam(required = false) Boolean camera,
+            @RequestParam(required = false) Boolean pet,
+            @RequestParam(defaultValue = "1") int page,
+            Model model) {
 
-        List<Room> rooms = getDemoRooms();
+        int pageSize = 6;
+        int activePage = Math.max(1, page);
 
-        model.addAttribute("rooms", rooms);
-        model.addAttribute("pageTitle", "Trọ tại Quận 12");
-        model.addAttribute("resultCount", rooms.size());
+        // Sắp xếp theo giá phòng
+        Sort sortCriteria = Sort.by("maNhaTro").descending();
+        if ("price_asc".equals(sort)) {
+            sortCriteria = Sort.by("giaPhong").ascending();
+        } else if ("price_desc".equals(sort)) {
+            sortCriteria = Sort.by("giaPhong").descending();
+        }
+
+        Pageable pageable = PageRequest.of(activePage - 1, pageSize, sortCriteria);
+
+        // Lọc dữ liệu bằng Specification theo các tiêu chí trên
+        Specification<NhaTro> spec = NhaTroSpecification.filterNhaTro(
+                keyword, location, minPrice, maxPrice, types, wifi, ac, parking, camera, pet);
+
+        Page<NhaTro> nhaTroPage = nhaTroRepository.findAll(spec, pageable);
+
+        // Truyền dữ liệu sang JSP
+        model.addAttribute("listNhaTro", nhaTroPage.getContent());
+        model.addAttribute("rooms", nhaTroPage.getContent());
+        model.addAttribute("resultCount", nhaTroPage.getTotalElements());
+        model.addAttribute("totalPages", nhaTroPage.getTotalPages());
+        model.addAttribute("currentPage", activePage);
+        model.addAttribute("pageTitle", "Thuê Phòng Trọ");
+
+        // Giữ lại trạng thái bộ lọc trên form UI
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("location", location);
+        model.addAttribute("minPrice", minPrice);
+        model.addAttribute("maxPrice", maxPrice);
+        model.addAttribute("sort", sort);
+        model.addAttribute("selectedTypes", types);
+        model.addAttribute("wifi", wifi);
+        model.addAttribute("ac", ac);
+        model.addAttribute("parking", parking);
+        model.addAttribute("camera", camera);
+        model.addAttribute("pet", pet);
 
         return "home/ThueTro";
     }
