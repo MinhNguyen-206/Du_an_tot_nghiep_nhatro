@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="<c:url value='/resources/css/admin-dashboard.css'/>">
 </head>
 <body class="admin-body admin-page">
+
     <div class="admin-shell">
         <aside class="admin-sidebar">
             <div class="sidebar-top">

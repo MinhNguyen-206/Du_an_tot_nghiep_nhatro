@@ -19,8 +19,6 @@
 
 <body class="admin-body admin-page">
 
-    
-
     <!-- ADMIN LAYOUT -->
     <div class="admin-shell">
 
@@ -400,4 +398,5 @@
 
     <script src="<c:url value='/resources/js/admin-dashboard.js'/>"></script>
 </body>
+
 </html>

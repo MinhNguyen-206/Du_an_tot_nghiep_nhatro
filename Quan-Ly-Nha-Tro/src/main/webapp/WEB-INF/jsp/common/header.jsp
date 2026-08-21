@@ -88,9 +88,20 @@
                         <i class="fa-regular fa-heart text-lg"></i>
                     </button>
 
-                    <button class="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-orange-50">
-                        <i class="fa-regular fa-bell text-lg"></i>
-                    </button>
+                    <!-- Thông báo (dropdown, tải từ /api/thong-bao) -->
+                    <div class="relative hidden md:block">
+                        <button id="notificationBtn" type="button" aria-expanded="false"
+                                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-orange-50 relative transition">
+                            <i class="fa-regular fa-bell text-lg"></i>
+                            <span id="notificationBadge"
+                                  class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center">0</span>
+                        </button>
+                        <div id="notificationDropdown"
+                             class="hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-soft border border-gray-100 py-2 px-3 overflow-hidden">
+                            <strong class="block text-sm font-semibold pb-2 border-b border-gray-100">Thông báo</strong>
+                            <div id="notificationList" class="text-sm text-gray-600 py-2 max-h-72 overflow-y-auto">Đang tải thông báo...</div>
+                        </div>
+                    </div>
 
                     <a
                             id="rcLandlordLink"
@@ -173,6 +184,59 @@
                 userDropdown.classList.add('hidden');
             }
         });
+    }
+
+    // ---- Toggle dropdown thông báo (giữ lại từ bản main) ----
+    var notifBtn = document.getElementById('notificationBtn');
+    var notifDropdown = document.getElementById('notificationDropdown');
+    if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var isHidden = notifDropdown.classList.contains('hidden');
+            notifDropdown.classList.toggle('hidden');
+            notifBtn.setAttribute('aria-expanded', String(isHidden));
+            if (isHidden) loadNotifications();
+        });
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#notificationBtn') && !e.target.closest('#notificationDropdown')) {
+                notifDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    async function loadNotifications() {
+        var list = document.getElementById('notificationList');
+        if (!list) return;
+        var token = localStorage.getItem('token');
+        try {
+            var response = await fetch('${pageContext.request.contextPath}/api/thong-bao', {
+                headers: token ? { Authorization: 'Bearer ' + token } : {}
+            });
+            if (!response.ok) throw new Error('Notification API unavailable');
+            var notifications = await response.json();
+            var badge = document.getElementById('notificationBadge');
+            if (badge) {
+                if (notifications.length > 0) {
+                    badge.textContent = notifications.length > 9 ? '9+' : String(notifications.length);
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+            if (!notifications.length) {
+                list.textContent = 'Không có thông báo mới.';
+                return;
+            }
+            list.innerHTML = notifications.slice(0, 5).map(function (item) {
+                return '<div class="py-2 border-b border-gray-50 last:border-0">' +
+                    '<strong class="block text-xs font-semibold text-navy">' + (item.tieuDe || item.noiDung || 'Thông báo hệ thống') + '</strong>' +
+                    '<small class="block text-[11px] text-gray-400 mt-0.5">' + (item.ngayGui || 'Mới cập nhật') + '</small>' +
+                    '</div>';
+            }).join('');
+        } catch (error) {
+            list.textContent = 'Không thể tải thông báo lúc này.';
+        }
     }
 
     // ---- Đăng xuất ----
