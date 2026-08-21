@@ -102,7 +102,7 @@
                 // dieu huong theo vai tro (maVaiTro: 1 = Admin, 2 = Chu tro, 3 = Nguoi thue)
                 const maVaiTro = data.user && data.user.vaiTro ? data.user.vaiTro.maVaiTro : null;
                 if (maVaiTro === 1) {
-                    window.location.href = "${pageContext.request.contextPath}/admin";
+                    window.location.href = "${pageContext.request.contextPath}/admin/dashboard";
                 } else {
                     window.location.href = "${pageContext.request.contextPath}/";
                 }

@@ -510,9 +510,7 @@ async function apiCall(url, options = {}) {
                 return null;
             }
             if (response.status === 403) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login?redirect=/admin/dashboard';
+                showNotification('Tài khoản không có quyền tải dữ liệu tổng quan.', 'error');
                 return null;
             }
             throw new Error(`HTTP error! status: ${response.status}`);

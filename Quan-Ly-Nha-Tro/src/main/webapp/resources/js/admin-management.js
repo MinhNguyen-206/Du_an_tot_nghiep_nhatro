@@ -11,8 +11,13 @@ async function loadManagementData() {
         const response = await fetch(window.ADMIN_MANAGEMENT_ENDPOINT, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
             window.location.href = '/login';
+            return;
+        }
+        if (response.status === 403) {
+            status.textContent = 'Tài khoản không có quyền xem dữ liệu này.';
+            status.classList.add('error');
             return;
         }
         if (!response.ok) {
