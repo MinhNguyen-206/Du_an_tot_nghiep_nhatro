@@ -32,6 +32,8 @@ const ADMIN_MOCK_DATA = {
 };
 
 const ADMIN_USE_MOCK = new URLSearchParams(window.location.search).get('mock') === 'true';
+let dashboardSummary = null;
+let selectedPeriod = 'month';
 
 /**
  * Khởi tạo trang admin dashboard
@@ -55,6 +57,14 @@ async function loadDashboardSummary() {
         return;
     }
 
+    dashboardSummary = summary;
+    applySelectedPeriod();
+}
+
+function applySelectedPeriod() {
+    const summary = dashboardSummary || ADMIN_MOCK_DATA;
+    const period = getPeriodDefinition(selectedPeriod, summary.monthlyRevenue || []);
+
     const values = document.querySelectorAll('.kpi-value');
     const dashboardValues = [
         summary.totalUsers,
@@ -70,29 +80,65 @@ async function loadDashboardSummary() {
     });
 
     updatePendingCounts(summary);
-    updateDetailStats(summary);
+    updateDetailStats(summary, period);
     renderPieChart(summary);
-    renderIncomeChart(summary);
+    renderIncomeChart(summary, period.revenue);
+    updatePeriodLabels(period);
     if (summary.activities) {
         renderActivities(summary.activities);
     }
 }
 
 function setupPeriodSwitcher() {
-    document.querySelectorAll('.period-switcher button').forEach(button => {
+    const periodButtons = document.querySelectorAll('.period-switcher button');
+    periodButtons.forEach((button, index) => {
+        button.dataset.period = ['day', 'month', 'quarter', 'year'][index];
         button.addEventListener('click', function() {
-            document.querySelectorAll('.period-switcher button').forEach(item => item.classList.remove('active'));
+            periodButtons.forEach(item => item.classList.remove('active'));
             this.classList.add('active');
+            selectedPeriod = this.dataset.period;
+            applySelectedPeriod();
         });
     });
 }
 
-function updateDetailStats(summary) {
+function getPeriodDefinition(period, revenue) {
+    const latest = revenue[revenue.length - 1] || { month: '08/2026', value: 0 };
+    const latestParts = latest.month.split('/');
+    const month = Number(latestParts[0]);
+    const year = latestParts[1];
+    const labels = {
+        day: { title: `Ngày 21/${latest.month}`, description: 'Tổng quan trong ngày hiện tại' },
+        month: { title: `Tháng ${latest.month}`, description: 'Tổng quan tháng hiện tại' },
+        quarter: { title: `Quý ${Math.ceil(month / 3)}/${year}`, description: 'Tổng quan trong quý hiện tại' },
+        year: { title: `Năm ${year}`, description: 'Tổng quan trong năm hiện tại' }
+    };
+    const windows = { day: 1, month: 1, quarter: 3, year: revenue.length };
+    const periodRevenue = revenue.slice(-windows[period]);
+    return { ...labels[period], revenue: periodRevenue };
+}
+
+function updatePeriodLabels(period) {
+    const analyticsLabel = document.getElementById('analyticsPeriodLabel');
+    const detailLabel = document.getElementById('periodDetailLabel');
+    const detailDescription = document.getElementById('periodDetailDescription');
+    const chartBadge = document.getElementById('chartPeriodBadge');
+    if (analyticsLabel) analyticsLabel.textContent = period.title;
+    if (detailLabel) detailLabel.textContent = period.title;
+    if (detailDescription) detailDescription.textContent = period.description;
+    if (chartBadge && period.revenue.length) {
+        chartBadge.textContent = period.revenue.length === 1
+            ? period.revenue[0].month
+            : `${period.revenue[0].month} - ${period.revenue[period.revenue.length - 1].month}`;
+    }
+}
+
+function updateDetailStats(summary, period) {
     const detailValues = {
         detailCompleted: summary.totalUsers,
         detailPosts: summary.totalPosts,
         detailRooms: summary.totalRooms || 0,
-        detailRevenue: summary.totalRevenue || 0
+        detailRevenue: period.revenue.reduce((total, item) => total + (Number(item.value) || 0), 0)
     };
 
     Object.entries(detailValues).forEach(([id, value]) => {
@@ -178,15 +224,15 @@ function highlightPieItem(index, active) {
         .forEach(element => element.classList.toggle('is-active', active));
 }
 
-function renderIncomeChart(summary) {
+function renderIncomeChart(summary, revenue) {
     const chart = document.getElementById('incomeChart');
     if (!chart) {
         return;
     }
 
-    const revenue = summary.monthlyRevenue || ADMIN_MOCK_DATA.monthlyRevenue;
-    const maxValue = Math.max(...revenue.map(item => item.value), 1);
-    chart.innerHTML = revenue.map(item => {
+    const chartRevenue = revenue.length ? revenue : (summary.monthlyRevenue || ADMIN_MOCK_DATA.monthlyRevenue);
+    const maxValue = Math.max(...chartRevenue.map(item => item.value), 1);
+    chart.innerHTML = chartRevenue.map(item => {
         const height = Math.max((item.value / maxValue) * 100, 8);
         const amount = `${(item.value / 1000000).toFixed(1)}M VNĐ`;
         return `<div class="income-bar-column">

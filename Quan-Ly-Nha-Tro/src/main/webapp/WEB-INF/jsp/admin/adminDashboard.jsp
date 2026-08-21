@@ -210,7 +210,7 @@
                             <p>Tỷ trọng các nhóm dữ liệu chính</p>
                         </div>
                     </div>
-                    <div class="analytics-period-label">Tháng 08/2026</div>
+                    <div class="analytics-period-label" id="analyticsPeriodLabel">Tháng 08/2026</div>
                     <div class="pie-chart-content">
                         <div class="pie-chart" id="adminPieChart">
                             <div class="pie-chart-center">
@@ -231,8 +231,8 @@
                     </div>
                     <div class="period-detail">
                         <span class="detail-eyebrow">MỐC ĐANG XEM</span>
-                        <strong>Tháng 08/2026</strong>
-                        <small>Tổng quan tháng hiện tại</small>
+                        <strong id="periodDetailLabel">Tháng 08/2026</strong>
+                        <small id="periodDetailDescription">Tổng quan tháng hiện tại</small>
                     </div>
                     <div class="detail-stat-grid">
                         <div><strong id="detailCompleted">0</strong><small>Người dùng</small></div>
@@ -253,7 +253,7 @@
                         <h2>Thu nhập theo thời gian</h2>
                         <p>Diễn biến thu nhập trong 6 tháng gần nhất</p>
                     </div>
-                    <span class="chart-period-badge">03/2026 - 08/2026</span>
+                    <span class="chart-period-badge" id="chartPeriodBadge">03/2026 - 08/2026</span>
                 </div>
                 <div class="income-chart" id="incomeChart" aria-label="Biểu đồ thu nhập theo tháng"></div>
                 <div class="income-chart-caption">

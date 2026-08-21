@@ -108,8 +108,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/lien-he").permitAll()
 
                         // API tổng hợp dành riêng cho quản trị viên
-                        .requestMatchers(HttpMethod.GET, "/api/admin/dashboard").hasAuthority(ADMIN)
-                        .requestMatchers("/api/admin/management/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/api/admin/dashboard").hasAnyAuthority(ADMIN, "ADMIN")
+                        .requestMatchers("/api/admin/management/**").hasAnyAuthority(ADMIN, "ADMIN")
 
 
                         // API xem dữ liệu công khai (GET)

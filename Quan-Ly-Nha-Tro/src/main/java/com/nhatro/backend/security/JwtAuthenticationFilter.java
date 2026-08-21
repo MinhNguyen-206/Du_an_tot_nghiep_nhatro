@@ -1,6 +1,7 @@
 package com.nhatro.backend.security;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -46,10 +47,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtUtil.getEmailFromToken(token);
                 String roleName = resolveRoleName(email, jwtUtil.getRoleFromToken(token));
 
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority(roleName));
+
+                String legacyAuthority = roleName.startsWith("ROLE_") ? roleName.substring(5) : roleName;
+                if (!legacyAuthority.equals(roleName)) {
+                    authorities.add(new SimpleGrantedAuthority(legacyAuthority));
+                }
+
                 var authentication = new UsernamePasswordAuthenticationToken(
                         email,
                         null,
-                        List.of(new SimpleGrantedAuthority(roleName)));
+                        authorities);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
