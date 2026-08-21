@@ -97,7 +97,7 @@ public class SecurityConfig {
                                 "/rooms/**"
                         ).permitAll()
 
-                        // Admin Dashboard (view JSP)
+                        // Trang admin cho preview local / mock UI
                         .requestMatchers("/admin/**").permitAll()
 
                         // Chu Tro Dashboard (view JSP demo; APIs vẫn phân quyền theo ROLE_CHU_TRO)
@@ -106,6 +106,11 @@ public class SecurityConfig {
                         // API Đăng ký tài khoản & Form liên hệ công khai
                         .requestMatchers(HttpMethod.POST, "/api/nguoi-dung").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/lien-he").permitAll()
+
+                        // API tổng hợp dành riêng cho quản trị viên
+                        .requestMatchers(HttpMethod.GET, "/api/admin/dashboard").hasAuthority(ADMIN)
+                        .requestMatchers("/api/admin/management/**").hasAuthority(ADMIN)
+
 
                         // API xem dữ liệu công khai (GET)
                         .requestMatchers(HttpMethod.GET,
