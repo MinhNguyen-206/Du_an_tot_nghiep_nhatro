@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="<c:url value='/resources/css/admin-dashboard.css'/>">
 </head>
 
-<body class="admin-body admin-page">
+<body class="admin-body">
 
     <!-- HEADER -->
     <jsp:include page="/WEB-INF/jsp/common/header.jsp" />
@@ -40,6 +40,18 @@
                         <strong>Room Connect</strong>
                         <span>ADMINISTRATION</span>
                     </div>
+                </div>
+
+                <!-- ADMIN PROFILE -->
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="admin-profile-info">
+                        <strong>Quản trị viên</strong>
+                        <span>Administrator</span>
+                    </div>
+                    <span class="online-dot"></span>
                 </div>
 
             </div>
@@ -116,15 +128,26 @@
                         <strong>Tổng quan</strong>
                     </div>
 
-                    <h1>Dashboard thống kê</h1>
-                    <p>Ban Quản trị · Tổng quan toàn hệ thống</p>
+                    <h1>Chào mừng trở lại, Admin 👋</h1>
+                    <p>Đây là tình hình hoạt động của Room Connect hôm nay.</p>
                 </div>
 
-                <div class="period-switcher" role="group" aria-label="Khoảng thời gian thống kê">
-                    <button type="button">Ngày</button>
-                    <button type="button" class="active">Tháng</button>
-                    <button type="button">Quý</button>
-                    <button type="button">Năm</button>
+                <div class="topbar-actions">
+                    <button type="button" class="icon-button">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+
+                    <button type="button" class="admin-account">
+                        <span class="account-avatar">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </span>
+                        <span class="account-text">
+                            <strong>Admin</strong>
+                            <small>Quản trị viên</small>
+                        </span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
                 </div>
 
             </div>
@@ -146,7 +169,6 @@
                             <small>so với tháng trước</small>
                         </span>
                     </div>
-                    <span class="kpi-sparkline green-line"></span>
                 </div>
 
                 <!-- POSTS -->
@@ -155,7 +177,7 @@
                         <i class="fa-solid fa-house"></i>
                     </div>
                     <div class="kpi-content">
-                        <span class="kpi-label">Tổng bài đăng</span>
+                        <span class="kpi-label">Bài đăng hoạt động</span>
                         <strong class="kpi-value">856</strong>
                         <span class="kpi-change positive">
                             <i class="fa-solid fa-arrow-up"></i>
@@ -163,7 +185,6 @@
                             <small>so với tháng trước</small>
                         </span>
                     </div>
-                    <span class="kpi-sparkline teal-line"></span>
                 </div>
 
                 <!-- APPOINTMENTS -->
@@ -172,7 +193,7 @@
                         <i class="fa-solid fa-calendar-check"></i>
                     </div>
                     <div class="kpi-content">
-                        <span class="kpi-label">Tổng lịch hẹn</span>
+                        <span class="kpi-label">Lịch hẹn hôm nay</span>
                         <strong class="kpi-value">48</strong>
                         <span class="kpi-change neutral">
                             <i class="fa-solid fa-minus"></i>
@@ -180,7 +201,6 @@
                             <small>so với hôm qua</small>
                         </span>
                     </div>
-                    <span class="kpi-sparkline orange-line"></span>
                 </div>
 
                 <!-- REVENUE -->
@@ -189,7 +209,7 @@
                         <i class="fa-solid fa-coins"></i>
                     </div>
                     <div class="kpi-content">
-                        <span class="kpi-label">Tổng giao dịch</span>
+                        <span class="kpi-label">Doanh thu tháng</span>
                         <strong class="kpi-value">128.5M</strong>
                         <span class="kpi-change positive">
                             <i class="fa-solid fa-arrow-up"></i>
@@ -197,69 +217,8 @@
                             <small>so với tháng trước</small>
                         </span>
                     </div>
-                    <span class="kpi-sparkline blue-line"></span>
                 </div>
 
-            </section>
-
-            <div class="analytics-grid">
-                <section class="panel analytics-panel">
-                    <div class="panel-header">
-                        <div>
-                            <h2>Phân bổ dữ liệu hệ thống</h2>
-                            <p>Tỷ trọng các nhóm dữ liệu chính</p>
-                        </div>
-                    </div>
-                    <div class="analytics-period-label">Tháng 08/2026</div>
-                    <div class="pie-chart-content">
-                        <div class="pie-chart" id="adminPieChart">
-                            <div class="pie-chart-center">
-                                <strong id="pieChartTotal">0</strong>
-                                <span>Tổng mục</span>
-                            </div>
-                        </div>
-                        <div class="pie-chart-legend" id="pieChartLegend"></div>
-                    </div>
-                </section>
-
-                <section class="panel analytics-panel">
-                    <div class="panel-header">
-                        <div>
-                            <h2>Chi tiết mốc thống kê</h2>
-                            <p>Thông tin tổng hợp của kỳ đang xem</p>
-                        </div>
-                    </div>
-                    <div class="period-detail">
-                        <span class="detail-eyebrow">MỐC ĐANG XEM</span>
-                        <strong>Tháng 08/2026</strong>
-                        <small>Tổng quan tháng hiện tại</small>
-                    </div>
-                    <div class="detail-stat-grid">
-                        <div><strong id="detailCompleted">0</strong><small>Người dùng</small></div>
-                        <div><strong id="detailPosts">0</strong><small>Bài đăng</small></div>
-                        <div><strong id="detailRooms">0</strong><small>Phòng trọ</small></div>
-                        <div><strong id="detailRevenue">0</strong><small>Thu nhập</small></div>
-                    </div>
-                    <div class="detail-note">
-                        <strong>Nhận định nhanh</strong>
-                        <p>Hệ thống đang duy trì hoạt động ổn định trong kỳ thống kê hiện tại.</p>
-                    </div>
-                </section>
-            </div>
-
-            <section class="panel income-panel">
-                <div class="panel-header">
-                    <div>
-                        <h2>Thu nhập theo thời gian</h2>
-                        <p>Diễn biến thu nhập trong 6 tháng gần nhất</p>
-                    </div>
-                    <span class="chart-period-badge">03/2026 - 08/2026</span>
-                </div>
-                <div class="income-chart" id="incomeChart" aria-label="Biểu đồ thu nhập theo tháng"></div>
-                <div class="income-chart-caption">
-                    <span><i class="income-dot"></i>Thu nhập (VNĐ)</span>
-                    <span>Hover từng cột để xem tháng và số tiền</span>
-                </div>
             </section>
 
             <!-- ACTIVITY + QUICK ACTION GRID -->
@@ -352,7 +311,7 @@
                             </span>
                             <span>
                                 <strong>Duyệt người dùng</strong>
-                                <small><span id="pendingUsers">0</span> yêu cầu mới</small>
+                                <small>24 yêu cầu mới</small>
                             </span>
                             <i class="fa-solid fa-chevron-right"></i>
                         </a>
@@ -363,7 +322,7 @@
                             </span>
                             <span>
                                 <strong>Duyệt bài đăng</strong>
-                                <small><span id="pendingPosts">0</span> bài đang chờ</small>
+                                <small>12 bài đang chờ</small>
                             </span>
                             <i class="fa-solid fa-chevron-right"></i>
                         </a>
@@ -374,7 +333,7 @@
                             </span>
                             <span>
                                 <strong>Xử lý báo cáo</strong>
-                                <small><span id="pendingReports">0</span> báo cáo chưa xử lý</small>
+                                <small>5 báo cáo chưa xử lý</small>
                             </span>
                             <i class="fa-solid fa-chevron-right"></i>
                         </a>
@@ -399,6 +358,5 @@
 
     </div>
 
-    <script src="<c:url value='/resources/js/admin-dashboard.js'/>"></script>
 </body>
 </html>

@@ -19,45 +19,19 @@
                     <a href="/" class="nav-link">Trang chủ</a>
                 </li>
                 <li class="nav-item">
-                    <a href="<c:url value='/rooms'/>" class="nav-link">Danh sách phòng</a>
+                    <a href="#" class="nav-link">Danh sách phòng</a>
                 </li>
                 <li class="nav-item">
-                    <a href="<c:url value='/lien-he'/>" class="nav-link">Liên hệ</a>
+                    <a href="#" class="nav-link">Liên hệ</a>
                 </li>
             </ul>
 
             <!-- User Profile & Actions -->
             <div class="navbar-actions">
-                <div class="notification-menu">
-                <button class="notification-btn" id="notificationBtn" type="button" aria-expanded="false">
+                <button class="notification-btn" id="notificationBtn">
                     <span class="icon">🔔</span>
                     <span class="badge" id="notificationBadge" style="display:none;">0</span>
                 </button>
-                <div class="notification-dropdown" id="notificationDropdown" style="display:none;">
-                    <strong>Thông báo</strong>
-                    <div id="notificationList">Đang tải thông báo...</div>
-                </div>
-                </div>
-
-                <div class="admin-header-account" id="adminHeaderAccount">
-                    <div class="admin-account-menu">
-                        <button type="button" class="admin-account" id="profileBtn" aria-expanded="false">
-                            <span class="account-avatar">
-                                <i class="fa-solid fa-user-shield"></i>
-                            </span>
-                            <span class="account-text">
-                                <strong>Quản trị viên</strong>
-                                <small>Administrator</small>
-                            </span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <div class="admin-profile-menu" id="profileMenu" style="display: none;">
-                            <a href="<c:url value='/profile'/>">Hồ sơ cá nhân</a>
-                            <a href="<c:url value='/admin/settings'/>">Cài đặt</a>
-                            <a href="<c:url value='/logout'/>" class="logout-item">Đăng xuất</a>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="user-menu">
                     <button class="user-btn" id="userMenuBtn">
@@ -172,62 +146,12 @@
         gap: 1rem;
     }
 
-    .admin-header-account {
-        display: none;
-        align-items: center;
-    }
-
     .notification-btn {
         background: none;
         border: none;
         font-size: 1.25rem;
         cursor: pointer;
         position: relative;
-    }
-
-    .notification-menu {
-        position: relative;
-    }
-
-    .notification-dropdown {
-        position: absolute;
-        top: calc(100% + 0.65rem);
-        right: 0;
-        z-index: 210;
-        width: 280px;
-        padding: 0.85rem;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 5px 16px rgba(0,0,0,0.14);
-        color: #333;
-        font-size: 0.85rem;
-    }
-
-    .notification-dropdown > strong {
-        display: block;
-        padding-bottom: 0.65rem;
-        border-bottom: 1px solid #eee;
-    }
-
-    .notification-item {
-        display: block;
-        padding: 0.65rem 0;
-        border-bottom: 1px solid #f1f1f1;
-    }
-
-    .notification-item:last-child {
-        border-bottom: 0;
-    }
-
-    .notification-item strong,
-    .notification-item small {
-        display: block;
-    }
-
-    .notification-item small {
-        margin-top: 0.25rem;
-        color: #888;
     }
 
     .badge {
@@ -345,9 +269,6 @@
         const userMenuBtn = document.getElementById('userMenuBtn');
         const userDropdown = document.getElementById('userDropdown');
         const logoutBtn = document.getElementById('logoutBtn');
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationDropdown = document.getElementById('notificationDropdown');
-        const notificationList = document.getElementById('notificationList');
 
         // Toggle user dropdown
         if (userMenuBtn && userDropdown) {
@@ -363,22 +284,6 @@
                 }
             });
         }
-
-        if (notificationBtn && notificationDropdown) {
-            notificationBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const isHidden = notificationDropdown.style.display === 'none';
-                notificationDropdown.style.display = isHidden ? 'block' : 'none';
-                notificationBtn.setAttribute('aria-expanded', String(isHidden));
-                if (isHidden) loadNotifications();
-            });
-        }
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.notification-menu')) {
-                if (notificationDropdown) notificationDropdown.style.display = 'none';
-            }
-        });
 
         // Logout functionality
         if (logoutBtn) {
@@ -404,29 +309,4 @@
             }
         }
     });
-
-    async function loadNotifications() {
-        const list = document.getElementById('notificationList');
-        if (!list) return;
-        const token = localStorage.getItem('token');
-        try {
-            const response = await fetch('/api/thong-bao', {
-                headers: token ? { Authorization: 'Bearer ' + token } : {}
-            });
-            if (!response.ok) throw new Error('Notification API unavailable');
-            const notifications = await response.json();
-            if (!notifications.length) {
-                list.textContent = 'Không có thông báo mới.';
-                return;
-            }
-            list.innerHTML = notifications.slice(0, 5).map(item => `
-                <div class="notification-item">
-                    <strong>${item.tieuDe || item.noiDung || 'Thông báo hệ thống'}</strong>
-                    <small>${item.ngayGui || 'Mới cập nhật'}</small>
-                </div>
-            `).join('');
-        } catch (error) {
-            list.textContent = 'Không thể tải thông báo lúc này.';
-        }
-    }
 </script>
