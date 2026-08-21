@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="<c:url value='/resources/css/admin-dashboard.css'/>">
 </head>
 <body class="admin-body admin-page">
-    <jsp:include page="/WEB-INF/jsp/common/header.jsp" />
+
     <div class="admin-shell">
         <aside class="admin-sidebar">
             <div class="sidebar-top">

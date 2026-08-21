@@ -19,9 +19,6 @@
 
 <body class="admin-body admin-page">
 
-    <!-- HEADER -->
-    <jsp:include page="/WEB-INF/jsp/common/header.jsp" />
-
     <!-- ADMIN LAYOUT -->
     <div class="admin-shell">
 
@@ -401,4 +398,5 @@
 
     <script src="<c:url value='/resources/js/admin-dashboard.js'/>"></script>
 </body>
+
 </html>

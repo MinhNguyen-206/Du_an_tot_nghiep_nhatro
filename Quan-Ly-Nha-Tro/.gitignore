@@ -1,1 +1,6 @@
 src/main/resources/application-local.properties
+
+backend.log
+login-response.json
+springboot.err
+springboot.log

@@ -3,7 +3,10 @@ package com.nhatro.backend.controller;
 import com.nhatro.backend.entity.NguoiDung;
 import com.nhatro.backend.service.NguoiDungService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,8 +39,28 @@ public class NguoiDungController {
         return ResponseEntity.ok(nguoiDungService.create(nguoiDung));
     }
 
+    // Cho phep nguoi dung da dang nhap tu cap nhat ho so cua CHINH MINH
+    // (trang /profile), hoac ADMIN cap nhat ho so cua bat ky ai.
+    // Xem SecurityConfig: PUT /api/nguoi-dung/** chi yeu cau authenticated(),
+    // nen phai tu kiem tra quyen so huu o day de tranh 1 user sua du lieu cua user khac.
     @PutMapping("/{id}")
-    public ResponseEntity<NguoiDung> update(@PathVariable Integer id, @RequestBody NguoiDung duLieuMoi) {
+    public ResponseEntity<NguoiDung> update(@PathVariable Integer id,
+                                             @RequestBody NguoiDung duLieuMoi,
+                                             Authentication authentication) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_ADMIN"::equals);
+
+        if (!isAdmin) {
+            String currentEmail = authentication.getName();
+            boolean isSelf = nguoiDungService.getById(id)
+                    .map(nd -> nd.getEmail() != null && nd.getEmail().equalsIgnoreCase(currentEmail))
+                    .orElse(false);
+            if (!isSelf) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
         return nguoiDungService.update(id, duLieuMoi)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

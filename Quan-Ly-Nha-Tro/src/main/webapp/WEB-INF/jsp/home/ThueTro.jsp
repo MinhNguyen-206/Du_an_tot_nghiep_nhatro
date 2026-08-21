@@ -10,6 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thuê Phòng Trọ - ROOM - CONNECT</title>
+    <%@ include file="/WEB-INF/jsp/common/head-assets.jspf" %>
     <style>
         * {
             margin: 0;
@@ -496,29 +497,7 @@
 
 <body>
 
-<nav class="navbar">
-    <a href="${pageContext.request.contextPath}/thue-tro" class="logo">
-        ROOM - CONNECT
-    </a>
-
-    <div class="nav-links">
-        <a href="${pageContext.request.contextPath}/thue-tro" class="active">Thuê trọ</a>
-        <a href="${pageContext.request.contextPath}/thue-can-ho">Thuê căn hộ</a>
-        <a href="#">Về chúng tôi</a>
-        <a href="#">Liên hệ</a>
-    </div>
-
-    <!-- TÌM KIẾM KEYWORD -->
-    <form action="${pageContext.request.contextPath}/thue-tro" method="GET" class="search-bar-top">
-        🔍
-        <input type="text" name="keyword" value="<c:out value='${param.keyword}'/>" placeholder="Tìm kiếm phòng trọ...">
-    </form>
-
-    <div class="user-actions">
-        <span>🔔</span>
-        <button class="user-btn" type="button">Khách</button>
-    </div>
-</nav>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
 <div class="promo-banner">
     Đăng ký & Xác Minh Chủ Trọ: Miễn Phí 30 Ngày Premium Bạc
