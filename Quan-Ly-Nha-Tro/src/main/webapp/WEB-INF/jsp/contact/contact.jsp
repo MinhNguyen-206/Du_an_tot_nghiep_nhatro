@@ -14,9 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <%@ include file="/WEB-INF/jsp/common/head-assets.jspf" %>
 
     <style>
 
@@ -981,60 +979,7 @@
      HEADER
 ===================================================== -->
 
-<header class="header">
-
-    <div class="logo">
-        ROOM - CONNECT
-    </div>
-
-
-    <nav class="nav">
-
-        <a href="${pageContext.request.contextPath}/home">
-            Trang chủ
-        </a>
-
-        <a href="${pageContext.request.contextPath}/gioi-thieu">
-            Về chúng tôi
-        </a>
-
-        <a class="active" href="${pageContext.request.contextPath}/lien-he">
-            Liên hệ
-        </a>
-
-        <a href="${pageContext.request.contextPath}/thue-tro">
-            Tìm phòng
-        </a>
-
-    </nav>
-
-
-    <input
-        class="header-search"
-        type="text"
-        placeholder="Tìm kiếm phòng trọ..."
-    >
-
-
-    <div class="header-right">
-
-        <i class="fa-regular fa-bell notification"></i>
-
-        <div class="user">
-
-            <div class="avatar">
-                <i class="fa-regular fa-user"></i>
-            </div>
-
-            <span>
-                Khách
-            </span>
-
-        </div>
-
-    </div>
-
-</header>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
 
 

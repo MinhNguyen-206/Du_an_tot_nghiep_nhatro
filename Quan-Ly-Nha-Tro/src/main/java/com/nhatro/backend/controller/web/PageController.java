@@ -1,5 +1,6 @@
 package com.nhatro.backend.controller.web;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,9 +47,15 @@ public class PageController {
         return "auth/resetPassword";
     }
 
+    // "/rooms" la route cu (stub roomList.jsp chua noi voi du lieu that).
+    // Chuc nang tim kiem + loc phong hien da hoat dong day du o "/thue-tro"
+    // (xem HomeController + NhaTroSpecification), nen redirect sang do va
+    // giu nguyen query string (keyword, type, minPrice...) de cac form
+    // tim kiem cu (neu con tro ve "/rooms") van hoat dong dung.
     @GetMapping("/rooms")
-    public String danhSachPhong() {
-        return "room/roomList";
+    public String danhSachPhong(HttpServletRequest request) {
+        String queryString = request.getQueryString();
+        return "redirect:/thue-tro" + (queryString != null ? "?" + queryString : "");
     }
 
     @GetMapping("/rooms/{id}")
@@ -79,5 +86,15 @@ public class PageController {
     @GetMapping("/lien-he")
     public String lienHe() {
         return "contact/contact";
+    }
+
+    // =====================================================
+    // HO SO CA NHAN (trang tinh, tu kiem tra dang nhap bang JS
+    // + localStorage giong header.jsp; xem note trong SecurityConfig)
+    // =====================================================
+
+    @GetMapping("/profile")
+    public String hoSoCaNhan() {
+        return "profile/profile";
     }
 }

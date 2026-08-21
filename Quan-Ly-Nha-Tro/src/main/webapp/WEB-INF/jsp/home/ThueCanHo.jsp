@@ -17,6 +17,8 @@
 
     <title>Thuê Căn Hộ - ROOM - CONNECT</title>
 
+    <%@ include file="/WEB-INF/jsp/common/head-assets.jspf" %>
+
     <style>
 
         * {
@@ -385,67 +387,7 @@
 <body>
 
 
-<nav class="navbar">
-
-    <a href="${pageContext.request.contextPath}/thue-tro"
-       class="logo">
-
-        ROOM - CONNECT
-
-    </a>
-
-
-    <div class="nav-links">
-
-        <a href="${pageContext.request.contextPath}/thue-tro">
-
-            Thuê trọ
-
-        </a>
-
-        <a href="${pageContext.request.contextPath}/thue-can-ho"
-           class="active">
-
-            Thuê căn hộ
-
-        </a>
-
-        <a href="#">
-
-            Về chúng tôi
-
-        </a>
-
-        <a href="#">
-
-            Liên hệ
-
-        </a>
-
-    </div>
-
-
-    <div class="search-bar-top">
-
-        🔍
-
-        <input type="text"
-               placeholder="Tìm kiếm căn hộ, chung cư...">
-
-    </div>
-
-
-    <div class="user-actions">
-
-        <span>🔔</span>
-
-        <button class="user-btn">
-            Khách
-        </button>
-
-    </div>
-
-</nav>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
 
 <div class="promo-banner">

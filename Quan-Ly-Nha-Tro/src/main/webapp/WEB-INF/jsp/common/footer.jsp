@@ -1,5 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
+<%@ page pageEncoding="UTF-8" %>
 <!-- Footer Component - Include this in any page -->
 <footer class="footer">
     <div class="footer-container">

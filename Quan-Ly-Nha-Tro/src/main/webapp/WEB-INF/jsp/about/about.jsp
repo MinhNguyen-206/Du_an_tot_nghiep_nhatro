@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 
+    <%@ include file="/WEB-INF/jsp/common/head-assets.jspf" %>
+
     <style>
         * {
             margin: 0;
@@ -741,38 +743,7 @@
      HEADER
 ========================= -->
 
-<header class="header">
-    <div class="header-inner">
-
-        <div class="logo">
-            ROOM - CONNECT
-        </div>
-
-        <nav class="nav">
-            <a href="${pageContext.request.contextPath}/home">Trang chủ</a>
-            <a class="active" href="${pageContext.request.contextPath}/gioi-thieu">Về chúng tôi</a>
-            <a href="${pageContext.request.contextPath}/lien-he">Liên hệ</a>
-            <a href="${pageContext.request.contextPath}/thue-tro">Tìm phòng</a>
-        </nav>
-
-        <div class="header-right">
-
-            <input
-                type="text"
-                class="search"
-                placeholder="Tìm kiếm phòng trọ..."
-            >
-
-            <div class="notification">♧</div>
-
-            <div class="user">
-                <div class="user-avatar">♙</div>
-                <span>Khách</span>
-            </div>
-
-        </div>
-    </div>
-</header>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
 
 <!-- =========================

@@ -73,87 +73,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Nhà Tốt - Tìm phòng trọ nhanh chóng</title>
+    <title>Room - Connect - Tìm phòng trọ nhanh chóng</title>
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome -->
-    <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    >
-
-    <!-- Font đẹp -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-            href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap"
-            rel="stylesheet"
-    >
-
-    <script>
-
-        tailwind.config = {
-
-            theme: {
-
-                extend: {
-
-                    colors: {
-
-                        brand: '#ff641e',
-                        brandDark: '#e9510d',
-
-                        cream: '#fff7f1',
-
-                        navy: '#172033'
-
-                    },
-
-                    fontFamily: {
-
-                        sans: ['Be Vietnam Pro', 'sans-serif']
-
-                    },
-
-                    boxShadow: {
-
-                        soft: '0 8px 30px rgba(38, 32, 25, .08)',
-
-                        card: '0 5px 20px rgba(38, 32, 25, .07)'
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    </script>
+    <%@ include file="/WEB-INF/jsp/common/head-assets.jspf" %>
 
     <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background: #f7f7f6;
-            color: #172033;
-        }
-
-        .hide-scroll::-webkit-scrollbar {
-            display: none;
-        }
-
-        .hide-scroll {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
 
         .hero-pattern {
             background:
@@ -232,128 +156,7 @@
 <!-- HEADER -->
 <!-- ========================================================= -->
 
-<header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
-
-    <div class="max-w-[1180px] mx-auto px-4">
-
-        <div class="h-[64px] flex items-center gap-3">
-
-            <!-- MENU -->
-
-            <button
-                    class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-orange-50 transition"
-            >
-                <i class="fa-solid fa-bars text-lg"></i>
-            </button>
-
-
-            <!-- LOGO -->
-
-            <a
-                    href="${pageContext.request.contextPath}/home"
-                    class="shrink-0"
-            >
-
-                <div class="text-[24px] font-black italic tracking-[-1.5px] text-brand">
-                    NHÀTỐT
-                </div>
-
-            </a>
-
-
-            <!-- LOCATION -->
-
-            <button
-                    class="hidden md:flex items-center gap-2 bg-gray-100 hover:bg-orange-50 px-4 py-2.5 rounded-full text-sm font-semibold transition"
-            >
-
-                <i class="fa-solid fa-location-dot text-brand"></i>
-
-                <span>TP Hồ Chí Minh</span>
-
-                <i class="fa-solid fa-chevron-down text-[10px]"></i>
-
-            </button>
-
-
-            <!-- SEARCH -->
-
-            <form
-                    action="${pageContext.request.contextPath}/rooms"
-                    method="GET"
-                    class="flex-1 hidden sm:flex"
-            >
-
-                <div class="relative w-full">
-
-                    <i
-                            class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    ></i>
-
-                    <input
-                            type="text"
-                            name="keyword"
-                            placeholder="Tìm phòng trọ, căn hộ..."
-                            class="w-full h-11 rounded-full bg-gray-100 pl-11 pr-14 text-sm outline-none border border-transparent focus:border-orange-200 focus:bg-white transition"
-                    >
-
-                    <button
-                            type="submit"
-                            class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-brand text-white hover:bg-brandDark transition"
-                    >
-
-                        <i class="fa-solid fa-arrow-right"></i>
-
-                    </button>
-
-                </div>
-
-            </form>
-
-
-            <!-- RIGHT -->
-
-            <div class="flex items-center gap-1 ml-auto">
-
-                <button
-                        class="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-orange-50"
-                >
-                    <i class="fa-regular fa-heart text-lg"></i>
-                </button>
-
-                <button
-                        class="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-orange-50"
-                >
-                    <i class="fa-regular fa-bell text-lg"></i>
-                </button>
-
-
-                <a
-                        href="${pageContext.request.contextPath}/login"
-                        class="hidden sm:flex px-4 py-2.5 rounded-full border border-gray-200 text-sm font-bold hover:border-orange-300 hover:text-brand transition"
-                >
-                    Đăng nhập
-                </a>
-
-
-                <a
-                        href="${pageContext.request.contextPath}/login"
-                        class="flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-full text-sm font-bold hover:bg-brandDark transition shadow-sm"
-                >
-
-                    <i class="fa-solid fa-pen-to-square"></i>
-
-                    <span>Đăng tin</span>
-
-                </a>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</header>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
 
 <!-- ========================================================= -->
@@ -410,7 +213,7 @@
         >
 
             <form
-                    action="${pageContext.request.contextPath}/rooms"
+                    action="${pageContext.request.contextPath}/thue-tro"
                     method="GET"
                     class="flex flex-col md:flex-row gap-2"
             >
@@ -437,9 +240,9 @@
                 >
 
                     <option value="">Loại phòng</option>
-                    <option value="room">Phòng trọ</option>
-                    <option value="ktx">Ký túc xá</option>
-                    <option value="apartment">Căn hộ</option>
+                    <option value="Phòng trọ">Phòng trọ</option>
+                    <option value="Kí túc xá">Ký túc xá</option>
+                    <option value="Chung cư mini">Căn hộ</option>
 
                 </select>
 
@@ -1234,7 +1037,7 @@
                 <div
                         class="text-2xl font-black italic text-orange-400"
                 >
-                    NHÀTỐT
+                    ROOM - CONNECT
                 </div>
 
                 <p class="text-gray-400 text-xs leading-6 mt-4 max-w-[250px]">
@@ -1319,7 +1122,7 @@
 
                     <p>
                         <i class="fa-solid fa-envelope text-orange-400 w-5"></i>
-                        support@nhatot.vn
+                        support@roomconnect.vn
                     </p>
 
                     <p>
@@ -1368,7 +1171,7 @@
         <div class="border-t border-white/10 mt-10 pt-6 text-center">
 
             <p class="text-[11px] text-gray-500">
-                © 2026 NHÀ TỐT - Hệ thống quản lý thuê trọ thông minh.
+                © 2026 ROOM - CONNECT - Hệ thống quản lý thuê trọ thông minh.
             </p>
 
         </div>

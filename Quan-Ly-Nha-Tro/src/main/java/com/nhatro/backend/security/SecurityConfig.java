@@ -94,7 +94,8 @@ public class SecurityConfig {
                                 "/chi-tiet-phong",
                                 "/chi-tiet-phong/**",
                                 "/rooms",
-                                "/rooms/**"
+                                "/rooms/**",
+                                "/profile"
                         ).permitAll()
 
                         // Admin Dashboard (view JSP)
@@ -128,7 +129,10 @@ public class SecurityConfig {
                                 "/api/bao-cao/**",
                                 "/api/xac-thuc-ekyc/**"
                         ).hasAuthority(ADMIN)
-                        .requestMatchers(HttpMethod.PUT, "/api/nguoi-dung/**").hasAuthority(ADMIN)
+                        // PUT tu-cap-nhat ho so: cho phep bat ky nguoi dung da dang nhap nao goi,
+                        // NguoiDungController se tu kiem tra chi duoc sua ho so cua chinh minh
+                        // (tru khi la ADMIN) truoc khi cho ghi.
+                        .requestMatchers(HttpMethod.PUT, "/api/nguoi-dung/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/nguoi-dung/**").hasAuthority(ADMIN)
                         .requestMatchers(HttpMethod.GET, "/api/nguoi-dung").hasAuthority(ADMIN)
 
@@ -173,14 +177,16 @@ public class SecurityConfig {
                 )
 
                 // 3. JWT FILTER
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // // 4. OAUTH2 LOGIN
-                // .oauth2Login(oauth2 -> oauth2
-                //         .loginPage("/login")
-                //         .successHandler(oAuth2LoginSuccessHandler)
-                //         .failureUrl("/login?error=google")
-                // );
+                // 4. OAUTH2 LOGIN (Google) - PHAI bat lai khoi nay, neu khong
+                // Spring Security se khong dang ky client "google" nao ca va
+                // request "/oauth2/authorization/google" se roi vao /error (403).
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureUrl("/login?error=google")
+                );
 
         return http.build();
     }
