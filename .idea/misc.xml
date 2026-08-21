@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
+<<<<<<< HEAD
   <component name="KubernetesApiProvider">{}</component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/Du_an_tot_nghiep_nhatro-admin-chutro/Quan-Ly-Nha-Tro/pom.xml" />
+=======
+  <component name="KubernetesApiProvider"><![CDATA[{}]]></component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/Du_an_tot_nghiep_nhatro-main/Quan-Ly-Nha-Tro/pom.xml" />
+>>>>>>> master
       </list>
     </option>
   </component>
