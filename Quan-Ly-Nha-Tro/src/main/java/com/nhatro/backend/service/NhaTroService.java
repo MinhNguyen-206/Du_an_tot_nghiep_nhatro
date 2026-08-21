@@ -22,6 +22,10 @@ public class NhaTroService {
         return nhaTroRepository.findAll();
     }
 
+    public long count() {
+        return nhaTroRepository.count();
+    }
+
     public Optional<NhaTro> getById(Integer id) {
         Objects.requireNonNull(id, "id must not be null");
         return nhaTroRepository.findById(id);

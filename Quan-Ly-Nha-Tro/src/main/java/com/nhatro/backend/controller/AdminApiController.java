@@ -80,7 +80,7 @@ public class AdminApiController {
 
         return ResponseEntity.ok(new AdminDashboardResponse(
                 nguoiDungService.getAll().size(),
-                nhaTroService.getAll().size(),
+                nhaTroService.count(),
                 phongTroService.getAll().size(),
                 dangTinService.getAll().size(),
                 lichHenService.getAll().size(),
