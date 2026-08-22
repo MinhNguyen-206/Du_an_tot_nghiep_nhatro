@@ -513,6 +513,11 @@
 
             </h1>
 
+            <button id="saveRoomBtn" type="button"
+                    style="border:1px solid #ddd;padding:9px 14px;border-radius:8px;background:#fff;color:#444;font-weight:700;cursor:pointer;margin-bottom:12px;">
+                ♡ Lưu phòng
+            </button>
+
 
             <div class="location">
 
@@ -902,3 +907,26 @@
 </body>
 
 </html>
+<script src="${pageContext.request.contextPath}/resources/js/api.js"></script>
+<script>
+(function(){
+    var roomId = new URLSearchParams(window.location.search).get('id');
+    var user = null;
+    try { user = JSON.parse(localStorage.getItem('user') || 'null'); } catch(e) {}
+    if (!roomId || !user || !user.maNguoiDung || !localStorage.getItem('token')) return;
+
+    // Ghi nhận lượt xem khi khách thuê mở trang chi tiết.
+    apiFetch('/profile/' + user.maNguoiDung + '/viewed-rooms/' + roomId, {method:'POST'}).catch(function(){});
+
+    var btn = document.getElementById('saveRoomBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+        btn.disabled = true;
+        var saving = btn.textContent.indexOf('Lưu') >= 0 && btn.textContent.indexOf('Đã') < 0;
+        apiFetch('/profile/' + user.maNguoiDung + '/saved-rooms/' + roomId, {method:'POST'})
+            .then(function(){ btn.textContent = '♥ Đã lưu phòng'; btn.style.color = '#e44b3c'; })
+            .catch(function(err){ alert((err && err.message) || 'Không thể lưu phòng.'); })
+            .finally(function(){ btn.disabled = false; });
+    });
+})();
+</script>

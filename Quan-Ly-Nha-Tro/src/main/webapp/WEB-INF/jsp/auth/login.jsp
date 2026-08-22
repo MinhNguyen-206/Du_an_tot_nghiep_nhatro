@@ -96,7 +96,11 @@
 
             try {
                 const data = await AuthApi.login(email, password);
-                localStorage.setItem("token", data.token);
+                // saveAuthToken() luu ca localStorage LAN cookie "jwt" (xem resources/js/api.js)
+                // Cookie la bat buoc vi cac trang JSP (vd: /chu-tro, /admin) duoc dieu huong
+                // bang window.location.href / <a href>, khong phai fetch(), nen khong the
+                // tu dinh kem header Authorization - server chi xac thuc duoc qua cookie.
+                saveAuthToken(data.token);
                 localStorage.setItem("user", JSON.stringify(data.user));
 
                 // dieu huong theo vai tro (maVaiTro: 1 = Admin, 2 = Chu tro, 3 = Nguoi thue)

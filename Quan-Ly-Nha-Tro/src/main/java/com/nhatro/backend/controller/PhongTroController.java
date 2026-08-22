@@ -2,6 +2,8 @@ package com.nhatro.backend.controller;
 
 import com.nhatro.backend.entity.PhongTro;
 import com.nhatro.backend.service.PhongTroService;
+import com.nhatro.backend.service.PhongCardService;
+import com.nhatro.backend.dto.PhongCardDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +16,11 @@ import java.util.List;
 public class PhongTroController {
 
     private final PhongTroService phongTroService;
+    private final PhongCardService phongCardService;
 
-    public PhongTroController(PhongTroService phongTroService) {
+    public PhongTroController(PhongTroService phongTroService, PhongCardService phongCardService) {
         this.phongTroService = phongTroService;
+        this.phongCardService = phongCardService;
     }
 
     @GetMapping
@@ -28,6 +32,13 @@ public class PhongTroController {
     public ResponseEntity<PhongTro> getById(@PathVariable Integer id) {
         return phongTroService.getById(id)
                 .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/card")
+    public ResponseEntity<PhongCardDto> getCard(@PathVariable Integer id) {
+        return phongTroService.getById(id)
+                .map(room -> ResponseEntity.ok(phongCardService.toCard(room, null)))
                 .orElse(ResponseEntity.notFound().build());
     }
 

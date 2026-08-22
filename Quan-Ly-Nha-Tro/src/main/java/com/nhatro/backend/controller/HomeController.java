@@ -1,9 +1,9 @@
 package com.nhatro.backend.controller;
 
-import com.nhatro.backend.entity.NhaTro;
-import com.nhatro.backend.model.Room;
-import com.nhatro.backend.repository.NhaTroRepository;
-import com.nhatro.backend.repository.specification.NhaTroSpecification;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,8 +14,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.nhatro.backend.entity.NhaTro;
+import com.nhatro.backend.model.Room;
+import com.nhatro.backend.repository.NhaTroRepository;
+import com.nhatro.backend.repository.specification.NhaTroSpecification;
+
+import jakarta.transaction.Transactional;
 
 @Controller
 public class HomeController {
@@ -48,6 +52,7 @@ public class HomeController {
      * ============================================================
      */
     @GetMapping("/thue-tro")
+    @Transactional
     public String thueTro(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String location,
@@ -81,6 +86,13 @@ public class HomeController {
                 keyword, location, minPrice, maxPrice, types, wifi, ac, parking, camera, pet);
 
         Page<NhaTro> nhaTroPage = nhaTroRepository.findAll(spec, pageable);
+
+        // spring.jpa.open-in-view=false -> session Hibernate đóng ngay khi
+        // hàm này return, TRƯỚC KHI JSP render. Nếu không ép load
+        // danhSachTienIch (LAZY) ở đây, JSP sẽ dính LazyInitializationException
+        // giữa chừng khi render -> response bị cắt cụt (ERR_INCOMPLETE_CHUNKED_ENCODING).
+        nhaTroPage.getContent()
+                .forEach(nt -> Hibernate.initialize(nt.getDanhSachTienIch()));
 
         // Truyền dữ liệu sang JSP
         model.addAttribute("listNhaTro", nhaTroPage.getContent());

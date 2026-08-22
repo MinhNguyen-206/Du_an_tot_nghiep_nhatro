@@ -9,6 +9,24 @@
 const API_BASE = "/api";
 
 /**
+ * Luu JWT vao CA localStorage (cho apiFetch dung Authorization header)
+ * LAN cookie "jwt" (de trinh duyet tu dong gui kem khi dieu huong trang
+ * thuong nhu /chu-tro, /admin/... - nhung request nay KHONG phai la
+ * fetch() nen khong the tu gan header Authorization).
+ * JwtAuthenticationFilter se doc them cookie nay khi khong co header.
+ */
+function saveAuthToken(token) {
+  localStorage.setItem("token", token);
+  document.cookie = "jwt=" + encodeURIComponent(token) + "; path=/; SameSite=Lax";
+}
+
+function clearAuthToken() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  document.cookie = "jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
+
+/**
  * @param {string} path        VD: "/auth/login", "/phong-tro"
  * @param {object} [options]   { method, body, headers }
  */
@@ -26,8 +44,7 @@ async function apiFetch(path, options = {}) {
   });
 
   if (res.status === 401) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuthToken();
     window.location.href = "/login";
     return null;
   }
@@ -51,17 +68,15 @@ const AuthApi = {
   // Chua co AuthController.register() rieng ben BE, nen dung tam endpoint
   // POST /api/nguoi-dung (NguoiDungController.create) - endpoint nay da
   // permitAll trong SecurityConfig va da tu hash mat khau trong
-  // NguoiDungService.create(). maVaiTro: 2 = Chu tro, 3 = Nguoi thue.
-  register: ({ hoTen, email, soDienThoai, matKhau, maVaiTro }) =>
+  // NguoiDungService.create(). KHONG con gui maVaiTro nua: BE (xem
+  // NguoiDungController.create) LUON ep vai tro tai khoan moi ve
+  // "Nguoi thue" bat ke client gui gi - dang ky khong con cho chon vai
+  // tro nua. Muon thanh Chu tro se phai di qua luong "dang ky chu tro"
+  // rieng (Admin duyet) - luong nay CHUA duoc trien khai o BE.
+  register: ({ hoTen, email, soDienThoai, matKhau }) =>
     apiFetch("/nguoi-dung", {
       method: "POST",
-      body: {
-        hoTen,
-        email,
-        soDienThoai,
-        matKhau,
-        vaiTro: { maVaiTro },
-      },
+      body: { hoTen, email, soDienThoai, matKhau },
     }),
 
   // Gui yeu cau khoi phuc mat khau - BE se gui email chua link dat lai mat khau

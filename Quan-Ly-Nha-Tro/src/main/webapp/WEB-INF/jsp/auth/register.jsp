@@ -29,6 +29,11 @@
             <div class="auth-header">
                 <h2>Tạo tài khoản</h2>
                 <p>Vui lòng điền thông tin để đăng ký thành viên tại <strong>Room Connect.</strong></p>
+                <p style="font-size:13px;color:#6b7280;margin-top:4px;">
+                    Tài khoản mới sẽ được tạo với vai trò <strong>Người thuê</strong>.
+                    Muốn đăng cho thuê phòng, sau khi đăng ký bạn có thể gửi yêu cầu
+                    trở thành Chủ trọ để quản trị viên xét duyệt.
+                </p>
             </div>
 
             <div class="auth-alert error" id="registerError"></div>
@@ -70,20 +75,6 @@
                         <i class="fa-solid fa-shield left-icon"></i>
                         <input type="password" id="regConfirmPassword" placeholder="Nhập lại mật khẩu" required minlength="6">
                         <i class="fa-regular fa-eye right-icon toggle-password"></i>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="label-group"><label>Bạn đăng ký với vai trò *</label></div>
-                    <div class="role-choice">
-                        <div class="role-option">
-                            <input type="radio" name="maVaiTro" id="roleTenant" value="3" checked>
-                            <label for="roleTenant"><i class="fa-solid fa-user"></i> Người thuê</label>
-                        </div>
-                        <div class="role-option">
-                            <input type="radio" name="maVaiTro" id="roleHost" value="2">
-                            <label for="roleHost"><i class="fa-solid fa-house-user"></i> Chủ trọ</label>
-                        </div>
                     </div>
                 </div>
 
@@ -129,7 +120,6 @@
             const soDienThoai = document.getElementById("soDienThoai").value.trim();
             const matKhau = document.getElementById("regPassword").value;
             const confirmPassword = document.getElementById("regConfirmPassword").value;
-            const maVaiTro = Number(document.querySelector('input[name="maVaiTro"]:checked').value);
 
             if (matKhau !== confirmPassword) {
                 registerError.textContent = "Mật khẩu xác nhận không khớp.";
@@ -142,7 +132,8 @@
 
             try {
                 // TODO (BE): tam thoi dung POST /api/nguoi-dung (xem ghi chu trong api.js).
-                await AuthApi.register({ hoTen, email, soDienThoai, matKhau, maVaiTro });
+                // Khong con gui maVaiTro nua - BE luon ep vai tro moi tao ve "Nguoi thue".
+                await AuthApi.register({ hoTen, email, soDienThoai, matKhau });
 
                 registerSuccess.textContent = "Đăng ký thành công! Đang chuyển sang trang đăng nhập...";
                 registerSuccess.classList.add("show");

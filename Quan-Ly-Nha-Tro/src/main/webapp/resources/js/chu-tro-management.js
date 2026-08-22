@@ -1,320 +1,991 @@
 (function () {
     "use strict";
 
-    const storageKeys = {
-        properties: "roomConnect.demo.properties.v1",
-        rooms: "roomConnect.demo.rooms.v1"
-    };
+    const API = window.NHA_TRO_API || "/api/nha-tro";
 
-    const $ = (selector, root = document) => root.querySelector(selector);
-    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    const $ = (selector, root = document) =>
+        root.querySelector(selector);
+
+    const $$ = (selector, root = document) =>
+        Array.from(root.querySelectorAll(selector));
+
+
+    // =========================================================
+    // TOKEN
+    // =========================================================
+
+    function getToken() {
+        return localStorage.getItem("token") || "";
+    }
+
+
+    function headers(json = false) {
+
+        const result = {};
+
+        if (json) {
+            result["Content-Type"] = "application/json";
+        }
+
+        const token = getToken();
+
+        if (token) {
+            result["Authorization"] = "Bearer " + token;
+        }
+
+        return result;
+    }
+
+
+    // =========================================================
+    // HTML SAFE
+    // =========================================================
 
     function escapeHtml(value) {
-        return String(value ?? "").replace(/[&<>"']/g, ch => ({
-            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-        }[ch]));
+
+        return String(value ?? "")
+            .replace(/[&<>"']/g, ch => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            }[ch]));
     }
 
-    function formatMoney(value) {
-        return new Intl.NumberFormat("vi-VN").format(Number(value) || 0) + "đ";
-    }
 
-    function readStorage(key) {
-        try {
-            return JSON.parse(localStorage.getItem(key) || "[]");
-        } catch (e) {
-            return [];
-        }
-    }
+    // =========================================================
+    // MODAL
+    // =========================================================
 
-    function writeStorage(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-    }
+    function openModal() {
 
-    function openModal(id) {
-        const modal = $("#" + id);
+        const modal = $("#propertyModal");
+
         if (!modal) return;
+
         modal.classList.add("show");
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
-        const input = modal.querySelector("input");
-        if (input) setTimeout(() => input.focus(), 80);
+
+        const input = $("#propertyName");
+
+        if (input) {
+            setTimeout(() => input.focus(), 80);
+        }
     }
 
-    function closeModal(id) {
-        const modal = $("#" + id);
+
+    function closeModal() {
+
+        const modal = $("#propertyModal");
+
         if (!modal) return;
+
         modal.classList.remove("show");
         modal.setAttribute("aria-hidden", "true");
-        if (!$$(".owner-modal.show").length) document.body.classList.remove("modal-open");
+
+        if (!$$(".owner-modal.show").length) {
+            document.body.classList.remove("modal-open");
+        }
     }
 
-    function bindModal(openId, modalId, closeAttr) {
-        const openButton = $("#" + openId);
-        if (openButton) openButton.addEventListener("click", () => openModal(modalId));
 
-        $$("[" + closeAttr + "]").forEach(el => {
-            el.addEventListener("click", () => closeModal(modalId));
-        });
+    // =========================================================
+    // RESET FORM
+    // =========================================================
+
+    function resetFormForCreate() {
+
+        const form = $("#propertyForm");
+
+        if (!form) return;
+
+        form.reset();
+
+        $("#propertyId").value = "";
+        $("#propertyRating").value = "5.0";
+
+        $("#propertyModalTitle").textContent =
+            "Thêm nhà trọ";
+
+        $("#propertyModalDescription").textContent =
+            "Nhập thông tin để tạo nhà trọ mới.";
+
+        $("#propertySubmitBtn span").textContent =
+            "Thêm nhà trọ";
+
+        $("#propertySubmitBtn i").className =
+            "bi bi-check-lg";
+
+        hideImagePreview();
     }
 
-    document.addEventListener("keydown", e => {
-        if (e.key === "Escape") $$(".owner-modal.show").forEach(m => closeModal(m.id));
-    });
 
-    // =========================
-    // NHÀ TRỌ
-    // =========================
-    function propertyCard(item) {
-        const cover = ["one", "two", "three", "four"][Math.floor(Math.random() * 4)];
-        const status = item.status === "paused" ? "paused" : "active";
-        const statusText = status === "paused" ? "TẠM NGƯNG" : "ĐANG HOẠT ĐỘNG";
-        const rooms = Number(item.rooms) || 0;
-        const occupied = Number(item.occupied) || 0;
+    // =========================================================
+    // EDIT FORM
+    // =========================================================
 
-        return `
-            <article class="property-card" data-name="${escapeHtml(item.name)}" data-status="${status}" data-demo-id="${escapeHtml(item.id)}">
-                <div class="property-cover ${cover}">
-                    <span class="${status === "paused" ? "paused" : ""}">
-                        <i class="bi ${status === "paused" ? "bi-pause-circle-fill" : "bi-check-circle-fill"}"></i> ${statusText}
-                    </span>
-                </div>
-                <div class="property-body">
-                    <h3>${escapeHtml(item.name)}</h3>
-                    <p><i class="bi bi-geo-alt"></i> ${escapeHtml(item.address)}</p>
-                    <div class="property-meta"><b>${rooms} phòng</b><span>${occupied} đang thuê</span></div>
-                    <button type="button" class="owner-btn light full-btn property-manage" data-property="${escapeHtml(item.name)}">
-                        <i class="bi bi-gear"></i> Quản lý nhà trọ
-                    </button>
-                </div>
-            </article>`;
-    }
+    function fillFormForEdit(card) {
 
-    function updatePropertyStats() {
-        const added = readStorage(storageKeys.properties);
-        const propertyCount = 4 + added.length;
-        const extraRooms = added.reduce((sum, p) => sum + (Number(p.rooms) || 0), 0);
-        const extraOccupied = added.reduce((sum, p) => sum + (Number(p.occupied) || 0), 0);
+        const id = card.dataset.id;
 
-        const setText = (id, value) => { const el = $("#" + id); if (el) el.textContent = value; };
-        setText("propertyCount", propertyCount);
-        setText("propertyRoomCount", 24 + extraRooms);
-        setText("propertyOccupiedCount", 18 + extraOccupied);
-        setText("propertyAvailableCount", 6 + Math.max(0, extraRooms - extraOccupied));
-    }
-
-    function initProperties() {
-        const grid = $("#propertyGrid");
-        if (!grid) return;
-
-        readStorage(storageKeys.properties).forEach(item => {
-            grid.insertAdjacentHTML("beforeend", propertyCard(item));
-        });
-
-        const search = $("#propertySearch");
-        const status = $("#propertyStatusFilter");
-        const empty = $("#propertyEmpty");
-
-        function filter() {
-            const keyword = (search?.value || "").trim().toLowerCase();
-            const wantedStatus = status?.value || "all";
-            let visible = 0;
-
-            $$(".property-card", grid).forEach(card => {
-                const matchName = (card.dataset.name || "").toLowerCase().includes(keyword);
-                const matchStatus = wantedStatus === "all" || card.dataset.status === wantedStatus;
-                card.style.display = matchName && matchStatus ? "" : "none";
-                if (matchName && matchStatus) visible++;
-            });
-
-            if (empty) empty.hidden = visible !== 0;
+        if (!id) {
+            showToast(
+                "Không tìm thấy mã nhà trọ.",
+                "error"
+            );
+            return;
         }
 
-        search?.addEventListener("input", filter);
-        $("#propertyFilterBtn")?.addEventListener("click", filter);
 
-        grid.addEventListener("click", e => {
-            const button = e.target.closest(".property-manage");
-            if (!button) return;
-            const property = button.dataset.property || "";
-            window.location.href = "rooms?property=" + encodeURIComponent(property);
-        });
+        const name =
+            card.querySelector("h3")?.textContent.trim() || "";
 
-        bindModal("openPropertyModal", "propertyModal", "data-close-property");
 
-        $("#propertyForm")?.addEventListener("submit", e => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const data = new FormData(form);
-            const rooms = Math.max(0, Number(data.get("rooms")) || 0);
+        const address =
+            card.querySelector("p")?.textContent
+                .replace(/\s+/g, " ")
+                .replace("📍", "")
+                .trim() || "";
 
-            const item = {
-                id: Date.now().toString(),
-                name: data.get("name"),
-                address: data.get("address"),
-                status: data.get("status"),
-                rooms: rooms,
-                occupied: 0,
-                rating: data.get("rating"),
-                description: data.get("description")
-            };
 
-            const properties = readStorage(storageKeys.properties);
-            properties.push(item);
-            writeStorage(storageKeys.properties, properties);
+        const ratingText =
+            card.querySelector("small")?.textContent || "";
 
-            grid.insertAdjacentHTML("beforeend", propertyCard(item));
-            updatePropertyStats();
-            form.reset();
-            closeModal("propertyModal");
-            filter();
-            showToast("Đã thêm nhà trọ " + item.name);
-        });
 
-        updatePropertyStats();
-        filter();
+        const ratingMatch =
+            ratingText.match(/★\s*([0-9]+(?:\.[0-9]+)?)/);
+
+
+        const rating =
+            ratingMatch
+                ? ratingMatch[1]
+                : "5.0";
+
+
+        const image =
+            card.querySelector(".property-image")?.getAttribute("src")
+            || "";
+
+
+        $("#propertyId").value = id;
+        $("#propertyName").value = name;
+        $("#propertyAddress").value = address;
+        $("#propertyRating").value = rating;
+        $("#propertyDescription").value = "";
+
+        $("#propertyImage").value = image;
+
+
+        $("#propertyModalTitle").textContent =
+            "Sửa nhà trọ";
+
+        $("#propertyModalDescription").textContent =
+            "Cập nhật thông tin nhà trọ và lưu trực tiếp vào SQL Server.";
+
+        $("#propertySubmitBtn span").textContent =
+            "Lưu thay đổi";
+
+        $("#propertySubmitBtn i").className =
+            "bi bi-save";
+
+
+        if (image) {
+            showImagePreview(image);
+        } else {
+            hideImagePreview();
+        }
+
+
+        /*
+         * Lấy mô tả đầy đủ từ API vì card không hiển thị mô tả.
+         */
+        loadPropertyDetailForEdit(id);
+
+        openModal();
     }
 
-    // =========================
-    // PHÒNG
-    // =========================
-    function roomCard(item) {
-        const status = item.status || "available";
-        const map = {
-            occupied: { text: "Đang thuê", cls: "green", card: "occupied-card", icon: "bi-door-closed" },
-            available: { text: "Còn trống", cls: "orange", card: "available-card", icon: "bi-door-open" },
-            pending: { text: "Chờ ký HĐ", cls: "purple", card: "pending-card", icon: "bi-door-closed" }
+
+    async function loadPropertyDetailForEdit(id) {
+
+        try {
+
+            const response =
+                await fetch(
+                    API + "/" + encodeURIComponent(id)
+                );
+
+
+            if (!response.ok) {
+                return;
+            }
+
+
+            const item =
+                await response.json();
+
+
+            if ($("#propertyId").value !== String(id)) {
+                return;
+            }
+
+
+            $("#propertyDescription").value =
+                item.moTa || "";
+
+
+            $("#propertyImage").value =
+                item.hinhAnh || "";
+
+
+            if (item.hinhAnh) {
+                showImagePreview(item.hinhAnh);
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Không lấy được chi tiết nhà trọ:",
+                error
+            );
+        }
+    }
+
+
+    // =========================================================
+    // IMAGE PREVIEW
+    // =========================================================
+
+    function showImagePreview(url) {
+
+        const preview =
+            $("#propertyImagePreview");
+
+        if (!preview || !url) return;
+
+        preview.src = url;
+        preview.classList.add("show");
+
+        preview.onerror = function () {
+
+            preview.classList.remove("show");
+
+            showToast(
+                "Link ảnh không hợp lệ hoặc ảnh không cho phép nhúng.",
+                "error"
+            );
         };
-        const meta = map[status] || map.available;
-        const detail = status === "occupied"
-            ? escapeHtml(item.tenant || "Đang cập nhật")
-            : status === "pending"
-                ? escapeHtml(item.tenant || "Đang chờ ký hợp đồng")
-                : "Sẵn sàng cho thuê";
-
-        return `
-            <article class="room-card ${meta.card}" data-name="${escapeHtml((item.name || "") + " " + (item.tenant || ""))}"
-                     data-property="${escapeHtml(item.property)}" data-status="${status}" data-demo-id="${escapeHtml(item.id)}">
-                <div class="room-top">
-                    <b><i class="bi ${meta.icon}"></i> ${escapeHtml(item.name)}</b>
-                    <span class="status-pill ${meta.cls}">${meta.text}</span>
-                </div>
-                <h3>${formatMoney(item.price)} <small>/ tháng</small></h3>
-                <p><i class="bi ${status === "available" ? "bi-door-open" : "bi-person"}"></i> ${detail}</p>
-                <div class="room-foot">
-                    <span>${item.area ? escapeHtml(item.area) + " m²" : "Diện tích chưa cập nhật"}</span>
-                    <span>${escapeHtml(item.type || "Phòng tiêu chuẩn")}</span>
-                </div>
-            </article>`;
     }
 
-    function updateRoomStats() {
-        const added = readStorage(storageKeys.rooms);
-        let occupied = 18, available = 6;
-        added.forEach(r => {
-            if (r.status === "occupied") occupied++;
-            else if (r.status === "available") available++;
-        });
 
-        const setText = (id, value) => { const el = $("#" + id); if (el) el.textContent = value; };
-        setText("roomTotal", 24 + added.length);
-        setText("roomOccupied", occupied);
-        setText("roomAvailable", available);
+    function hideImagePreview() {
+
+        const preview =
+            $("#propertyImagePreview");
+
+        if (!preview) return;
+
+        preview.removeAttribute("src");
+        preview.classList.remove("show");
     }
 
-    function initRooms() {
-        const grid = $("#roomGrid");
-        if (!grid) return;
 
-        readStorage(storageKeys.rooms).forEach(item => {
-            grid.insertAdjacentHTML("beforeend", roomCard(item));
-        });
+    // =========================================================
+    // TOAST
+    // =========================================================
 
-        const search = $("#roomSearch");
-        const property = $("#roomPropertyFilter");
-        const status = $("#roomStatusFilter");
-        const empty = $("#roomEmpty");
+    function showToast(
+        message,
+        type = "success"
+    ) {
 
-        const params = new URLSearchParams(window.location.search);
-        const propertyFromUrl = params.get("property");
-        if (propertyFromUrl && property) {
-            property.value = propertyFromUrl;
-        }
+        let toast =
+            $("#ownerToast");
 
-        function filter() {
-            const keyword = (search?.value || "").trim().toLowerCase();
-            const wantedProperty = property?.value || "all";
-            const wantedStatus = status?.value || "all";
-            let visible = 0;
 
-            $$(".room-card", grid).forEach(card => {
-                const matchName = (card.dataset.name || "").toLowerCase().includes(keyword);
-                const matchProperty = wantedProperty === "all" || card.dataset.property === wantedProperty;
-                const matchStatus = wantedStatus === "all" || card.dataset.status === wantedStatus;
-                const show = matchName && matchProperty && matchStatus;
-                card.style.display = show ? "" : "none";
-                if (show) visible++;
-            });
-
-            if (empty) empty.hidden = visible !== 0;
-        }
-
-        search?.addEventListener("input", filter);
-        $("#roomFilterBtn")?.addEventListener("click", filter);
-        property?.addEventListener("change", filter);
-        status?.addEventListener("change", filter);
-
-        bindModal("openRoomModal", "roomModal", "data-close-room");
-
-        $("#roomForm")?.addEventListener("submit", e => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const data = new FormData(form);
-
-            const item = {
-                id: Date.now().toString(),
-                name: data.get("name"),
-                property: data.get("property"),
-                price: Number(data.get("price")) || 0,
-                area: data.get("area"),
-                type: data.get("type"),
-                status: data.get("status"),
-                tenant: data.get("tenant")
-            };
-
-            const rooms = readStorage(storageKeys.rooms);
-            rooms.push(item);
-            writeStorage(storageKeys.rooms, rooms);
-
-            grid.insertAdjacentHTML("beforeend", roomCard(item));
-            updateRoomStats();
-            form.reset();
-            closeModal("roomModal");
-            filter();
-            showToast("Đã thêm " + item.name);
-        });
-
-        updateRoomStats();
-        filter();
-    }
-
-    function showToast(message) {
-        let toast = $("#ownerToast");
         if (!toast) {
-            toast = document.createElement("div");
-            toast.id = "ownerToast";
-            toast.className = "owner-toast";
+
+            toast =
+                document.createElement("div");
+
+            toast.id =
+                "ownerToast";
+
+            toast.className =
+                "owner-toast";
+
             document.body.appendChild(toast);
         }
-        toast.innerHTML = '<i class="bi bi-check-circle-fill"></i><span></span>';
-        toast.querySelector("span").textContent = message;
+
+
+        toast.innerHTML =
+            '<i></i><span></span>';
+
+
+        const icon =
+            toast.querySelector("i");
+
+
+        icon.className =
+            type === "error"
+                ? "bi bi-exclamation-circle-fill"
+                : "bi bi-check-circle-fill";
+
+
+        toast.querySelector("span")
+            .textContent = message;
+
+
         toast.classList.add("show");
-        clearTimeout(window.__ownerToastTimer);
-        window.__ownerToastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+
+
+        clearTimeout(
+            window.__ownerToastTimer
+        );
+
+
+        window.__ownerToastTimer =
+            setTimeout(
+                () => toast.classList.remove("show"),
+                3000
+            );
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        initProperties();
-        initRooms();
-    });
+
+    // =========================================================
+    // API ERROR
+    // =========================================================
+
+    async function readError(response) {
+
+        try {
+
+            const data =
+                await response.json();
+
+            return data.message
+                || data.error
+                || "Có lỗi xảy ra.";
+
+        } catch (e) {
+
+            return "HTTP " + response.status;
+        }
+    }
+
+
+    // =========================================================
+    // FILTER
+    // =========================================================
+
+    function initFilter() {
+
+        const grid =
+            $("#propertyGrid");
+
+        if (!grid) return;
+
+
+        const search =
+            $("#propertySearch");
+
+        const status =
+            $("#propertyStatusFilter");
+
+        const empty =
+            $("#propertyEmpty");
+
+
+        function filter() {
+
+            const keyword =
+                (search?.value || "")
+                    .trim()
+                    .toLowerCase();
+
+
+            const wantedStatus =
+                status?.value || "all";
+
+
+            let visible = 0;
+
+
+            $$(".property-card", grid)
+                .forEach(card => {
+
+                    const name =
+                        (card.dataset.name || "")
+                            .toLowerCase();
+
+
+                    const cardStatus =
+                        card.dataset.status || "active";
+
+
+                    const matchName =
+                        name.includes(keyword);
+
+
+                    const matchStatus =
+                        wantedStatus === "all"
+                        || cardStatus === wantedStatus;
+
+
+                    const show =
+                        matchName && matchStatus;
+
+
+                    card.style.display =
+                        show ? "" : "none";
+
+
+                    if (show) {
+                        visible++;
+                    }
+                });
+
+
+            if (empty) {
+                empty.hidden =
+                    visible !== 0;
+            }
+        }
+
+
+        search?.addEventListener(
+            "input",
+            filter
+        );
+
+
+        $("#propertyFilterBtn")
+            ?.addEventListener(
+                "click",
+                filter
+            );
+
+
+        status?.addEventListener(
+            "change",
+            filter
+        );
+
+
+        filter();
+    }
+
+
+    // =========================================================
+    // ADD
+    // =========================================================
+
+    async function createProperty(form) {
+
+        const data =
+            new FormData(form);
+
+
+        const body = {
+
+            tenNhaTro:
+                String(
+                    data.get("name") || ""
+                ).trim(),
+
+            diaChi:
+                String(
+                    data.get("address") || ""
+                ).trim(),
+
+            soSao:
+                data.get("rating")
+                    ? Number(data.get("rating"))
+                    : null,
+
+            moTa:
+                String(
+                    data.get("description") || ""
+                ).trim(),
+
+            hinhAnh:
+                String(
+                    data.get("imageUrl") || ""
+                ).trim()
+        };
+
+
+        const response =
+            await fetch(
+                API + "/mine",
+                {
+                    method: "POST",
+                    headers: headers(true),
+                    body: JSON.stringify(body)
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                await readError(response)
+            );
+        }
+
+
+        return response.json();
+    }
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
+    async function updateProperty(
+        id,
+        form
+    ) {
+
+        const data =
+            new FormData(form);
+
+
+        const body = {
+
+            tenNhaTro:
+                String(
+                    data.get("name") || ""
+                ).trim(),
+
+            diaChi:
+                String(
+                    data.get("address") || ""
+                ).trim(),
+
+            soSao:
+                data.get("rating")
+                    ? Number(data.get("rating"))
+                    : null,
+
+            moTa:
+                String(
+                    data.get("description") || ""
+                ).trim(),
+
+            hinhAnh:
+                String(
+                    data.get("imageUrl") || ""
+                ).trim()
+        };
+
+
+        const response =
+            await fetch(
+                API
+                + "/mine/"
+                + encodeURIComponent(id),
+                {
+                    method: "PUT",
+                    headers: headers(true),
+                    body: JSON.stringify(body)
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                await readError(response)
+            );
+        }
+
+
+        return response.json();
+    }
+
+
+    // =========================================================
+    // DELETE
+    // =========================================================
+
+    async function deleteProperty(id) {
+
+        const response =
+            await fetch(
+                API
+                + "/mine/"
+                + encodeURIComponent(id),
+                {
+                    method: "DELETE",
+                    headers: headers()
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                await readError(response)
+            );
+        }
+    }
+
+
+    // =========================================================
+    // SUBMIT FORM
+    // =========================================================
+
+    function initForm() {
+
+        const form =
+            $("#propertyForm");
+
+        if (!form) return;
+
+
+        form.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                const id =
+                    $("#propertyId").value.trim();
+
+
+                const button =
+                    $("#propertySubmitBtn");
+
+
+                const oldText =
+                    button.querySelector("span")
+                        .textContent;
+
+
+                button.disabled = true;
+
+
+                button.querySelector("span")
+                    .textContent =
+                    id
+                        ? "Đang lưu..."
+                        : "Đang thêm...";
+
+
+                try {
+
+                    if (!getToken()) {
+
+                        throw new Error(
+                            "Bạn chưa đăng nhập hoặc token đã hết hạn. Hãy đăng nhập lại."
+                        );
+                    }
+
+
+                    if (id) {
+
+                        await updateProperty(
+                            id,
+                            form
+                        );
+
+                        showToast(
+                            "Đã sửa nhà trọ trong database."
+                        );
+
+                    } else {
+
+                        await createProperty(
+                            form
+                        );
+
+                        showToast(
+                            "Đã thêm nhà trọ vào database."
+                        );
+                    }
+
+
+                    closeModal();
+
+
+                    /*
+                     * Reload để số phòng, tổng nhà trọ
+                     * và danh sách lấy lại hoàn toàn từ SQL Server.
+                     */
+                    setTimeout(
+                        () => window.location.reload(),
+                        500
+                    );
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    showToast(
+                        error.message
+                        || "Không thể lưu nhà trọ.",
+                        "error"
+                    );
+
+                    button.disabled = false;
+
+                    button.querySelector("span")
+                        .textContent =
+                        oldText;
+                }
+            }
+        );
+    }
+
+
+    // =========================================================
+    // GRID ACTIONS
+    // =========================================================
+
+    function initGridActions() {
+
+        const grid =
+            $("#propertyGrid");
+
+        if (!grid) return;
+
+
+        grid.addEventListener(
+            "click",
+            async function (event) {
+
+                const manageButton =
+                    event.target.closest(
+                        ".property-manage"
+                    );
+
+
+                if (manageButton) {
+
+                    const property =
+                        manageButton.dataset.property
+                        || "";
+
+
+                    window.location.href =
+                        "rooms?property="
+                        + encodeURIComponent(
+                            property
+                        );
+
+                    return;
+                }
+
+
+                const editButton =
+                    event.target.closest(
+                        ".property-edit"
+                    );
+
+
+                if (editButton) {
+
+                    const card =
+                        editButton.closest(
+                            ".property-card"
+                        );
+
+
+                    if (card) {
+                        fillFormForEdit(card);
+                    }
+
+                    return;
+                }
+
+
+                const deleteButton =
+                    event.target.closest(
+                        ".property-delete"
+                    );
+
+
+                if (deleteButton) {
+
+                    const card =
+                        deleteButton.closest(
+                            ".property-card"
+                        );
+
+
+                    if (!card) return;
+
+
+                    const id =
+                        card.dataset.id;
+
+
+                    const name =
+                        card.querySelector("h3")
+                            ?.textContent
+                            .trim()
+                        || "nhà trọ này";
+
+
+                    if (!id) {
+
+                        showToast(
+                            "Không tìm thấy mã nhà trọ.",
+                            "error"
+                        );
+
+                        return;
+                    }
+
+
+                    const confirmed =
+                        window.confirm(
+                            "Bạn có chắc muốn xóa \""
+                            + name
+                            + "\" không?\n\n"
+                            + "Nếu nhà trọ còn phòng, hệ thống sẽ không cho xóa để tránh mất dữ liệu."
+                        );
+
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+
+                    deleteButton.disabled = true;
+
+
+                    try {
+
+                        if (!getToken()) {
+
+                            throw new Error(
+                                "Bạn chưa đăng nhập hoặc token đã hết hạn. Hãy đăng nhập lại."
+                            );
+                        }
+
+
+                        await deleteProperty(id);
+
+
+                        showToast(
+                            "Đã xóa nhà trọ khỏi database."
+                        );
+
+
+                        setTimeout(
+                            () => window.location.reload(),
+                            500
+                        );
+
+                    } catch (error) {
+
+                        console.error(error);
+
+                        showToast(
+                            error.message
+                            || "Không thể xóa nhà trọ.",
+                            "error"
+                        );
+
+                        deleteButton.disabled =
+                            false;
+                    }
+                }
+            }
+        );
+    }
+
+
+    // =========================================================
+    // IMAGE INPUT
+    // =========================================================
+
+    function initImagePreview() {
+
+        const input =
+            $("#propertyImage");
+
+        if (!input) return;
+
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const url =
+                    input.value.trim();
+
+
+                if (!url) {
+
+                    hideImagePreview();
+                    return;
+                }
+
+
+                showImagePreview(url);
+            }
+        );
+    }
+
+
+    // =========================================================
+    // OPEN / CLOSE
+    // =========================================================
+
+    function initModal() {
+
+        $("#openPropertyModal")
+            ?.addEventListener(
+                "click",
+                function () {
+
+                    resetFormForCreate();
+                    openModal();
+                }
+            );
+
+
+        $$("[data-close-property]")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    closeModal
+                );
+            });
+
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Escape") {
+                    closeModal();
+                }
+            }
+        );
+    }
+
+
+    // =========================================================
+    // START
+    // =========================================================
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            initFilter();
+            initGridActions();
+            initForm();
+            initImagePreview();
+            initModal();
+        }
+    );
+
 })();
