@@ -1,9 +1,10 @@
 package com.nhatro.backend.controller.web;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controller cho cac trang JSP (khac voi cac @RestController tra ve JSON
@@ -64,10 +65,9 @@ public class PageController {
         return "room/roomDetail";
     }
 
-    @GetMapping("/chon-vai-tro")
-    public String chonVaiTro() {
-        return "auth/chon-vai-tro";
-    }
+    // Da bo trang "/chon-vai-tro": tai khoan Google moi gio tu dong dang ky
+    // voi vai tro "Người thuê" ngay trong OAuth2LoginSuccessHandler, khong
+    // con man hinh trung gian de chon vai tro nua.
 
     @GetMapping("/oauth2-redirect")
     public String oauth2Redirect() {
@@ -96,5 +96,16 @@ public class PageController {
     @GetMapping("/profile")
     public String hoSoCaNhan() {
         return "profile/profile";
+    }
+
+    // =====================================================
+    // DANG KY CHU TRO (Nguoi thue gui yeu cau + upload xac minh,
+    // Admin duyet tai /admin/duyet-chu-tro - xem AdminPageController hoac
+    // admin/ekycApproval.jsp)
+    // =====================================================
+
+    @GetMapping("/dang-ky-chu-tro")
+    public String dangKyChuTro() {
+        return "chu-tro/dangKyChuTro";
     }
 }

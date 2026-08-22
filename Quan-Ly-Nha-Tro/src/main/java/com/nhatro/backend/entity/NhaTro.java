@@ -1,10 +1,25 @@
 package com.nhatro.backend.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "NHA_TRO")
@@ -24,33 +39,33 @@ public class NhaTro {
     @JoinColumn(name = "maNguoiDung", nullable = false)
     private NguoiDung nguoiDung;
 
-    @Column(name = "tenNhaTro", nullable = false, length = 255)
+    @Column(name = "tenNhaTro", length = 200, nullable = false)
     private String tenNhaTro;
 
-    @Column(name = "diaChi", nullable = false, length = 500)
+    @Column(name = "diaChi", length = 500)
     private String diaChi;
 
     @Column(name = "soSao", precision = 2, scale = 1)
     private BigDecimal soSao;
 
-    @Column(name = "moTa", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "moTa", columnDefinition = "nvarchar(max)")
     private String moTa;
 
-    @Column(name = "giaPhong")
+    @Column(name = "giaPhong", precision = 18, scale = 2)
     private BigDecimal giaPhong;
 
     @Column(name = "loaiPhong", length = 100)
     private String loaiPhong;
 
-    @Column(name = "hinhAnh", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "hinhAnh", length = 2000)
     private String hinhAnh;
 
-    // Quan hệ nhiều-nhiều với tiện ích, dùng cho chức năng lọc theo tiện ích
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "NHA_TRO_TIEN_ICH",
-        joinColumns = @JoinColumn(name = "maNhaTro"),
-        inverseJoinColumns = @JoinColumn(name = "maTienIch")
+            name = "NHA_TRO_TIEN_ICH",
+            joinColumns = @JoinColumn(name = "maNhaTro"),
+            inverseJoinColumns = @JoinColumn(name = "maTienIch")
     )
-    private Set<TienIch> danhSachTienIch;
+    @Builder.Default
+    private Set<TienIch> danhSachTienIch = new HashSet<>();
 }

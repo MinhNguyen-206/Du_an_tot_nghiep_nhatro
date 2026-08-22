@@ -1,24 +1,27 @@
 package com.nhatro.backend.security;
 
-import com.nhatro.backend.dto.AuthResponse;
-import com.nhatro.backend.entity.NguoiDung;
-import com.nhatro.backend.service.AuthService;
-import com.nhatro.backend.service.NguoiDungService;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
-import java.util.Optional;
+import com.nhatro.backend.dto.AuthResponse;
+import com.nhatro.backend.entity.NguoiDung;
+import com.nhatro.backend.service.AuthService;
+import com.nhatro.backend.service.NguoiDungService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 // Xu ly sau khi Google xac thuc THANH CONG (chua chac da co tai khoan trong
 // DB cua minh). Neu email da ton tai -> dang nhap luon, phat JWT. Neu chua
-// -> luu tam thong tin vao session, chuyen sang trang "chon vai tro".
+// -> TU DONG tao tai khoan moi voi vai tro mac dinh "Người thuê" (khach hang)
+// va dang nhap luon - KHONG con man "chon vai tro" nua (xem AuthService#registerFromGoogle).
 @Component
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -57,12 +60,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
-        // Chua co tai khoan -> luu tam vao session, chuyen sang trang chon vai tro
-        request.getSession().setAttribute("google_email", email);
-        request.getSession().setAttribute("google_hoTen", hoTen != null ? hoTen : email);
-        request.getSession().setAttribute("google_avatar", avatar);
-
-        response.sendRedirect(request.getContextPath() + "/chon-vai-tro");
+        // Chua co tai khoan -> tu dong dang ky voi vai tro mac dinh "Người thuê"
+        // roi dang nhap luon, khong hoi chon vai tro nua.
+        AuthResponse authResponse = authService.registerFromGoogle(email, hoTen, avatar);
+        redirectWithToken(request, response, authResponse.getToken());
     }
 
     // Redirect ve trang trung gian oauth2-redirect.jsp kem token tren query

@@ -7,6 +7,7 @@
 </head>
 <body>
     <p>Đang đăng nhập, vui lòng chờ...</p>
+    <script src="${pageContext.request.contextPath}/resources/js/api.js"></script>
     <script>
         (function () {
             const params = new URLSearchParams(window.location.search);
@@ -20,7 +21,9 @@
             // Luu token truoc, KHONG goi /api/nguoi-dung/me (endpoint nay
             // chua ton tai) - de trang chu tu doc token va lay thong tin
             // user sau, giong cach cac trang khac trong app dang lam.
-            localStorage.setItem("token", token);
+            // saveAuthToken() luu ca localStorage LAN cookie "jwt" de cac trang
+            // JSP dieu huong binh thuong (khong phai fetch) van xac thuc duoc.
+            saveAuthToken(token);
             window.location.href = "${pageContext.request.contextPath}/";
         })();
     </script>

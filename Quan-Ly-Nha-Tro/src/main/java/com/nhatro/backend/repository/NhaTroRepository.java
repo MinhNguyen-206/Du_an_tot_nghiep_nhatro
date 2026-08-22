@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface NhaTroRepository extends JpaRepository<NhaTro, Integer>, JpaSpecificationExecutor<NhaTro> {
+public interface NhaTroRepository
+        extends JpaRepository<NhaTro, Integer>,
+        JpaSpecificationExecutor<NhaTro> {
+
     List<NhaTro> findByNguoiDung_MaNguoiDung(Integer maNguoiDung);
 }

@@ -11,12 +11,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import com.nhatro.backend.entity.NguoiDung;
 import com.nhatro.backend.service.NguoiDungService;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 // Doc header "Authorization: Bearer <token>" tren moi request, kiem tra hop le
 // bang JwtUtil, roi nap thong tin dang nhap vao SecurityContext.
@@ -39,9 +41,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+        String token = null;
 
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
+            token = header.substring(7);
+        } else {
+            // Cac request dieu huong trang thuong (click link, go URL,...)
+            // khong the tu gan header Authorization nhu fetch() lam duoc.
+            // JWT duoc luu them vao cookie "jwt" (xem api.js: saveAuthToken)
+            // de nhung request nay van duoc xac thuc.
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwt".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (token != null) {
 
             if (jwtUtil.isTokenValid(token)) {
                 String email = jwtUtil.getEmailFromToken(token);

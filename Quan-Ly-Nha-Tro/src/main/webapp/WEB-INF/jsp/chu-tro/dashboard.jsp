@@ -1,15 +1,331 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ include file="includes/header.jspf" %>
-<div class="owner-page-head"><div><div class="eyebrow">CHỦ TRỌ CENTER</div><h1>Xin chào, ${userName}</h1><p>Quản lý nhà trọ, phòng, người thuê và doanh thu trên một màn hình.</p></div><a class="owner-btn primary" href="${pageContext.request.contextPath}/chu-tro/posts"><i class="bi bi-plus-lg"></i> Đăng tin mới</a></div>
+
+<div class="owner-page-head">
+    <div>
+        <div class="eyebrow">CHỦ TRỌ CENTER</div>
+
+        <h1>Xin chào, ${userName}</h1>
+
+        <p>
+            Dữ liệu được lấy trực tiếp từ SQL Server của tài khoản
+            <strong>${userEmail}</strong>.
+        </p>
+    </div>
+
+    <a class="owner-btn primary"
+       href="${pageContext.request.contextPath}/chu-tro/posts">
+        <i class="bi bi-plus-lg"></i>
+        Đăng tin mới
+    </a>
+</div>
+
+
+<!-- =========================
+     THỐNG KÊ TỔNG QUAN
+     ========================= -->
 <div class="owner-stats">
- <div class="owner-stat blue"><div class="stat-icon"><i class="bi bi-door-open"></i></div><span>Tổng số phòng</span><strong>${totalRooms}</strong><small>Trong tất cả nhà trọ</small></div>
- <div class="owner-stat green"><div class="stat-icon"><i class="bi bi-person-check"></i></div><span>Đang có người thuê</span><strong>${occupiedRooms}</strong><small>75% công suất</small></div>
- <div class="owner-stat orange"><div class="stat-icon"><i class="bi bi-door-closed"></i></div><span>Phòng còn trống</span><strong>${availableRooms}</strong><small>Có thể cho thuê ngay</small></div>
- <div class="owner-stat purple"><div class="stat-icon"><i class="bi bi-wallet2"></i></div><span>Doanh thu tháng này</span><strong>${monthlyRevenue}</strong><small>+12.8% so với tháng trước</small></div>
+
+    <!-- Tổng số phòng -->
+    <div class="owner-stat blue">
+        <div class="stat-icon">
+            <i class="bi bi-door-open"></i>
+        </div>
+
+        <span>Tổng số phòng</span>
+
+        <strong>${totalRooms}</strong>
+
+        <small>
+            Trong tất cả nhà trọ
+        </small>
+    </div>
+
+
+    <!-- Phòng đang có người thuê -->
+    <div class="owner-stat green">
+        <div class="stat-icon">
+            <i class="bi bi-person-check"></i>
+        </div>
+
+        <span>Đang có người thuê</span>
+
+        <strong>${occupiedRooms}</strong>
+
+        <small>
+            ${occupancyPercent}% công suất
+        </small>
+    </div>
+
+
+    <!-- Phòng còn trống -->
+    <div class="owner-stat orange">
+        <div class="stat-icon">
+            <i class="bi bi-door-closed"></i>
+        </div>
+
+        <span>Phòng còn trống</span>
+
+        <strong>${availableRooms}</strong>
+
+        <small>
+            Có thể cho thuê ngay
+        </small>
+    </div>
+
+
+    <!-- Doanh thu -->
+    <div class="owner-stat purple">
+        <div class="stat-icon">
+            <i class="bi bi-wallet2"></i>
+        </div>
+
+        <span>Doanh thu tháng này</span>
+
+        <strong>${monthlyRevenue}</strong>
+
+        <small>
+            ${revenueGrowth}
+        </small>
+    </div>
+
 </div>
+
+
+<!-- =========================
+     KHU VỰC BIỂU ĐỒ + CẦN XỬ LÝ
+     ========================= -->
 <div class="owner-grid-2">
- <section class="owner-card"><div class="card-head"><div><h3>Doanh thu 7 ngày gần nhất</h3><p>Doanh thu tiền phòng & dịch vụ</p></div><button class="mini-select">7 ngày <i class="bi bi-chevron-down"></i></button></div><div class="owner-chart"><div class="chart-col"><span>3.8M</span><i style="height:46%"></i><small>T2</small></div><div class="chart-col"><span>4.6M</span><i style="height:58%"></i><small>T3</small></div><div class="chart-col"><span>3.2M</span><i style="height:40%"></i><small>T4</small></div><div class="chart-col"><span>5.8M</span><i style="height:72%"></i><small>T5</small></div><div class="chart-col"><span>4.9M</span><i style="height:62%"></i><small>T6</small></div><div class="chart-col"><span>6.4M</span><i style="height:82%"></i><small>T7</small></div><div class="chart-col"><span>5.7M</span><i style="height:73%"></i><small>CN</small></div></div></section>
- <section class="owner-card"><div class="card-head"><div><h3>Cần xử lý</h3><p>Các việc bạn nên kiểm tra hôm nay</p></div><i class="bi bi-lightning-charge-fill accent-icon"></i></div><a class="task" href="${pageContext.request.contextPath}/chu-tro/rental-requests"><b>5 yêu cầu thuê</b><span>Người tìm trọ đang chờ phản hồi</span><i class="bi bi-chevron-right"></i></a><a class="task" href="${pageContext.request.contextPath}/chu-tro/invoices"><b>4 hóa đơn chưa thanh toán</b><span>Có hóa đơn quá hạn cần nhắc</span><i class="bi bi-chevron-right"></i></a><a class="task" href="${pageContext.request.contextPath}/chu-tro/meters"><b>6 phòng chưa nhập điện nước</b><span>Kỳ ghi số tháng này</span><i class="bi bi-chevron-right"></i></a><a class="task" href="${pageContext.request.contextPath}/chu-tro/reviews"><b>3 đánh giá mới</b><span>Có thể phản hồi ngay</span><i class="bi bi-chevron-right"></i></a></section>
+
+    <!-- =========================
+         DOANH THU 7 NGÀY
+         ========================= -->
+    <section class="owner-card">
+
+        <div class="card-head">
+
+            <div>
+                <h3>Doanh thu 7 ngày gần nhất</h3>
+
+                <p>
+                    Lấy từ các khoản thanh toán đã thanh toán trong SQL
+                </p>
+            </div>
+
+            <button class="mini-select" type="button">
+                7 ngày
+                <i class="bi bi-chevron-down"></i>
+            </button>
+
+        </div>
+
+
+        <div class="owner-chart">
+
+            <c:forEach var="point" items="${revenueChart}">
+
+                <div class="chart-col">
+
+                    <span>
+                        ${point.amount}
+                    </span>
+
+                    <i style="height:${point.height}%"></i>
+
+                    <small>
+                        ${point.label}
+                    </small>
+
+                </div>
+
+            </c:forEach>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         CẦN XỬ LÝ
+         ========================= -->
+    <section class="owner-card">
+
+        <div class="card-head">
+
+            <div>
+                <h3>Cần xử lý</h3>
+
+                <p>
+                    Các số liệu đang chờ xử lý từ database
+                </p>
+            </div>
+
+            <i class="bi bi-lightning-charge-fill accent-icon"></i>
+
+        </div>
+
+
+        <!-- Yêu cầu thuê -->
+        <a class="task"
+           href="${pageContext.request.contextPath}/chu-tro/rental-requests">
+
+            <b>
+                ${pendingRequests} yêu cầu thuê
+            </b>
+
+            <span>
+                Người tìm trọ đang chờ phản hồi
+            </span>
+
+            <i class="bi bi-chevron-right"></i>
+
+        </a>
+
+
+        <!-- Hóa đơn chưa thanh toán -->
+        <a class="task"
+           href="${pageContext.request.contextPath}/chu-tro/invoices">
+
+            <b>
+                ${unpaidInvoices} hóa đơn chưa thanh toán
+            </b>
+
+            <span>
+                Các hóa đơn chưa ở trạng thái đã thanh toán
+            </span>
+
+            <i class="bi bi-chevron-right"></i>
+
+        </a>
+
+
+        <!-- Chưa nhập điện nước -->
+        <a class="task"
+           href="${pageContext.request.contextPath}/chu-tro/meters">
+
+            <b>
+                ${missingMeters} phòng chưa nhập điện nước
+            </b>
+
+            <span>
+                Chưa có chỉ số của tháng hiện tại
+            </span>
+
+            <i class="bi bi-chevron-right"></i>
+
+        </a>
+
+
+        <!-- Đánh giá mới -->
+        <a class="task"
+           href="${pageContext.request.contextPath}/chu-tro/reviews">
+
+            <b>
+                ${newReviews} đánh giá mới
+            </b>
+
+            <span>
+                Đánh giá trong 7 ngày gần nhất
+            </span>
+
+            <i class="bi bi-chevron-right"></i>
+
+        </a>
+
+    </section>
+
 </div>
-<section class="owner-card"><div class="card-head"><div><h3>Phòng & tình trạng</h3><p>Tổng quan nhanh các phòng của bạn</p></div><a class="owner-btn light" href="${pageContext.request.contextPath}/chu-tro/rooms">Xem tất cả</a></div><div class="room-overview"><div><span class="legend-dot occupied"></span> Đang thuê <strong>18</strong></div><div><span class="legend-dot available"></span> Còn trống <strong>6</strong></div><div><span class="legend-dot pending"></span> Đang chờ ký <strong>2</strong></div><div class="occupancy"><div class="progress-label"><span>Tỷ lệ lấp đầy</span><b>75%</b></div><div class="progress-owner"><span style="width:75%"></span></div></div></div></section>
+
+
+<!-- =========================
+     TÌNH TRẠNG PHÒNG
+     ========================= -->
+<section class="owner-card">
+
+    <div class="card-head">
+
+        <div>
+            <h3>Phòng & tình trạng</h3>
+
+            <p>
+                Tổng quan thật từ hợp đồng điện tử
+            </p>
+        </div>
+
+        <a class="owner-btn light"
+           href="${pageContext.request.contextPath}/chu-tro/rooms">
+            Xem tất cả
+        </a>
+
+    </div>
+
+
+    <div class="room-overview">
+
+        <!-- Đang thuê -->
+        <div>
+            <span class="legend-dot occupied"></span>
+
+            Đang thuê
+
+            <strong>
+                ${occupiedRooms}
+            </strong>
+        </div>
+
+
+        <!-- Còn trống -->
+        <div>
+            <span class="legend-dot available"></span>
+
+            Còn trống
+
+            <strong>
+                ${availableRooms}
+            </strong>
+        </div>
+
+
+        <!-- Đang chờ ký -->
+        <div>
+            <span class="legend-dot pending"></span>
+
+            Đang chờ ký
+
+            <strong>
+                ${pendingRooms}
+            </strong>
+        </div>
+
+
+        <!-- Tỷ lệ lấp đầy -->
+        <div class="occupancy">
+
+            <div class="progress-label">
+
+                <span>
+                    Tỷ lệ lấp đầy
+                </span>
+
+                <b>
+                    ${occupancyPercent}%
+                </b>
+
+            </div>
+
+
+            <div class="progress-owner">
+
+                <span style="width:${occupancyPercent}%"></span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
 <%@ include file="includes/footer.jspf" %>

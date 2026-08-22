@@ -97,19 +97,22 @@ public class AuthService {
 
         nguoiDungService.updatePassword(nguoiDung.getMaNguoiDung(), matKhauMoi);
     }
-        // Hoan tat dang ky tai khoan cho user dang nhap Google LAN DAU: tao
-    // NguoiDung moi voi mat khau ngau nhien (an, khong tra ve cho user), gan
-    // vai tro nguoi dung chon o trang "chon vai tro".
-    public AuthResponse completeGoogleRegistration(String email, String hoTen, String avatar, Integer maVaiTro) {
+        // Tao tai khoan cho user dang nhap Google LAN DAU: tao NguoiDung moi voi
+    // mat khau ngau nhien (an, khong tra ve cho user). Khong con man "chon vai
+    // tro" nua - MOI tai khoan dang ky moi (kem ca qua Google) deu mac dinh la
+    // "Người thuê" (khach hang). Muon thanh Chu tro phai gui yeu cau rieng de
+    // Admin duyet (xem YeuCauChuTroController), khong duoc chon thang khi dang ky.
+    public AuthResponse registerFromGoogle(String email, String hoTen, String avatar) {
         Objects.requireNonNull(email, "email must not be null");
-        Objects.requireNonNull(maVaiTro, "maVaiTro must not be null");
 
         if (nguoiDungService.getByEmail(email).isPresent()) {
             throw new IllegalArgumentException("Email đã được đăng ký");
         }
 
-        VaiTro vaiTro = vaiTroRepository.findById(maVaiTro)
-                .orElseThrow(() -> new IllegalArgumentException("Vai trò không hợp lệ"));
+        VaiTro vaiTro = vaiTroRepository.findByTenVaiTro("Người thuê")
+                .or(() -> vaiTroRepository.findById(3))
+                .orElseThrow(() -> new IllegalStateException(
+                        "Khong tim thay vai tro mac dinh 'Người thuê' trong bang VAI_TRO"));
 
         String matKhauNgauNhien = UUID.randomUUID().toString();
 
