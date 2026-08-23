@@ -1,10 +1,18 @@
 package com.nhatro.backend.controller.web;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.nhatro.backend.entity.NhaTro;
+import com.nhatro.backend.repository.NhaTroRepository;
+
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 
 /**
  * Controller cho cac trang JSP (khac voi cac @RestController tra ve JSON
@@ -21,10 +29,23 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 public class PageController {
 
+    private final NhaTroRepository nhaTroRepository;
+
+    public PageController(NhaTroRepository nhaTroRepository) {
+        this.nhaTroRepository = nhaTroRepository;
+    }
+
     @GetMapping("/")
+    @Transactional
     public String trangChu(Model model) {
         // Vi du truyen du lieu sang JSP, lay bang ${tenBien} trong file .jsp
         model.addAttribute("tieuDe", "Room Connect - Trang chủ");
+
+        // Lay 6 nha tro moi nhat de hien thi trong khoi "Tin cho thue moi dang"
+        Pageable pageable = PageRequest.of(0, 6, Sort.by("maNhaTro").descending());
+        Page<NhaTro> nhaTroPage = nhaTroRepository.findAll(pageable);
+        model.addAttribute("listNhaTro", nhaTroPage.getContent());
+
         return "home/home";
     }
 

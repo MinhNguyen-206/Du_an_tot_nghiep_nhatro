@@ -60,12 +60,12 @@ public class NhaTro {
     @Column(name = "hinhAnh", length = 2000)
     private String hinhAnh;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "NHA_TRO_TIEN_ICH",
-            joinColumns = @JoinColumn(name = "maNhaTro"),
-            inverseJoinColumns = @JoinColumn(name = "maTienIch")
-    )
-    @Builder.Default
-    private Set<TienIch> danhSachTienIch = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+@JoinTable(
+        name = "NHA_TRO_TIEN_ICH",
+        joinColumns = @JoinColumn(name = "maNhaTro"),
+        inverseJoinColumns = @JoinColumn(name = "maTienIch")
+)
+@Builder.Default
+private Set<TienIch> danhSachTienIch = new HashSet<>();
 }

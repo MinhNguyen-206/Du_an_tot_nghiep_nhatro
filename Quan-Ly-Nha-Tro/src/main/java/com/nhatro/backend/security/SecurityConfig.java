@@ -82,7 +82,8 @@ public class SecurityConfig {
                                 "/profile",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/oauth2-redirect"
+                                "/oauth2-redirect",
+                                "/error"
                         ).permitAll()
 
                         // Trang "Đăng ký chủ trọ": chỉ cần đăng nhập (bất kỳ vai trò nào

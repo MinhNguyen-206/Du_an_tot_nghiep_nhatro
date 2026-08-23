@@ -609,7 +609,7 @@
                 <c:choose>
                     <c:when test="${not empty listNhaTro}">
                         <c:forEach var="item" items="${listNhaTro}">
-                            <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${item.maNhaTro}" class="card">
+                            <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${repRoomId[item.maNhaTro]}" class="card">
                                 <span class="card-tag">Nổi bật</span>
                                 <span class="card-heart">♡</span>
 

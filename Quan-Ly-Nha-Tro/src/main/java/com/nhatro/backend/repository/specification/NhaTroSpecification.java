@@ -1,15 +1,17 @@
 package com.nhatro.backend.repository.specification;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.jpa.domain.Specification;
+
 import com.nhatro.backend.entity.NhaTro;
 import com.nhatro.backend.entity.TienIch;
+
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import org.springframework.data.jpa.domain.Specification;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class NhaTroSpecification {
 
@@ -79,6 +81,40 @@ public class NhaTroSpecification {
         };
     }
 
+    /**
+     * Map moi checkbox "loai phong" tren giao dien sang tap tu khoa (chu
+     * thuong, khong dau tieng Viet duoc bo qua vi DB da co dau) de so
+     * khop LIKE voi cot loaiPhong trong DB. Ly do can map thay vi so
+     * khop tuyet doi: du lieu mau dat ten loai phong tu do (vd "Phong
+     * tieu chuan", "Phong co ban cong"...) khong trung 100% voi 5 gia
+     * tri co dinh tren UI ("Chung cu mini", "Ki tuc xa", "Phong tro",
+     * "Studio", "Nha nguyen can").
+     */
+    private static List<String> mapLoaiPhongKeywords(String type) {
+        String t = type.toLowerCase();
+        List<String> keywords = new ArrayList<>();
+        if (t.contains("chung cư") || t.contains("chung cu")) {
+            keywords.add("chung cư");
+            keywords.add("căn hộ mini");
+            keywords.add("can ho mini");
+        } else if (t.contains("ký túc") || t.contains("ky tuc") || t.contains("túc xá")) {
+            keywords.add("ký túc");
+            keywords.add("sinh viên");
+        } else if (t.contains("studio")) {
+            keywords.add("studio");
+        } else if (t.contains("nguyên căn") || t.contains("nguyen can")) {
+            keywords.add("nguyên căn");
+            keywords.add("nhà nguyên");
+        } else if (t.contains("phòng trọ") || t.contains("phong tro")) {
+            keywords.add("phòng");
+            keywords.add("căn hộ");
+        } else {
+            // Fallback: so khop LIKE truc tiep voi chinh gia tri checkbox
+            keywords.add(t);
+        }
+        return keywords;
+    }
+
     private static List<Predicate> getBasePredicates(
             String keyword, String location, Double minPrice, Double maxPrice, 
             String[] types, Root<NhaTro> root, CriteriaBuilder cb) {
@@ -112,7 +148,18 @@ public class NhaTroSpecification {
         }
 
         if (types != null && types.length > 0) {
-            predicates.add(root.get("loaiPhong").in((Object[]) types));
+            List<Predicate> typePredicates = new ArrayList<>();
+            for (String type : types) {
+                if (type == null || type.trim().isEmpty()) {
+                    continue;
+                }
+                for (String keyword2 : mapLoaiPhongKeywords(type.trim())) {
+                    typePredicates.add(cb.like(cb.lower(root.get("loaiPhong")), "%" + keyword2 + "%"));
+                }
+            }
+            if (!typePredicates.isEmpty()) {
+                predicates.add(cb.or(typePredicates.toArray(new Predicate[0])));
+            }
         }
 
         return predicates;
