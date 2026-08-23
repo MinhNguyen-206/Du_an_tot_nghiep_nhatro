@@ -1,0 +1,370 @@
+/* =========================================================
+   CSS dung chung cho 3 trang xac thuc: login / register / forgotPassword
+   Lay lai tinh than thiet ke tu file "dangnhap.jsp" (Room Connect)
+   nhung tach thanh 3 trang JSP rieng cho khop kien truc PageController
+   da co san cua du an (moi trang = 1 URL rieng, khong dung JS an/hien).
+   ========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body.auth-body {
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.auth-container {
+    position: relative;
+    display: flex;
+    width: 1000px;
+    max-width: 100%;
+    min-height: 640px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* --- Panel thuong hieu (ben trai, co dinh) --- */
+.auth-brand {
+    flex: 0 0 42%;
+    background: linear-gradient(to bottom, rgba(11, 61, 46, 0.7), rgba(9, 48, 36, 0.9)),
+        url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80') center/cover;
+    color: white;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.auth-brand .brand-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.auth-brand .brand-bottom .line {
+    width: 40px;
+    height: 3px;
+    background-color: white;
+    margin-bottom: 15px;
+}
+
+.auth-brand .brand-bottom h1 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.auth-brand .brand-bottom p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* --- Panel form (ben phai) --- */
+.auth-form-panel {
+    flex: 1;
+    padding: 40px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 6px;
+}
+
+.auth-header p {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 22px;
+    line-height: 1.5;
+}
+
+.auth-header p strong {
+    color: #115e45;
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+.label-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.form-group label {
+    font-size: 12px;
+    color: #333;
+    font-weight: 600;
+}
+
+.forgot-link {
+    font-size: 12px;
+    color: #115e45;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper i.left-icon {
+    position: absolute;
+    left: 15px;
+    color: #666;
+    font-size: 15px;
+}
+
+.input-wrapper i.right-icon {
+    position: absolute;
+    right: 15px;
+    color: #666;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+    width: 100%;
+    padding: 12px 15px 12px 42px;
+    border: none;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    color: #333;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+    box-shadow: 0 0 0 2px #115e4533;
+}
+
+.role-choice {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.role-option {
+    flex: 1;
+    position: relative;
+}
+
+.role-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    cursor: pointer;
+}
+
+.role-option label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.role-option input[type="radio"]:checked + label {
+    background-color: #115e45;
+    border-color: #115e45;
+    color: #fff;
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.terms-checkbox input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: #115e45;
+    cursor: pointer;
+}
+
+.terms-checkbox label {
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+}
+
+.terms-checkbox a {
+    color: #115e45;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: #0f5141;
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #0a3d31;
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.switch-link {
+    text-align: center;
+    font-size: 13px;
+    color: #555;
+    margin-top: 18px;
+}
+
+.switch-link a {
+    color: #115e45;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.back-to-login {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #115e45;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.auth-alert {
+    display: none;
+    font-size: 12.5px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+
+.auth-alert.show {
+    display: block;
+}
+
+.auth-alert.error {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.auth-alert.success {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+/* --- Responsive --- */
+@media (max-width: 850px) {
+    .auth-container {
+        flex-direction: column;
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .auth-brand {
+        display: none;
+    }
+
+    .auth-form-panel {
+        padding: 32px 24px;
+    }
+}
+/* ===== Divider "hoặc" ===== */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.auth-divider span {
+    padding: 0 12px;
+}
+
+/* ===== Nút đăng nhập Google ===== */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    color: #3c4043;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.15);
+    border-color: #d2d5d9;
+}
+
+.btn-google:active {
+    background-color: #f1f3f4;
+}
+
+.btn-google .google-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}

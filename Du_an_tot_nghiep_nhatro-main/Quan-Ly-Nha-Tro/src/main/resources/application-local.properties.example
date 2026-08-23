@@ -1,0 +1,29 @@
+# Copy file nay thanh "application-local.properties" (cung thu muc) roi dien
+# mat khau that cua ban. File application-local.properties da duoc .gitignore,
+# se khong bao gio bi commit len GitHub.
+#
+# Cach dung: chay app voi profile "local"
+#   mvn spring-boot:run -Dspring-boot.run.profiles=local
+# hoac set bien moi truong DB_URL / DB_USERNAME / DB_PASSWORD truoc khi chay.
+
+DB_URL=jdbc:sqlserver://localhost:1433;databaseName=QuanLyNhaTro;encrypt=true;trustServerCertificate=true
+DB_USERNAME=sa
+DB_PASSWORD=mat khau that cua ban
+
+# ===== Gui email (chuc nang Quen mat khau) =====
+# Dung Gmail App Password, KHONG dung mat khau Gmail thuong.
+# Tao tai: Google Account -> Security -> 2-Step Verification -> App passwords
+MAIL_USERNAME=email_cua_ban@gmail.com
+MAIL_PASSWORD=app_password_16_ky_tu
+
+# ===== Dang nhap Google (OAuth2) =====
+# Lay Client ID/Secret tai: https://console.cloud.google.com
+# -> APIs & Services -> Credentials -> Create OAuth client ID -> Web application
+# Authorized redirect URI phai la: http://localhost:8080/login/oauth2/code/google
+# MOI NGUOI trong nhom nen tu tao Client ID rieng (mien phi, nhanh),
+# KHONG dung chung 1 Client ID/Secret giua nhieu nguoi.
+spring.security.oauth2.client.registration.google.client-id=dan_client_id_that_vao_day
+spring.security.oauth2.client.registration.google.client-secret=dan_client_secret_that_vao_day
+spring.security.oauth2.client.registration.google.scope=openid,email,profile
+
+logging.level.org.springframework.security=DEBUG
