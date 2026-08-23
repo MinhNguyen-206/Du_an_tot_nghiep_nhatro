@@ -1,69 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.*" %>
-
-<%
-    List<Map<String, String>> roomList = new ArrayList<>();
-
-    Map<String, String> room1 = new HashMap<>();
-    room1.put("title", "Phòng trọ cao cấp full nội thất gần Đại học FPT, giờ giấc tự do");
-    room1.put("price", "3.2 Triệu/tháng");
-    room1.put("area", "25 m²");
-    room1.put("location", "Quận 9, TP. Hồ Chí Minh");
-    room1.put("img", "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=85");
-    room1.put("tag", "Đã xác minh");
-    room1.put("time", "15 phút trước");
-    roomList.add(room1);
-
-    Map<String, String> room2 = new HashMap<>();
-    room2.put("title", "Căn hộ Studio mới 100%, không chung chủ, có ban công thoáng mát");
-    room2.put("price", "4.5 Triệu/tháng");
-    room2.put("area", "35 m²");
-    room2.put("location", "Quận Bình Thạnh, TP. Hồ Chí Minh");
-    room2.put("img", "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=85");
-    room2.put("tag", "Chủ trọ uy tín");
-    room2.put("time", "1 giờ trước");
-    roomList.add(room2);
-
-    Map<String, String> room3 = new HashMap<>();
-    room3.put("title", "Ký túc xá cao cấp cho sinh viên, free điện nước wifi, thang máy");
-    room3.put("price", "1.5 Triệu/tháng");
-    room3.put("area", "18 m²");
-    room3.put("location", "Quận Cầu Giấy, Hà Nội");
-    room3.put("img", "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=900&q=85");
-    room3.put("tag", "Đã xác minh");
-    room3.put("time", "3 giờ trước");
-    roomList.add(room3);
-
-    Map<String, String> room4 = new HashMap<>();
-    room4.put("title", "Phòng mới đầy đủ nội thất, có ban công, giờ giấc tự do");
-    room4.put("price", "3.8 Triệu/tháng");
-    room4.put("area", "28 m²");
-    room4.put("location", "Quận Gò Vấp, TP. Hồ Chí Minh");
-    room4.put("img", "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=85");
-    room4.put("tag", "Chính chủ");
-    room4.put("time", "5 giờ trước");
-    roomList.add(room4);
-
-    Map<String, String> room5 = new HashMap<>();
-    room5.put("title", "Căn hộ mini cao cấp, full nội thất, bảo vệ 24/7");
-    room5.put("price", "5.2 Triệu/tháng");
-    room5.put("area", "40 m²");
-    room5.put("location", "Quận 7, TP. Hồ Chí Minh");
-    room5.put("img", "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=85");
-    room5.put("tag", "Premium");
-    room5.put("time", "8 giờ trước");
-    roomList.add(room5);
-
-    Map<String, String> room6 = new HashMap<>();
-    room6.put("title", "Phòng trọ sinh viên gần trường, có máy lạnh và máy giặt");
-    room6.put("price", "2.7 Triệu/tháng");
-    room6.put("area", "22 m²");
-    room6.put("location", "Thủ Đức, TP. Hồ Chí Minh");
-    room6.put("img", "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=85");
-    room6.put("tag", "Đã xác minh");
-    room6.put("time", "12 giờ trước");
-    roomList.add(room6);
-%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%-- listNhaTro (danh sách NhaTro thật từ DB) được HomeController truyền vào model --%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -551,7 +489,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
 
-        <% for (Map<String, String> room : roomList) { %>
+        <c:forEach var="item" items="${listNhaTro}">
 
 
         <article
@@ -562,11 +500,13 @@
 
             <div class="relative h-52 overflow-hidden bg-gray-200">
 
+                <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${repRoomId[item.maNhaTro]}">
                 <img
-                        src="<%= room.get("img") %>"
-                        alt="<%= room.get("title") %>"
+                        src="${not empty item.hinhAnh ? item.hinhAnh : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=85'}"
+                        alt="<c:out value='${item.tenNhaTro}'/>"
                         class="room-image w-full h-full object-cover"
                 >
+                </a>
 
 
                 <!-- DARK GRADIENT -->
@@ -582,7 +522,10 @@
                         class="absolute top-3 left-3 bg-brand text-white px-2.5 py-1 rounded-lg text-[9px] font-black shadow"
                 >
 
-                    <%= room.get("tag") %>
+                    <c:choose>
+                        <c:when test="${not empty item.loaiPhong}"><c:out value="${item.loaiPhong}"/></c:when>
+                        <c:otherwise>Đang cho thuê</c:otherwise>
+                    </c:choose>
 
                 </span>
 
@@ -599,19 +542,6 @@
 
                 </button>
 
-
-                <!-- TIME -->
-
-                <span
-                        class="absolute bottom-3 left-3 text-white text-[10px] font-semibold"
-                >
-
-                    <i class="fa-regular fa-clock mr-1"></i>
-
-                    <%= room.get("time") %>
-
-                </span>
-
             </div>
 
 
@@ -623,7 +553,9 @@
                         class="font-bold text-sm leading-5 line-clamp-2 min-h-[40px]"
                 >
 
-                    <%= room.get("title") %>
+                    <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${repRoomId[item.maNhaTro]}" class="hover:text-brand">
+                        <c:out value="${item.tenNhaTro}"/>
+                    </a>
 
                 </h3>
 
@@ -634,15 +566,12 @@
 
                     <span class="text-brand font-black text-base">
 
-                        <%= room.get("price") %>
-
-                    </span>
-
-                    <span
-                            class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-md"
-                    >
-
-                        <%= room.get("area") %>
+                        <c:choose>
+                            <c:when test="${item.giaPhong != null && item.giaPhong > 0}">
+                                <fmt:formatNumber value="${item.giaPhong}" type="number" groupingUsed="true"/> VNĐ<span class="text-xs font-normal">/Tháng</span>
+                            </c:when>
+                            <c:otherwise>Liên hệ</c:otherwise>
+                        </c:choose>
 
                     </span>
 
@@ -658,36 +587,23 @@
                     <i class="fa-solid fa-location-dot text-brand"></i>
 
                     <span class="truncate">
-                        <%= room.get("location") %>
+                        <c:out value="${item.diaChi}"/>
                     </span>
 
                 </div>
 
 
-                <!-- FEATURES -->
+                <!-- FEATURES (tiện ích thật từ DB, tối đa 3) -->
 
                 <div class="flex gap-2 mt-3 flex-wrap">
 
-                    <span
-                            class="bg-green-50 text-green-600 px-2 py-1 rounded-md text-[9px] font-semibold"
-                    >
-                        <i class="fa-solid fa-wifi mr-1"></i>
-                        Wifi
-                    </span>
-
-                    <span
-                            class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-[9px] font-semibold"
-                    >
-                        <i class="fa-solid fa-snowflake mr-1"></i>
-                        Máy lạnh
-                    </span>
-
-                    <span
-                            class="bg-purple-50 text-purple-600 px-2 py-1 rounded-md text-[9px] font-semibold"
-                    >
-                        <i class="fa-solid fa-clock mr-1"></i>
-                        Tự do
-                    </span>
+                    <c:forEach var="ti" items="${item.danhSachTienIch}" varStatus="tiStatus" end="2">
+                        <span
+                                class="bg-green-50 text-green-600 px-2 py-1 rounded-md text-[9px] font-semibold"
+                        >
+                            <c:out value="${ti.tenTienIch}"/>
+                        </span>
+                    </c:forEach>
 
                 </div>
 
@@ -699,7 +615,7 @@
             <div class="px-4 pb-4">
 
                 <a
-                        href="${pageContext.request.contextPath}/rooms"
+                        href="${pageContext.request.contextPath}/chi-tiet-phong?id=${repRoomId[item.maNhaTro]}"
                         class="block w-full text-center py-2.5 rounded-xl bg-orange-50 text-brand hover:bg-brand hover:text-white text-xs font-bold transition"
                 >
 
@@ -714,7 +630,7 @@
         </article>
 
 
-        <% } %>
+        </c:forEach>
 
 
     </div>

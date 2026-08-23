@@ -3,6 +3,7 @@
          pageEncoding="UTF-8"%>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 
@@ -563,64 +564,83 @@
 
         <main class="cards-grid">
 
-            <c:forEach var="room" items="${rooms}">
+            <c:choose>
+                <c:when test="${not empty listNhaTro}">
+                    <c:forEach var="item" items="${listNhaTro}">
 
-                <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${room.id}"
-                   class="card">
+                        <a href="${pageContext.request.contextPath}/chi-tiet-phong?id=${repRoomId[item.maNhaTro]}"
+                           class="card">
 
-                    <span class="card-tag">
-                        Nổi bật
-                    </span>
-
-                    <span class="card-heart">
-                        ♡
-                    </span>
-
-                    <img class="card-img"
-                         src="${room.image}"
-                         alt="${room.title}">
-
-                    <div class="card-body">
-
-                        <div class="card-category">
-                                ${room.category}
-                        </div>
-
-                        <h2 class="card-title">
-                                ${room.title}
-                        </h2>
-
-                        <div class="card-location">
-                            📍 ${room.location}
-                        </div>
-
-                        <div class="card-amenities">
-
-                            <span class="card-amenity">
-                                📶 Wifi
+                            <span class="card-tag">
+                                Nổi bật
                             </span>
 
-                            <span class="card-amenity">
-                                ❄ Điều hòa
+                            <span class="card-heart">
+                                ♡
                             </span>
 
-                        </div>
+                            <img class="card-img"
+                                 src="${not empty item.hinhAnh ? item.hinhAnh : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500'}"
+                                 alt="<c:out value='${item.tenNhaTro}'/>">
 
-                        <div class="card-price">
+                            <div class="card-body">
 
-                                ${room.price}
+                                <div class="card-category">
+                                    <c:out value="${item.loaiPhong != null ? item.loaiPhong : 'Căn hộ'}"/>
+                                </div>
 
-                            <span>
-                                VND/Tháng
-                            </span>
+                                <h2 class="card-title">
+                                    <c:out value="${item.tenNhaTro}"/>
+                                </h2>
 
-                        </div>
+                                <div class="card-location">
+                                    📍 <c:out value="${item.diaChi}"/>
+                                </div>
 
+                                <div class="card-amenities">
+                                    <c:choose>
+                                        <c:when test="${not empty item.danhSachTienIch}">
+                                            <c:forEach var="ti" items="${item.danhSachTienIch}" varStatus="tiStatus" end="2">
+                                                <span class="card-amenity">
+                                                    <c:choose>
+                                                        <c:when test="${ti.tenTienIch == 'Wifi'}">📶 Wifi</c:when>
+                                                        <c:when test="${ti.tenTienIch == 'Điều hòa'}">❄ Điều hòa</c:when>
+                                                        <c:when test="${ti.tenTienIch == 'Máy giặt'}">🧺 Máy giặt</c:when>
+                                                        <c:when test="${ti.tenTienIch == 'Camera an ninh'}">📹 Camera</c:when>
+                                                        <c:otherwise>✨ <c:out value="${ti.tenTienIch}"/></c:otherwise>
+                                                    </c:choose>
+                                                </span>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="card-amenity" style="color:#999;">Không có tiện ích</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+
+                                <div class="card-price">
+                                    <c:choose>
+                                        <c:when test="${item.giaPhong != null && item.giaPhong > 0}">
+                                            <fmt:formatNumber value="${item.giaPhong}" type="number" groupingUsed="true"/> VNĐ<span>/Tháng</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            Liên hệ chủ trọ
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <div class="empty-note" style="grid-column:1/-1;text-align:center;color:#888;padding:40px 0;">
+                        Chưa có căn hộ nào phù hợp.
                     </div>
-
-                </a>
-
-            </c:forEach>
+                </c:otherwise>
+            </c:choose>
 
         </main>
 
