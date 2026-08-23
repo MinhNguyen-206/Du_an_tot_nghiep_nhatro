@@ -626,6 +626,29 @@
             .similar-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            .rent-modal select {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.rent-modal-row {
+    display: flex;
+    gap: 10px;
+}
+
+.rent-modal-row > div {
+    flex: 1;
+}
+
+#rentModalSoNguoiWrap.hidden {
+    display: none;
+}
 
         }
 
@@ -951,11 +974,39 @@
 
         <div class="rent-modal-error hidden" id="rentModalError"></div>
 
+        <label for="rentModalHinhThuc">Hình thức thuê</label>
+        <select id="rentModalHinhThuc">
+            <option value="DON">Ở một mình</option>
+            <option value="NHOM">Ở ghép (nhiều người)</option>
+        </select>
+
+        <div id="rentModalSoNguoiWrap" class="hidden">
+            <label for="rentModalSoNguoi">Số người ở cùng (kể cả bạn)</label>
+            <input type="number" id="rentModalSoNguoi" min="2" max="20" placeholder="VD: 2">
+        </div>
+
+        <div class="rent-modal-row">
+            <div>
+                <label for="rentModalThoiHan">Thời hạn thuê</label>
+                <input type="number" id="rentModalThoiHan" min="1" placeholder="VD: 6">
+            </div>
+            <div>
+                <label for="rentModalDonVi">Đơn vị</label>
+                <select id="rentModalDonVi">
+                    <option value="Tháng">Tháng</option>
+                    <option value="Năm">Năm</option>
+                </select>
+            </div>
+        </div>
+
         <label for="rentModalDate">Ngày muốn nhận phòng</label>
         <input type="date" id="rentModalDate">
 
+        <label for="rentModalPhone">Số điện thoại liên hệ</label>
+        <input type="tel" id="rentModalPhone" placeholder="VD: 0987654321">
+
         <label for="rentModalNote">Ghi chú cho chủ trọ</label>
-        <textarea id="rentModalNote" placeholder="VD: Mình muốn xem phòng trước, số lượng người ở, thời gian thuê dự kiến..."></textarea>
+        <textarea id="rentModalNote" placeholder="VD: Mình muốn xem phòng trước, thời gian thuê dự kiến..."></textarea>
 
         <p class="rent-modal-note" id="rentModalFootnote"></p>
 
@@ -1273,19 +1324,16 @@
         window.location.href = ctx + '/profile#appointments';
     });
 
-    // ===== NÚT "THUÊ PHÒNG NGAY" / "ĐẶT CỌC GIỮ PHÒNG" =====
-    // Backend hiện chưa có API "đặt cọc" độc lập ở bước xem phòng: bảng
-    // THANH_TOAN_COC luôn gắn với 1 HOP_DONG_DIEN_TU (hợp đồng) đã tồn tại,
-    // mà hợp đồng chỉ được tạo SAU KHI chủ trọ duyệt một YEU_CAU_THUE.
-    // => Cả 2 nút cùng gửi 1 yêu cầu thuê (POST /api/yeu-cau-thue, entity
-    // YeuCauThue) tới chủ trọ; nút "Đặt cọc" chỉ khác ở chỗ đánh dấu rõ
-    // trong ghi chú là người thuê muốn đặt cọc giữ chỗ ngay, để chủ trọ ưu
-    // tiên xử lý. Khi nào có luồng tạo hợp đồng + thanh toán cọc thật ở
-    // trang "Hồ sơ", nút này có thể trỏ thẳng sang đó.
-    var rentModalOverlay = document.getElementById('rentModalOverlay');
+        var rentModalOverlay = document.getElementById('rentModalOverlay');
     var rentModalTitle = document.getElementById('rentModalTitle');
     var rentModalSub = document.getElementById('rentModalSub');
+    var rentModalHinhThuc = document.getElementById('rentModalHinhThuc');
+    var rentModalSoNguoiWrap = document.getElementById('rentModalSoNguoiWrap');
+    var rentModalSoNguoi = document.getElementById('rentModalSoNguoi');
+    var rentModalThoiHan = document.getElementById('rentModalThoiHan');
+    var rentModalDonVi = document.getElementById('rentModalDonVi');
     var rentModalDate = document.getElementById('rentModalDate');
+    var rentModalPhone = document.getElementById('rentModalPhone');
     var rentModalNote = document.getElementById('rentModalNote');
     var rentModalFootnote = document.getElementById('rentModalFootnote');
     var rentModalError = document.getElementById('rentModalError');
@@ -1302,7 +1350,13 @@
         rentModalMode = mode;
         rentModalError.classList.add('hidden');
         rentModalError.textContent = '';
+        rentModalHinhThuc.value = 'DON';
+        rentModalSoNguoiWrap.classList.add('hidden');
+        rentModalSoNguoi.value = '';
+        rentModalThoiHan.value = '6';
+        rentModalDonVi.value = 'Tháng';
         rentModalNote.value = '';
+        rentModalPhone.value = (currentUser && currentUser.soDienThoai) || '';
         var today = new Date().toISOString().slice(0, 10);
         rentModalDate.value = today;
         rentModalDate.min = today;
@@ -1310,11 +1364,11 @@
         if (mode === 'coc') {
             rentModalTitle.textContent = 'Đặt cọc giữ phòng';
             rentModalSub.textContent = 'Gửi yêu cầu đặt cọc giữ chỗ tới chủ trọ, chủ trọ sẽ liên hệ để xác nhận và hướng dẫn thanh toán cọc.';
-            rentModalFootnote.textContent = 'Sau khi chủ trọ duyệt yêu cầu, hệ thống sẽ lập hợp đồng và bạn thanh toán tiền cọc theo hướng dẫn trong mục Hồ sơ của mình.';
+            rentModalFootnote.textContent = 'Sau khi chủ trọ duyệt yêu cầu, hệ thống sẽ lập hợp đồng điện tử để hai bên ký online và thanh toán cọc ngay trên trang tiến trình đặt phòng.';
         } else {
             rentModalTitle.textContent = 'Thuê phòng ngay';
             rentModalSub.textContent = 'Gửi yêu cầu thuê tới chủ trọ, chủ trọ sẽ liên hệ lại để xác nhận.';
-            rentModalFootnote.textContent = '';
+            rentModalFootnote.textContent = 'Sau khi chủ trọ duyệt yêu cầu, hệ thống sẽ lập hợp đồng điện tử để hai bên ký online.';
         }
 
         rentModalOverlay.classList.remove('hidden');
@@ -1323,6 +1377,15 @@
     function closeRentModal() {
         rentModalOverlay.classList.add('hidden');
     }
+
+    rentModalHinhThuc.addEventListener('change', function () {
+        if (rentModalHinhThuc.value === 'NHOM') {
+            rentModalSoNguoiWrap.classList.remove('hidden');
+        } else {
+            rentModalSoNguoiWrap.classList.add('hidden');
+            rentModalSoNguoi.value = '';
+        }
+    });
 
     document.getElementById('rentNowBtn').addEventListener('click', function () {
         openRentModal('thue');
@@ -1340,10 +1403,36 @@
     rentModalSubmit.addEventListener('click', function () {
         rentModalError.classList.add('hidden');
 
-        if (!rentModalDate.value) {
-            rentModalError.textContent = 'Vui lòng chọn ngày muốn nhận phòng.';
+        function showError(msg) {
+            rentModalError.textContent = msg;
             rentModalError.classList.remove('hidden');
+        }
+
+        if (!rentModalDate.value) {
+            showError('Vui lòng chọn ngày muốn nhận phòng.');
             return;
+        }
+
+        var phone = rentModalPhone.value.trim();
+        if (!/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone)) {
+            showError('Số điện thoại liên hệ không hợp lệ.');
+            return;
+        }
+
+        var thoiHan = Number(rentModalThoiHan.value);
+        if (!thoiHan || thoiHan < 1) {
+            showError('Vui lòng nhập thời hạn thuê hợp lệ.');
+            return;
+        }
+
+        var hinhThuc = rentModalHinhThuc.value;
+        var soNguoiCung = null;
+        if (hinhThuc === 'NHOM') {
+            soNguoiCung = Number(rentModalSoNguoi.value);
+            if (!soNguoiCung || soNguoiCung < 2) {
+                showError('Ở ghép cần từ 2 người trở lên. Vui lòng nhập lại số người ở cùng.');
+                return;
+            }
         }
 
         var ghiChu = rentModalNote.value.trim();
@@ -1360,17 +1449,25 @@
                 phong: { maPhong: Number(roomId) },
                 nguoiThue: { maNguoiDung: currentUser.maNguoiDung },
                 ngayMuonNhanPhong: rentModalDate.value,
-                ghiChu: ghiChu
+                ghiChu: ghiChu,
+                hinhThucThue: hinhThuc,
+                soNguoiCung: soNguoiCung,
+                thoiHanThue: thoiHan,
+                donViThoiHan: rentModalDonVi.value,
+                soDienThoaiLienHe: phone
             }
         })
             .then(function (res) {
                 if (!res) return; // apiFetch tự điều hướng /login khi 401
                 closeRentModal();
-                alert('Đã gửi yêu cầu tới chủ trọ. Chủ trọ sẽ liên hệ với bạn qua số điện thoại/tài khoản đã đăng ký.');
+                if (res.maYeuCau) {
+                    window.location.href = ctx + '/tien-trinh-dat-phong?id=' + res.maYeuCau;
+                } else {
+                    alert('Đã gửi yêu cầu tới chủ trọ. Chủ trọ sẽ liên hệ với bạn qua số điện thoại/tài khoản đã đăng ký.');
+                }
             })
             .catch(function (err) {
-                rentModalError.textContent = (err && err.message) || 'Không thể gửi yêu cầu. Vui lòng thử lại.';
-                rentModalError.classList.remove('hidden');
+                showError((err && err.message) || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
             })
             .finally(function () {
                 rentModalSubmit.disabled = false;

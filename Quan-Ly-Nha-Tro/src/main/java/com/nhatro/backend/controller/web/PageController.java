@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.nhatro.backend.entity.NhaTro;
 import com.nhatro.backend.repository.NhaTroRepository;
@@ -128,5 +129,11 @@ public class PageController {
     @GetMapping("/dang-ky-chu-tro")
     public String dangKyChuTro() {
         return "chu-tro/dangKyChuTro";
+    }
+
+        @GetMapping("/tien-trinh-dat-phong")
+    public String tienTrinhDatPhong(@RequestParam("id") Integer maYeuCau, Model model) {
+        model.addAttribute("maYeuCau", maYeuCau);
+        return "dat-phong/tienTrinhDatPhong";
     }
 }

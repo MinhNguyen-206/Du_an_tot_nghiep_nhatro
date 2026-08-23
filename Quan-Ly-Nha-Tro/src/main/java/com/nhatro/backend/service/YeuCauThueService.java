@@ -1,12 +1,13 @@
 package com.nhatro.backend.service;
 
-import com.nhatro.backend.entity.YeuCauThue;
-import com.nhatro.backend.repository.YeuCauThueRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.nhatro.backend.entity.YeuCauThue;
+import com.nhatro.backend.repository.YeuCauThueRepository;
 
 @Service
 public class YeuCauThueService {
@@ -22,9 +23,10 @@ public class YeuCauThueService {
         return yeuCauThueRepository.findAll();
     }
 
+    // ✅ CHỈ GIỮ 1 BẢN NÀY — xoá bản "return yeuCauThueRepository.findById(id);" cũ đi
     public Optional<YeuCauThue> getById(Integer id) {
         Objects.requireNonNull(id, "id must not be null");
-        return yeuCauThueRepository.findById(id);
+        return yeuCauThueRepository.findByIdWithChiTiet(id);
     }
 
     public List<YeuCauThue> getByNguoiThue(Integer maNguoiDung) {
@@ -40,6 +42,27 @@ public class YeuCauThueService {
     public List<YeuCauThue> getByTrangThai(String trangThai) {
         Objects.requireNonNull(trangThai, "trangThai must not be null");
         return yeuCauThueRepository.findByTrangThai(trangThai);
+    }
+
+    public List<YeuCauThue> getByChuTro(Integer maChuTro) {
+        Objects.requireNonNull(maChuTro, "maChuTro must not be null");
+        return yeuCauThueRepository.findByPhong_NhaTro_NguoiDung_MaNguoiDungOrderByNgayGuiDesc(maChuTro);
+    }
+
+    public Optional<YeuCauThue> duyet(Integer id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return yeuCauThueRepository.findByIdWithChiTiet(id).map(yc -> {
+            yc.setTrangThai("Đã duyệt");
+            return yeuCauThueRepository.save(yc);
+        });
+    }
+
+    public Optional<YeuCauThue> tuChoi(Integer id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return yeuCauThueRepository.findByIdWithChiTiet(id).map(yc -> {
+            yc.setTrangThai("Từ chối");
+            return yeuCauThueRepository.save(yc);
+        });
     }
 
     public YeuCauThue create(YeuCauThue yeuCauThue) {
