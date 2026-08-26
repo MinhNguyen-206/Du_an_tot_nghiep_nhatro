@@ -121,4 +121,19 @@ public class HopDongDienTu {
 
     @Column(name = "diaDiemKy", length = 255)
     private String diaDiemKy;
+
+    // ===== Bổ sung cho Điều 13 - Chính sách gia hạn sau khi hết hạn hợp đồng =====
+
+    @Column(name = "choPhepGiaHan", nullable = false)
+    @Builder.Default
+    private Boolean choPhepGiaHan = true;
+
+    @Column(name = "soNgayBaoTruocGiaHan")
+    private Integer soNgayBaoTruocGiaHan;
+
+    @Column(name = "soLanGiaHanToiDa")
+    private Integer soLanGiaHanToiDa;
+
+    @Column(name = "mucTangGiaToiDaPhanTram")
+    private Integer mucTangGiaToiDaPhanTram;
 }

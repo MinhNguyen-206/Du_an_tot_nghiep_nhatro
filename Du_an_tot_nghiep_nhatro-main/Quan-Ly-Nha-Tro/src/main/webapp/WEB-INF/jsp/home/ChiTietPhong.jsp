@@ -15,6 +15,8 @@
 
     <title>Chi tiết phòng - ROOM - CONNECT</title>
 
+    <%@ include file="/WEB-INF/jsp/common/head-assets.jspf" %>
+
     <style>
 
         * {
@@ -27,40 +29,6 @@
         body {
             background: #eef1f5;
             color: #111;
-        }
-
-        .navbar {
-            background: #fff;
-            padding: 12px 6%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-weight: 800;
-            font-size: 20px;
-            text-decoration: none;
-            color: #111;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #555;
-            font-size: 14px;
-        }
-
-        .nav-links a:hover {
-            color: #ff3345;
         }
 
         .container {
@@ -686,47 +654,7 @@
 <body data-context-path="${pageContext.request.contextPath}" data-room-id="${roomId}">
 
 
-<!-- NAVBAR -->
-
-<nav class="navbar">
-
-    <a href="${pageContext.request.contextPath}/thue-tro"
-       class="logo">
-
-        ROOM - CONNECT
-
-    </a>
-
-
-    <div class="nav-links">
-
-        <a href="${pageContext.request.contextPath}/thue-tro">
-
-            Thuê trọ
-
-        </a>
-
-        <a href="${pageContext.request.contextPath}/thue-can-ho">
-
-            Thuê căn hộ
-
-        </a>
-
-        <a href="#">
-
-            Về chúng tôi
-
-        </a>
-
-        <a href="#">
-
-            Liên hệ
-
-        </a>
-
-    </div>
-
-</nav>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
 
 <div class="container">

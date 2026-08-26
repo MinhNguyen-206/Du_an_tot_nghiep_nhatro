@@ -98,14 +98,35 @@ public class HopDongDienTuService {
         return hopDongRepository.findById(id);
     }
 
+    /**
+     * Giong getById() nhung JOIN FETCH san chuTro/nguoiThue - dung cho cac thao tac
+     * can kiem tra/doc 2 quan he nay ngay sau khi lay hop dong (ky hop dong, thanh
+     * toan coc...), vi du an dung open-in-view=false nen truy cap lazy proxy ngoai
+     * session se nem loi "Could not initialize proxy [...] - no session".
+     */
+    public Optional<HopDongDienTu> getByIdWithNguoiDung(Integer id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return hopDongRepository.findByIdWithNguoiDung(id);
+    }
+
+    /**
+     * Lay hop dong kem day du chuTro/nguoiThue/phong/phong.nhaTro - dung cho
+     * trang "Xem chi tiet hop dong" (xem + xuat PDF) o ca 2 phia nguoi thue va
+     * chu tro (xem HopDongDienTuController#getByIdChiTiet).
+     */
+    public Optional<HopDongDienTu> getByIdChiTietDayDu(Integer id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return hopDongRepository.findByIdWithChiTietDayDu(id);
+    }
+
     public List<HopDongDienTu> getByNguoiThue(Integer maNguoiDung) {
         Objects.requireNonNull(maNguoiDung, "maNguoiDung must not be null");
-        return hopDongRepository.findByNguoiThue_MaNguoiDung(maNguoiDung);
+        return hopDongRepository.findByNguoiThueWithChiTietDayDu(maNguoiDung);
     }
 
     public List<HopDongDienTu> getByChuTro(Integer maNguoiDung) {
         Objects.requireNonNull(maNguoiDung, "maNguoiDung must not be null");
-        return hopDongRepository.findByChuTro_MaNguoiDung(maNguoiDung);
+        return hopDongRepository.findByChuTroWithChiTietDayDu(maNguoiDung);
     }
 
     public List<HopDongDienTu> getByPhong(Integer maPhong) {
@@ -132,6 +153,19 @@ public class HopDongDienTuService {
             hd.setFileHopDong(duLieuMoi.getFileHopDong());
             hd.setTrangThai(duLieuMoi.getTrangThai());
             hd.setNgayKy(duLieuMoi.getNgayKy());
+            hd.setDiaDiemKy(duLieuMoi.getDiaDiemKy());
+            hd.setCccdChuTro(duLieuMoi.getCccdChuTro());
+            hd.setNgayCapCccdChuTro(duLieuMoi.getNgayCapCccdChuTro());
+            hd.setNoiCapCccdChuTro(duLieuMoi.getNoiCapCccdChuTro());
+            hd.setDiaChiThuongTruChuTro(duLieuMoi.getDiaChiThuongTruChuTro());
+            hd.setCccdNguoiThue(duLieuMoi.getCccdNguoiThue());
+            hd.setNgayCapCccdNguoiThue(duLieuMoi.getNgayCapCccdNguoiThue());
+            hd.setNoiCapCccdNguoiThue(duLieuMoi.getNoiCapCccdNguoiThue());
+            hd.setDiaChiThuongTruNguoiThue(duLieuMoi.getDiaChiThuongTruNguoiThue());
+            hd.setChoPhepGiaHan(duLieuMoi.getChoPhepGiaHan());
+            hd.setSoNgayBaoTruocGiaHan(duLieuMoi.getSoNgayBaoTruocGiaHan());
+            hd.setSoLanGiaHanToiDa(duLieuMoi.getSoLanGiaHanToiDa());
+            hd.setMucTangGiaToiDaPhanTram(duLieuMoi.getMucTangGiaToiDaPhanTram());
             return hopDongRepository.save(hd);
         });
     }

@@ -31,7 +31,40 @@ public class OtpService {
         this.mailSender = mailSender;
     }
 
-    public MaOtp taoVaGui(Integer maHopDong, String vaiTroKy, NguoiDung nguoiKy) {
+    /**
+     * Ket qua sau khi tao + gui OTP: gom ban ghi OTP va co gui email THAT
+     * thanh cong hay khong, de controller quyet dinh co can tra otpDemo
+     * (fallback debug khi SMTP loi) ve cho UI hay khong.
+     */
+    public static class KetQuaGuiOtp {
+        private final MaOtp otp;
+        private final boolean daGuiEmailThanhCong;
+
+        public KetQuaGuiOtp(MaOtp otp, boolean daGuiEmailThanhCong) {
+            this.otp = otp;
+            this.daGuiEmailThanhCong = daGuiEmailThanhCong;
+        }
+
+        public MaOtp getOtp() {
+            return otp;
+        }
+
+        public boolean isDaGuiEmailThanhCong() {
+            return daGuiEmailThanhCong;
+        }
+    }
+
+    public KetQuaGuiOtp taoVaGui(Integer maHopDong, String vaiTroKy, NguoiDung nguoiKy) {
+        return taoVaGui(maHopDong, vaiTroKy, nguoiKy, "EMAIL");
+    }
+
+    /**
+     * @param kenhGui "SDT" hoac "EMAIL" - kenh nguoi dung chon o giao dien ky hop dong.
+     *                He thong hien tai gui OTP THAT qua Gmail SMTP (JavaMailSender).
+     *                Du an CHUA tich hop tong dai SMS that, nen neu nguoi dung chon
+     *                kenh "SDT" thi he thong van gui qua email dang ky cua ho.
+     */
+    public KetQuaGuiOtp taoVaGui(Integer maHopDong, String vaiTroKy, NguoiDung nguoiKy, String kenhGui) {
         String maSo = String.format("%06d", RANDOM.nextInt(1_000_000));
 
         MaOtp otp = MaOtp.builder()
@@ -44,11 +77,23 @@ public class OtpService {
                 .build();
         otp = maOtpRepository.save(otp);
 
-        guiEmail(nguoiKy.getEmail(), maSo);
-        return otp;
+        boolean daGui = guiThongBao(nguoiKy, maSo, kenhGui);
+        return new KetQuaGuiOtp(otp, daGui);
     }
 
-    private void guiEmail(String toEmail, String maSo) {
+    /**
+     * Gui ma OTP toi nguoi ky qua Gmail SMTP that. Tra ve true neu gui thanh cong.
+     */
+    private boolean guiThongBao(NguoiDung nguoiKy, String maSo, String kenhGui) {
+        boolean qaSdt = "SDT".equalsIgnoreCase(kenhGui);
+        if (qaSdt) {
+            log.info("Yeu cau gui OTP qua SDT ({}) - du an chua tich hop SMS that, se fallback qua email.",
+                    nguoiKy.getSoDienThoai());
+        }
+        return guiEmail(nguoiKy.getEmail(), maSo);
+    }
+
+    private boolean guiEmail(String toEmail, String maSo) {
         try {
             if (fromAddress == null || fromAddress.isBlank() || toEmail == null || toEmail.isBlank()) {
                 throw new IllegalStateException("Chua cau hinh MAIL_USERNAME/MAIL_PASSWORD hoac thieu email nguoi nhan");
@@ -60,9 +105,11 @@ public class OtpService {
             message.setText("Ma OTP cua ban la: " + maSo + "\nMa co hieu luc trong " + TTL_PHUT + " phut.\n\n" +
                     "Neu ban khong yeu cau, vui long bo qua email nay.\n\n- Room Connect -");
             mailSender.send(message);
-            log.info("Da gui OTP toi {}", toEmail);
+            log.info("Da gui OTP THAT qua Gmail toi {}", toEmail);
+            return true;
         } catch (Exception e) {
-            log.warn("Khong gui duoc email OTP that ({}). Ma OTP (DEV) cho {}: {}", e.getMessage(), toEmail, maSo);
+            log.warn("Khong gui duoc email OTP that ({}). Ma OTP (DEV fallback) cho {}: {}", e.getMessage(), toEmail, maSo);
+            return false;
         }
     }
 

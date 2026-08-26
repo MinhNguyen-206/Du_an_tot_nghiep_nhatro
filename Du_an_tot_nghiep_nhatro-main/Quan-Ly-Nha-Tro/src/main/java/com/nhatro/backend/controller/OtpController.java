@@ -40,22 +40,51 @@ public class OtpController {
     public static class GuiOtpRequest {
         public Integer maHopDong;
         public String vaiTroKy; // "CHU_TRO" hoac "NGUOI_THUE"
+        public String kenhGui;  // "SDT" hoac "EMAIL" - nguoi dung chon o modal ky hop dong (mac dinh EMAIL)
     }
 
     @PostMapping("/gui")
     public ResponseEntity<?> gui(@RequestBody GuiOtpRequest req, Authentication authentication) {
         NguoiDung nguoiDungHienTai = currentUser(authentication);
-        HopDongDienTu hopDong = hopDongDienTuRepository.findById(req.maHopDong)
+        HopDongDienTu hopDong = hopDongDienTuRepository.findByIdWithNguoiDung(req.maHopDong)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hợp đồng"));
 
         NguoiDung nguoiKy = kiemTraVaLayNguoiKy(hopDong, req.vaiTroKy, nguoiDungHienTai);
 
-        MaOtp otp = otpService.taoVaGui(hopDong.getMaHopDong(), req.vaiTroKy, nguoiKy);
+        String kenhGui = "SDT".equalsIgnoreCase(req.kenhGui) ? "SDT" : "EMAIL";
+        OtpService.KetQuaGuiOtp ketQua = otpService.taoVaGui(hopDong.getMaHopDong(), req.vaiTroKy, nguoiKy, kenhGui);
+        MaOtp otp = ketQua.getOtp();
+        boolean daGuiThanhCong = ketQua.isDaGuiEmailThanhCong();
 
         Map<String, Object> res = new HashMap<>();
-        res.put("message", "Đã gửi mã OTP");
-        res.put("otpDemo", otp.getMaSo()); // TODO: xóa khi có SMS/SMTP thật
+        res.put("kenhGui", kenhGui);
+        if (daGuiThanhCong) {
+            if ("SDT".equals(kenhGui)) {
+                res.put("message", "Đã gửi mã OTP qua email " + maskEmail(nguoiKy.getEmail()));
+                res.put("note", "Hệ thống chưa tích hợp tổng đài SMS thật nên mã OTP được gửi qua email đăng ký của bạn.");
+            } else {
+                res.put("message", "Đã gửi mã OTP qua email " + maskEmail(nguoiKy.getEmail()));
+            }
+        } else {
+            // Gui email that that bai (VD: chua cau hinh SMTP, sai mat khau ung dung...)
+            // -> tra ma OTP ve UI de van test duoc luong ky hop dong.
+            res.put("message", "Không gửi được email OTP thật (kiểm tra lại cấu hình SMTP). Dùng tạm mã demo bên dưới.");
+            res.put("otpDemo", otp.getMaSo());
+        }
         return ResponseEntity.ok(res);
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) return email;
+        String[] parts = email.split("@", 2);
+        String ten = parts[0];
+        String hienThi = ten.length() <= 2 ? ten.charAt(0) + "*" : ten.substring(0, 2) + "***";
+        return hienThi + "@" + parts[1];
+    }
+
+    private String maskSdt(String sdt) {
+        if (sdt == null || sdt.length() < 4) return sdt;
+        return "*****" + sdt.substring(sdt.length() - 3);
     }
 
     private NguoiDung currentUser(Authentication authentication) {

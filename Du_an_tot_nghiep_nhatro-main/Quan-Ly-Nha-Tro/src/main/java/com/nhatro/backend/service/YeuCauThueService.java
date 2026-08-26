@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nhatro.backend.entity.YeuCauThue;
 import com.nhatro.backend.repository.YeuCauThueRepository;
@@ -49,6 +50,15 @@ public class YeuCauThueService {
         return yeuCauThueRepository.findByChuTroWithChiTiet(maChuTro);
     }
 
+    // @Transactional: giu find + sua + save trong CUNG mot session Hibernate.
+    // Neu khong co, findByIdWithChiTiet() va save() se chay o 2 transaction
+    // rieng (moi goi repository tu dong mo/dong session khi khong co
+    // @Transactional bao ngoai) -> entity bi "detach" giua 2 lan goi ->
+    // save() phai merge() -> Hibernate nap lai entity "tron" (khong JOIN
+    // FETCH) -> cac quan he (phong, nguoiThue...) tro thanh proxy CHUA
+    // initialize -> Jackson serialize sau khi session da dong se nem loi
+    // "Could not initialize proxy [...] - no session".
+    @Transactional
     public Optional<YeuCauThue> duyet(Integer id) {
         Objects.requireNonNull(id, "id must not be null");
         return yeuCauThueRepository.findByIdWithChiTiet(id).map(yc -> {
@@ -57,6 +67,7 @@ public class YeuCauThueService {
         });
     }
 
+    @Transactional
     public Optional<YeuCauThue> tuChoi(Integer id) {
         Objects.requireNonNull(id, "id must not be null");
         return yeuCauThueRepository.findByIdWithChiTiet(id).map(yc -> {

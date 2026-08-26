@@ -20,11 +20,14 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     private static final String ADMIN = "ROLE_ADMIN";
@@ -42,8 +45,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 // ===================== SESSION =====================
+                // Dung IF_REQUIRED (thay vi STATELESS) vi luong OAuth2 Login (dang
+                // nhap Google) can Spring Security tam luu "authorization request"
+                // vao HttpSession trong luc chuyen huong sang Google roi quay ve.
+                // Voi STATELESS, Spring Security KHONG tao session -> loi
+                // "authorization_request_not_found" khi Google redirect ve.
+                // Cac API con lai van xac thuc bang JWT (khong phu thuoc session)
+                // nen doi sang IF_REQUIRED khong anh huong gi.
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
 
                 // ===================== AUTHORIZATION =====================
@@ -93,7 +103,21 @@ public class SecurityConfig {
                                 "/rooms",
                                 "/rooms/**",
                                 "/profile",
-                                "/error"
+                                "/error",
+                                // Trang trung gian nhan token sau khi Google xac thuc xong
+                                // (xem OAuth2LoginSuccessHandler#redirectWithToken) - PHAI
+                                // permitAll, neu khong se bi chan va bi day nguoc ve /login,
+                                // mat luon token vua nhan tu Google.
+                                "/oauth2-redirect"
+                        )
+                        .permitAll()
+
+                        // ===================== OAUTH2 LOGIN (Google) =====================
+                        // /oauth2/authorization/google  -> khoi tao dang nhap Google
+                        // /login/oauth2/code/google     -> Google redirect ve sau khi xac thuc
+                        .requestMatchers(
+                                "/oauth2/**",
+                                "/login/oauth2/**"
                         )
                         .permitAll()
 
@@ -357,6 +381,17 @@ public class SecurityConfig {
                                     }
                                 }
                         )
+                )
+
+                // =========================================================
+                // OAUTH2 LOGIN (Dang nhap bang Google)
+                // =========================================================
+                // Sau khi Google xac thuc thanh cong, OAuth2LoginSuccessHandler se
+                // tim/tao NguoiDung tuong ung, phat JWT roi redirect ve /oauth2-redirect
+                // kem token (xem class do de biet chi tiet).
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureUrl("/login?error=google")
                 )
 
                 // =========================================================

@@ -91,7 +91,7 @@ public class HopDongDienTuController {
     public ResponseEntity<HopDongDienTu> kyChuTro(@PathVariable Integer id, @RequestBody KyHopDongRequest req,
                                                     Authentication authentication) {
         NguoiDung nguoiDungHienTai = currentUser(authentication);
-        HopDongDienTu hopDong = hopDongDienTuService.getById(id)
+        HopDongDienTu hopDong = hopDongDienTuService.getByIdWithNguoiDung(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (!hopDong.getChuTro().getMaNguoiDung().equals(nguoiDungHienTai.getMaNguoiDung())) {
@@ -107,7 +107,7 @@ public class HopDongDienTuController {
     public ResponseEntity<HopDongDienTu> kyNguoiThue(@PathVariable Integer id, @RequestBody KyHopDongRequest req,
                                                        Authentication authentication) {
         NguoiDung nguoiDungHienTai = currentUser(authentication);
-        HopDongDienTu hopDong = hopDongDienTuService.getById(id)
+        HopDongDienTu hopDong = hopDongDienTuService.getByIdWithNguoiDung(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (!hopDong.getNguoiThue().getMaNguoiDung().equals(nguoiDungHienTai.getMaNguoiDung())) {
@@ -123,7 +123,7 @@ public class HopDongDienTuController {
     public ResponseEntity<HopDongDienTu> thanhToan(@PathVariable Integer id, @RequestBody(required = false) Map<String, String> body,
                                                      Authentication authentication) {
         NguoiDung nguoiDungHienTai = currentUser(authentication);
-        HopDongDienTu hopDong = hopDongDienTuService.getById(id)
+        HopDongDienTu hopDong = hopDongDienTuService.getByIdWithNguoiDung(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (!hopDong.getNguoiThue().getMaNguoiDung().equals(nguoiDungHienTai.getMaNguoiDung())) {
@@ -142,11 +142,24 @@ public class HopDongDienTuController {
         return hopDongDienTuService.getAll();
     }
 
+    // Dung cho trang "Xem chi tiet hop dong" (xem + xuat PDF) - tra ve kem day du
+    // phong/nhaTro/chuTro/nguoiThue (JOIN FETCH) va CHI cho phep chu tro, nguoi
+    // thue cua chinh hop dong nay hoac ADMIN xem, tranh lo thong tin CCCD/dia
+    // chi cho nguoi dung bat ky nhu truoc day (getById() cu khong kiem tra quyen).
     @GetMapping("/{id}")
-    public ResponseEntity<HopDongDienTu> getById(@PathVariable Integer id) {
-        return hopDongDienTuService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<HopDongDienTu> getById(@PathVariable Integer id, Authentication authentication) {
+        NguoiDung nguoiDungHienTai = currentUser(authentication);
+        HopDongDienTu hopDong = hopDongDienTuService.getByIdChiTietDayDu(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        boolean laChuTro = hopDong.getChuTro().getMaNguoiDung().equals(nguoiDungHienTai.getMaNguoiDung());
+        boolean laNguoiThue = hopDong.getNguoiThue().getMaNguoiDung().equals(nguoiDungHienTai.getMaNguoiDung());
+        boolean laAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ADMIN".equals(a.getAuthority()));
+        if (!laChuTro && !laNguoiThue && !laAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem hợp đồng này");
+        }
+        return ResponseEntity.ok(hopDong);
     }
 
     @GetMapping("/nguoi-thue/{userId}")

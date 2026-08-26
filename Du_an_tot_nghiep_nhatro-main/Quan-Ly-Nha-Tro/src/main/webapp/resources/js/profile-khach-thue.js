@@ -78,10 +78,32 @@
             '<div class="appointment-side"><div><div class="appointment-time">' + escapeHtml((item.gioHen || '').slice(0,5)) + ' ' + (item.gioHen ? '' : '') + '</div><div class="appointment-owner">Phòng: ' + escapeHtml(item.tenPhong || '—') + '</div><div class="appointment-owner">' + (item.trangThai === true ? 'Đã xác nhận' : 'Chờ xác nhận') + '</div></div>' +
             '<div class="appointment-actions"><button type="button" class="reschedule-btn" data-id="' + escapeHtml(item.maLichHen) + '">Dời lịch</button><button type="button" class="cancel-appointment-btn" data-id="' + escapeHtml(item.maLichHen) + '">Hủy lịch</button></div></div></article>';
     }
+    function rentalStatusLabel(trangThai) {
+        if (trangThai === 'Đã duyệt') return 'Chủ trọ đã duyệt — tiếp tục ký hợp đồng';
+        if (trangThai === 'Từ chối') return 'Chủ trọ đã từ chối';
+        return 'Đang chờ chủ trọ duyệt';
+    }
+    function rentalRequestCard(item) {
+        var tenPhong = item.phong ? item.phong.tenPhong : 'Phòng trọ';
+        var tenNhaTro = (item.phong && item.phong.nhaTro) ? item.phong.nhaTro.tenNhaTro : '';
+        var isTuChoi = item.trangThai === 'Từ chối';
+        var icon = isTuChoi ? 'fa-circle-xmark' : (item.trangThai === 'Đã duyệt' ? 'fa-circle-check' : 'fa-hourglass-half');
+        var actionHtml = isTuChoi
+            ? '<button type="button" class="contract-btn" disabled>Yêu cầu đã bị từ chối</button>'
+            : '<a class="contract-btn" href="' + ctx + '/tien-trinh-dat-phong?id=' + escapeHtml(item.maYeuCau) + '">Xem tiến trình</a>';
+        return '<article class="contract-card"><div class="contract-icon"><i class="fa-solid ' + icon + '"></i></div><div class="contract-main"><strong>' + escapeHtml(tenPhong) + (tenNhaTro ? ' — ' + escapeHtml(tenNhaTro) : '') + '</strong><span>' + rentalStatusLabel(item.trangThai) + ' · Gửi ngày ' + formatDate(String(item.ngayGui || '').slice(0, 10)) + '</span></div>' +
+            actionHtml + '</article>';
+    }
     function contractCard(item) {
         var status = item.trangThai || 'Đang hiệu lực';
+        // Truoc day: hop dong chua co "fileHopDong" (file dinh kem rieng) thi
+        // bam "Xem chi tiet" chi hien alert bao loi. Gio moi hop dong dieu tu
+        // deu xem duoc day du noi dung + tai PDF tai trang /hop-dong/{id}
+        // (xem hopDongChiTiet.js), nen luon dan sang trang do; chi khi da co
+        // san 1 file dinh kem rieng (fileHopDong) thi moi mo thang file do.
+        var chiTietHref = item.fileHopDong ? escapeHtml(item.fileHopDong) : (ctx + '/hop-dong/' + escapeHtml(item.maHopDong));
         return '<article class="contract-card"><div class="contract-icon"><i class="fa-regular fa-file-lines"></i></div><div class="contract-main"><strong>Hợp đồng thuê phòng #' + escapeHtml(item.maHopDong) + '</strong><span>Trạng thái: ' + escapeHtml(status) + '</span></div>' +
-            (item.fileHopDong ? '<a class="contract-btn" href="' + escapeHtml(item.fileHopDong) + '" target="_blank" rel="noopener">Xem chi tiết</a>' : '<button type="button" class="contract-btn" onclick="alert(\'Hợp đồng chưa có file đính kèm.\')">Xem chi tiết</button>') +
+            '<a class="contract-btn" href="' + chiTietHref + '"' + (item.fileHopDong ? ' target="_blank" rel="noopener"' : '') + '>Xem chi tiết</a>' +
             '<div class="contract-dates"><div class="contract-date"><span>Ngày bắt đầu</span><strong>' + formatDate(item.ngayBatDau) + '</strong></div><div class="contract-date"><span>Ngày kết thúc</span><strong>' + formatDate(item.ngayKetThuc) + '</strong></div></div></article>';
     }
 
@@ -144,6 +166,25 @@
             })
             .catch(function (err) {
                 showError((err && err.message) || 'Không thể tải hồ sơ. Vui lòng thử lại.');
+            });
+        loadRentalRequests();
+    }
+
+    // "/api/profile/{id}" khong tra ve danh sach yeu cau thue (DTO
+    // ProfileResponse chua co truong nay), nen goi rieng sang
+    // GET /api/yeu-cau-thue/nguoi-thue/{maNguoiDung} (da co san o BE).
+    // Goi doc lap voi loadProfile() de neu API nay loi cung khong lam
+    // hong phan con lai cua trang ho so.
+    function loadRentalRequests() {
+        apiFetch('/yeu-cau-thue/nguoi-thue/' + encodeURIComponent(user.maNguoiDung))
+            .then(function (list) {
+                list = (list || []).sort(function (a, b) { return new Date(b.ngayGui) - new Date(a.ngayGui); });
+                qs('rentalRequestsList').innerHTML = list.map(rentalRequestCard).join('');
+                qs('rentalRequestsEmpty').classList.toggle('hidden', list.length !== 0);
+            })
+            .catch(function () {
+                qs('rentalRequestsList').innerHTML = '';
+                qs('rentalRequestsEmpty').classList.remove('hidden');
             });
     }
 
@@ -243,11 +284,9 @@
     qs('editProfileBtn').addEventListener('click', openProfileModal);
     document.querySelectorAll('[data-action="edit-profile"]').forEach(function (el) { el.addEventListener('click', openProfileModal); });
     qs('sidebarLogoutBtn').addEventListener('click', logout);
-    qs('headerLogoutBtn').addEventListener('click', logout);
-    qs('headerUserBtn').addEventListener('click', function () { qs('headerUserMenu').classList.toggle('hidden'); });
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('.profile-header-user')) qs('headerUserMenu').classList.add('hidden');
-    });
+    // Ghi chú: nút đăng xuất + dropdown tài khoản trên nav giờ dùng chung
+    // header (common/header.jsp, id rcLogoutBtn/rcUserMenuBtn) và đã tự xử lý
+    // sự kiện trong chính file đó, nên không cần bind lại ở đây nữa.
     document.querySelectorAll('.profile-menu-item[data-target]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             document.querySelectorAll('.profile-menu-item').forEach(function (x) { x.classList.remove('active'); });

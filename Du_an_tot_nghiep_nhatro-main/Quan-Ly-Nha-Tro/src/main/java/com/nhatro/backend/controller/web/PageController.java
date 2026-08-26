@@ -136,4 +136,16 @@ public class PageController {
         model.addAttribute("maYeuCau", maYeuCau);
         return "dat-phong/tienTrinhDatPhong";
     }
+
+    // =====================================================
+    // XEM CHI TIET HOP DONG (doc + xuat PDF) - dung chung cho ca nguoi thue
+    // (link "Xem chi tiet" trong /profile) va chu tro (nut "Tai PDF" trong
+    // /chu-tro/contracts). Trang tinh, du lieu + kiem tra quyen deu do JS goi
+    // GET /api/hop-dong/{id} dam nhiem (xem resources/js/hopDongChiTiet.js).
+    // =====================================================
+    @GetMapping("/hop-dong/{id}")
+    public String chiTietHopDong(@org.springframework.web.bind.annotation.PathVariable Integer id, Model model) {
+        model.addAttribute("maHopDong", id);
+        return "contract/contractDetail";
+    }
 }

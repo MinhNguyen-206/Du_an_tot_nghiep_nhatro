@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tiến trình đặt phòng - ROOM CONNECT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; }
         body { background: #f5f6f8; color: #222; }
@@ -88,6 +89,8 @@
 </div>
 
 <script src="${pageContext.request.contextPath}/resources/js/api.js"></script>
+<script src="${pageContext.request.contextPath}/resources/js/hopDongModal.js"></script>
+<script src="${pageContext.request.contextPath}/resources/js/hopDongKyModal.js"></script>
 <script>
 (function () {
     'use strict';
@@ -341,45 +344,22 @@
 
     function renderPanelTaoHopDong() {
         var phong = yeuCau.phong || {};
-        var ngayBatDau = yeuCau.ngayMuonNhanPhong || new Date().toISOString().slice(0, 10);
-        var ngayKetThuc = addToDate(ngayBatDau, yeuCau.thoiHanThue || 6, yeuCau.donViThoiHan || 'Tháng');
-        var giaGoiY = phong.giaPhong || 0;
 
         actionBox.innerHTML =
             '<h3>Lập hợp đồng điện tử</h3>' +
-            '<div class="grid-2">' +
-                '<div><label for="hdBatDau">Ngày bắt đầu</label><input type="date" id="hdBatDau" value="' + ngayBatDau + '"></div>' +
-                '<div><label for="hdKetThuc">Ngày kết thúc</label><input type="date" id="hdKetThuc" value="' + ngayKetThuc + '"></div>' +
-            '</div>' +
-            '<div class="grid-2">' +
-                '<div><label for="hdGiaThue">Giá thuê / tháng</label><input type="number" id="hdGiaThue" value="' + giaGoiY + '"></div>' +
-                '<div><label for="hdTienCoc">Tiền cọc</label><input type="number" id="hdTienCoc" value="' + giaGoiY + '"></div>' +
-            '</div>' +
+            '<p class="waiting-note">Yêu cầu đã được duyệt. Bấm nút bên dưới để điền đầy đủ thông tin hợp đồng ' +
+            '(CCCD, địa chỉ thường trú hai bên, chính sách gia hạn...) và xem trước nội dung hợp đồng trước khi tạo.</p>' +
             '<div class="action-error hidden" id="panelError"></div>' +
-            '<div class="action-row"><button class="btn-primary" id="btnTaoHopDong" style="flex:none;padding-left:24px;padding-right:24px;">Tạo hợp đồng</button></div>';
+            '<div class="action-row"><button class="btn-primary" id="btnMoModalTaoHopDong" style="flex:none;padding-left:24px;padding-right:24px;">' +
+                '<i class="bi bi-file-earmark-plus"></i> Tạo hợp đồng</button></div>';
 
-        document.getElementById('btnTaoHopDong').addEventListener('click', function () {
-            var btn = this;
-            var batDau = document.getElementById('hdBatDau').value;
-            var ketThuc = document.getElementById('hdKetThuc').value;
-            var giaThue = Number(document.getElementById('hdGiaThue').value);
-            var tienCoc = Number(document.getElementById('hdTienCoc').value);
-
-            if (!batDau || !ketThuc) { panelError('Vui lòng chọn đầy đủ ngày bắt đầu/kết thúc.'); return; }
-            if (new Date(ketThuc) <= new Date(batDau)) { panelError('Ngày kết thúc phải sau ngày bắt đầu.'); return; }
-
-            btn.disabled = true;
-            btn.textContent = 'Đang tạo...';
-            apiFetch('/hop-dong/tu-yeu-cau/' + maYeuCau, {
-                method: 'POST',
-                body: { ngayBatDau: batDau, ngayKetThuc: ketThuc, giaThue: giaThue, tienCoc: tienCoc }
-            })
-                .then(function () { loadAll(); })
-                .catch(function (err) {
-                    panelError((err && err.message) || 'Không tạo được hợp đồng.');
-                    btn.disabled = false;
-                    btn.textContent = 'Tạo hợp đồng';
-                });
+        document.getElementById('btnMoModalTaoHopDong').addEventListener('click', function () {
+            openHopDongModal({
+                mode: 'fixed',
+                currentUser: currentUser,
+                yeuCau: yeuCau,
+                onSuccess: function () { loadAll(); }
+            });
         });
     }
 
@@ -389,70 +369,20 @@
             '<p class="waiting-note">Hợp đồng #' + hopDong.maHopDong + ' • ' + formatDate(hopDong.ngayBatDau) +
             ' → ' + formatDate(hopDong.ngayKetThuc) + ' • Giá thuê ' + formatMoney(hopDong.giaThue) +
             '/tháng • Cọc ' + formatMoney(hopDong.tienCoc) + '</p>' +
+            '<p class="waiting-note">Bấm nút bên dưới để xem lại toàn bộ nội dung hợp đồng, tạo chữ ký điện tử ' +
+            '(vẽ tay hoặc gõ tên) và xác thực bằng mã OTP gửi qua SĐT/Email trước khi hoàn tất ký.</p>' +
             '<div class="action-error hidden" id="panelError"></div>' +
-            '<div id="otpStep1">' +
-                '<div class="action-row"><button class="btn-primary" id="btnGuiOtp">Gửi mã OTP xác thực</button></div>' +
-            '</div>' +
-            '<div class="hidden" id="otpStep2">' +
-                '<label for="kyHoTen">Họ tên xác nhận chữ ký điện tử</label>' +
-                '<input type="text" id="kyHoTen" placeholder="Nhập đúng họ tên của bạn">' +
-                '<label for="kyOtp">Mã OTP (6 số)</label>' +
-                '<input type="text" id="kyOtp" maxlength="6" placeholder="Nhập mã OTP đã gửi">' +
-                '<div class="otp-demo-box hidden" id="otpDemoBox"></div>' +
-                '<div class="action-row">' +
-                    '<button class="btn-outline" id="btnGuiLaiOtp">Gửi lại mã</button>' +
-                    '<button class="btn-primary" id="btnXacNhanKy">Xác nhận ký</button>' +
-                '</div>' +
-            '</div>';
+            '<div class="action-row"><button class="btn-primary" id="btnMoModalKy" style="flex:none;padding-left:24px;padding-right:24px;">' +
+                '<i class="bi bi-pen"></i> Xem hợp đồng &amp; Ký</button></div>';
 
-        function guiOtp() {
-            var btn1 = document.getElementById('btnGuiOtp');
-            var btn2 = document.getElementById('btnGuiLaiOtp');
-            var activeBtn = btn1 || btn2;
-            if (activeBtn) activeBtn.disabled = true;
-
-            apiFetch('/otp/gui', { method: 'POST', body: { maHopDong: hopDong.maHopDong, vaiTroKy: vaiTroKy } })
-                .then(function (res) {
-                    document.getElementById('otpStep1').classList.add('hidden');
-                    document.getElementById('otpStep2').classList.remove('hidden');
-                    var demoBox = document.getElementById('otpDemoBox');
-                    if (res && res.otpDemo) {
-                        demoBox.textContent = 'Chưa cấu hình gửi email/SMS thật — mã OTP demo của bạn: ' + res.otpDemo;
-                        demoBox.classList.remove('hidden');
-                    }
-                })
-                .catch(function (err) {
-                    panelError((err && err.message) || 'Không gửi được mã OTP.');
-                    if (activeBtn) activeBtn.disabled = false;
-                });
-        }
-
-        document.getElementById('btnGuiOtp').addEventListener('click', guiOtp);
-
-        document.getElementById('btnGuiLaiOtp') && document.getElementById('btnGuiLaiOtp').addEventListener('click', guiOtp);
-
-        actionBox.addEventListener('click', function (e) {
-            if (e.target && e.target.id === 'btnGuiLaiOtp') guiOtp();
-        });
-
-        actionBox.addEventListener('click', function (e) {
-            if (!e.target || e.target.id !== 'btnXacNhanKy') return;
-            var hoTen = document.getElementById('kyHoTen').value.trim();
-            var otp = document.getElementById('kyOtp').value.trim();
-
-            if (!hoTen) { panelError('Vui lòng nhập họ tên để xác nhận chữ ký.'); return; }
-            if (!/^\d{6}$/.test(otp)) { panelError('Mã OTP gồm 6 chữ số.'); return; }
-
-            e.target.disabled = true;
-            apiFetch('/hop-dong/' + hopDong.maHopDong + '/' + apiSuffix, {
-                method: 'PUT',
-                body: { chuKy: hoTen, maOtp: otp }
-            })
-                .then(function () { loadAll(); })
-                .catch(function (err) {
-                    panelError((err && err.message) || 'Ký hợp đồng không thành công. Kiểm tra lại mã OTP.');
-                    e.target.disabled = false;
-                });
+        document.getElementById('btnMoModalKy').addEventListener('click', function () {
+            openHopDongKyModal({
+                hopDong: hopDong,
+                yeuCau: yeuCau,
+                vaiTroKy: vaiTroKy,
+                currentUser: currentUser,
+                onSuccess: function () { loadAll(); }
+            });
         });
     }
 

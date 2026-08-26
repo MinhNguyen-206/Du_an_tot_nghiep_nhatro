@@ -10,26 +10,7 @@
 </head>
 <body class="profile-page" data-context-path="${pageContext.request.contextPath}">
 
-<header class="profile-header">
-    <div class="profile-header-inner">
-        <a href="${pageContext.request.contextPath}/" class="profile-logo">ROOM - CONNECT</a>
-        <nav class="profile-nav" aria-label="Điều hướng chính">
-            <a href="${pageContext.request.contextPath}/">Trang chủ</a>
-            <a href="${pageContext.request.contextPath}/gioi-thieu">Về chúng tôi</a>
-            <a href="${pageContext.request.contextPath}/lien-he">Liên hệ</a>
-            <a href="${pageContext.request.contextPath}/thue-tro">Tìm phòng</a>
-        </nav>
-        <div class="profile-header-user">
-            <button type="button" id="headerUserBtn" class="header-user-btn" aria-label="Mở menu tài khoản">
-                <i class="fa-solid fa-circle-user"></i>
-            </button>
-            <div id="headerUserMenu" class="header-user-menu hidden">
-                <a href="#top">Hồ sơ cá nhân</a>
-                <button type="button" id="headerLogoutBtn">Đăng xuất</button>
-            </div>
-        </div>
-    </div>
-</header>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
 <main id="top" class="profile-shell">
     <div class="profile-breadcrumb"><a href="${pageContext.request.contextPath}/">Trang chủ</a><i class="fa-solid fa-chevron-right"></i><strong>Hồ sơ cá nhân</strong></div>
@@ -57,6 +38,7 @@
             <nav class="profile-menu">
                 <button class="profile-menu-item active" data-target="dashboardSection"><i class="fa-regular fa-circle-user"></i><span>Thông tin cá nhân</span></button>
                 <button class="profile-menu-item" data-target="appointmentsSection"><i class="fa-regular fa-calendar-check"></i><span>Lịch hẹn của tôi</span></button>
+                <button class="profile-menu-item" data-target="rentalRequestsSection"><i class="fa-regular fa-clipboard"></i><span>Yêu cầu thuê</span></button>
                 <button class="profile-menu-item" data-target="contractsSection"><i class="fa-regular fa-file-lines"></i><span>Hợp đồng của tôi</span></button>
                 <button class="profile-menu-item" data-target="savedSection"><i class="fa-regular fa-bookmark"></i><span>Phòng đã lưu</span></button>
                 <button class="profile-menu-item" data-target="historySection"><i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử xem phòng</span></button>
@@ -97,6 +79,12 @@
                 <div class="section-heading"><h2>Lịch sử phòng đã xem</h2><button type="button" class="text-link" data-show="history">Xem tất cả</button></div>
                 <div id="historyRooms" class="history-list"></div>
                 <div id="historyEmpty" class="empty-card hidden"><i class="fa-solid fa-clock-rotate-left"></i><strong>Chưa có lịch sử xem phòng</strong><span>Những phòng bạn đã mở sẽ xuất hiện tại đây.</span></div>
+            </section>
+
+            <section id="rentalRequestsSection" class="profile-section">
+                <div class="section-heading"><div><h2>Yêu cầu thuê</h2><p>Theo dõi tiến trình duyệt, ký hợp đồng và thanh toán cọc cho các yêu cầu bạn đã gửi.</p></div></div>
+                <div id="rentalRequestsList" class="contract-list"></div>
+                <div id="rentalRequestsEmpty" class="empty-card hidden"><i class="fa-regular fa-clipboard"></i><strong>Chưa có yêu cầu thuê nào</strong><span>Khi bạn bấm "Thuê phòng ngay" hoặc "Đặt cọc giữ phòng" ở trang chi tiết phòng, yêu cầu sẽ hiển thị tại đây.</span><a href="${pageContext.request.contextPath}/thue-tro">Tìm phòng ngay</a></div>
             </section>
 
             <section id="contractsSection" class="profile-section">

@@ -14,14 +14,14 @@
 
 <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
 
-    <div class="max-w-[1180px] mx-auto px-4">
+    <div class="max-w-[1400px] mx-auto px-4">
 
-        <div class="h-[64px] flex items-center gap-3">
+        <div class="h-[64px] flex items-center gap-2">
 
             <!-- MOBILE MENU TOGGLE -->
             <button
                     id="rcMobileMenuBtn"
-                    class="md:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-orange-50 transition"
+                    class="lg:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-orange-50 transition"
             >
                 <i class="fa-solid fa-bars text-lg"></i>
             </button>
@@ -33,30 +33,30 @@
             </a>
 
             <!-- NAV (desktop) -->
-            <nav class="hidden md:flex items-center gap-3 ml-6">
-                <a href="${pageContext.request.contextPath}/" class="px-4 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Trang chủ</a>
-                <a href="${pageContext.request.contextPath}/thue-tro" class="px-4 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Tìm phòng</a>
-                <a href="${pageContext.request.contextPath}/gioi-thieu" class="px-4 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Về chúng tôi</a>
-                <a href="${pageContext.request.contextPath}/lien-he" class="px-4 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Liên hệ</a>
+            <nav class="hidden lg:flex items-center gap-1 ml-4">
+                <a href="${pageContext.request.contextPath}/" class="px-3 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Trang chủ</a>
+                <a href="${pageContext.request.contextPath}/thue-tro" class="px-3 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Tìm phòng</a>
+                <a href="${pageContext.request.contextPath}/gioi-thieu" class="px-3 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Về chúng tôi</a>
+                <a href="${pageContext.request.contextPath}/lien-he" class="px-3 py-2 rounded-full text-sm font-semibold text-navy hover:bg-orange-50 hover:text-brand transition whitespace-nowrap">Liên hệ</a>
             </nav>
 
             <!-- SEARCH -->
             <form
                     action="${pageContext.request.contextPath}/thue-tro"
                     method="GET"
-                    class="flex-1 hidden sm:flex ml-2"
+                    class="flex-1 hidden sm:flex mx-3 sm:min-w-[220px] lg:min-w-[380px]"
             >
                 <div class="relative w-full">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input
                             type="text"
                             name="keyword"
-                            placeholder="Tìm phòng trọ, căn hộ..."
-                            class="w-full h-11 rounded-full bg-gray-100 pl-11 pr-14 text-sm outline-none border border-transparent focus:border-orange-200 focus:bg-white transition"
+                            placeholder="Tìm phòng trọ, căn hộ, khu vực..."
+                            class="w-full h-12 rounded-full bg-gray-100 pl-12 pr-16 text-base outline-none border border-transparent focus:border-orange-200 focus:bg-white transition"
                     >
                     <button
                             type="submit"
-                            class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-brand text-white hover:bg-brandDark transition"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-brand text-white hover:bg-brandDark transition"
                     >
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
@@ -142,7 +142,7 @@
         </div>
 
         <!-- MOBILE NAV -->
-        <div id="rcMobileNav" class="hidden md:hidden pb-3 flex flex-col gap-1 border-t border-gray-100 pt-2">
+        <div id="rcMobileNav" class="hidden lg:hidden pb-3 flex flex-col gap-1 border-t border-gray-100 pt-2">
             <a href="${pageContext.request.contextPath}/" class="px-3 py-2 rounded-lg text-sm font-semibold hover:bg-orange-50">Trang chủ</a>
             <a href="${pageContext.request.contextPath}/thue-tro" class="px-3 py-2 rounded-lg text-sm font-semibold hover:bg-orange-50">Tìm phòng</a>
             <a href="${pageContext.request.contextPath}/gioi-thieu" class="px-3 py-2 rounded-lg text-sm font-semibold hover:bg-orange-50">Về chúng tôi</a>
