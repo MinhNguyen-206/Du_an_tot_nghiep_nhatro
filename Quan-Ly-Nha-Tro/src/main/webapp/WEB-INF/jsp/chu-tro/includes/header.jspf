@@ -1,0 +1,58 @@
+<%@ page pageEncoding="UTF-8" %>
+<% response.setCharacterEncoding("UTF-8"); %>
+<%
+    String currentPath = request.getRequestURI();
+    String contextPath = request.getContextPath();
+    if (contextPath != null && !contextPath.isEmpty()) {
+        currentPath = currentPath.substring(contextPath.length());
+    }
+%>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/landlord.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="owner-sidebar">
+    <div class="owner-brand">
+        <div class="owner-logo"><i class="bi bi-house-heart-fill"></i></div>
+        <div><strong>Room Connect</strong><small>CHỦ TRỌ CENTER</small></div>
+    </div>
+
+    <div class="owner-role"><i class="bi bi-patch-check-fill"></i> Tài khoản Chủ Trọ</div>
+
+    <div class="owner-nav-title">Tổng quan</div>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/dashboard") || currentPath.equals("/chu-tro") || currentPath.equals("/chu-tro/") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/dashboard"><i class="bi bi-grid-1x2-fill"></i><span>Tổng quan</span></a>
+
+    <div class="owner-nav-title">Quản lý nhà trọ</div>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/properties") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/properties"><i class="bi bi-buildings"></i><span>Nhà trọ của tôi</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/rooms") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/rooms"><i class="bi bi-door-open"></i><span>Phòng trọ</span><span class="owner-badge blue">24</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/posts") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/posts"><i class="bi bi-megaphone"></i><span>Tin đăng</span><span class="owner-badge red">3</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/rental-requests") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/rental-requests"><i class="bi bi-person-check"></i><span>Yêu cầu thuê</span><span class="owner-badge orange">5</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/appointments") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/appointments"><i class="bi bi-calendar-check"></i><span>Lịch hẹn</span></a>
+
+    <div class="owner-nav-title">Hợp đồng & tài chính</div>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/contracts") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/contracts"><i class="bi bi-file-earmark-text"></i><span>Hợp đồng</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/invoices") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/invoices"><i class="bi bi-receipt"></i><span>Hóa đơn</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/meters") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/meters"><i class="bi bi-speedometer2"></i><span>Điện & nước</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/revenue") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/revenue"><i class="bi bi-wallet2"></i><span>Doanh thu</span></a>
+
+    <div class="owner-nav-title">Chăm sóc</div>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/reviews") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/reviews"><i class="bi bi-star"></i><span>Đánh giá</span></a>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/notifications") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/notifications"><i class="bi bi-bell"></i><span>Thông báo</span><span class="owner-badge purple">4</span></a>
+
+    <div class="owner-nav-title">Tài khoản</div>
+    <a class="owner-link <%= currentPath.equals("/chu-tro/profile") ? "active" : "" %>" href="${pageContext.request.contextPath}/chu-tro/profile"><i class="bi bi-person-circle"></i><span>Hồ sơ cá nhân</span></a>
+    <a class="owner-link" href="${pageContext.request.contextPath}/"><i class="bi bi-arrow-left-circle"></i><span>Về trang chủ</span></a>
+</div>
+
+<div class="owner-main">
+    <div class="owner-topbar">
+        <div class="owner-search"><i class="bi bi-search"></i><input type="text" placeholder="Tìm phòng, người thuê, hóa đơn..."></div>
+        <div class="owner-user">
+            <button class="icon-btn"><i class="bi bi-bell"></i><span class="top-dot"></span></button>
+            <div class="owner-avatar">CT</div>
+            <div><strong>${not empty userName ? userName : 'Chủ Trọ'}</strong><small>Chủ trọ</small></div>
+        </div>
+    </div>
+    <main class="owner-content">
