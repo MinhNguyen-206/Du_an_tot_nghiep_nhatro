@@ -41,4 +41,10 @@ public class DanhGia {
     @Column(name = "trangThai")
     @Builder.Default
     private Boolean trangThai = true;
+
+    // Ly do bi bao cao (nguoi dung khac report, hoac Admin tu ghi nhan khi
+    // phat hien spam/vi pham). NULL = danh gia binh thuong, chua bi bao cao.
+    // Con trangThai=false nghia la Admin da AN danh gia nay khoi cong khai.
+    @Column(name = "lyDoBaoCao", length = 500)
+    private String lyDoBaoCao;
 }

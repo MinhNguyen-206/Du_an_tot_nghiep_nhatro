@@ -1,5 +1,7 @@
 package com.nhatro.backend.security;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,7 +12,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import jakarta.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableWebSecurity
@@ -35,16 +38,32 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // ===================== CORS =====================
                 .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
+                // ===================== CSRF =====================
+                .csrf(csrf -> csrf.disable())
+
+                // ===================== SESSION =====================
+                // Dung IF_REQUIRED (thay vi STATELESS) vi luong OAuth2 Login (dang
+                // nhap Google) can Spring Security tam luu "authorization request"
+                // vao HttpSession trong luc chuyen huong sang Google roi quay ve.
+                // Voi STATELESS, Spring Security KHONG tao session -> loi
+                // "authorization_request_not_found" khi Google redirect ve.
+                // Cac API con lai van xac thuc bang JWT (khong phu thuoc session)
+                // nen doi sang IF_REQUIRED khong anh huong gi.
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+
+                // ===================== AUTHORIZATION =====================
                 .authorizeHttpRequests(auth -> auth
 
+                        // OPTIONS / CORS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
 
+                        // ===================== STATIC =====================
                         .requestMatchers(
                                 "/resources/**",
                                 "/static/**",
@@ -54,15 +73,19 @@ public class SecurityConfig {
                                 "/img/**",
                                 "/favicon.ico",
                                 "/WEB-INF/**"
-                        ).permitAll()
+                        )
+                        .permitAll()
 
+                        // ===================== PUBLIC API =====================
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
-                        ).permitAll()
+                        )
+                        .permitAll()
 
+                        // ===================== PUBLIC PAGE =====================
                         .requestMatchers(
                                 "/",
                                 "/home",
@@ -80,42 +103,101 @@ public class SecurityConfig {
                                 "/rooms",
                                 "/rooms/**",
                                 "/profile",
-                                "/oauth2/**",
-                                "/login/oauth2/**",
-                                "/oauth2-redirect",
-                                "/error"
-                        ).permitAll()
+                                "/error",
+                                // Trang trung gian nhan token sau khi Google xac thuc xong
+                                // (xem OAuth2LoginSuccessHandler#redirectWithToken) - PHAI
+                                // permitAll, neu khong se bi chan va bi day nguoc ve /login,
+                                // mat luon token vua nhan tu Google.
+                                "/oauth2-redirect"
+                        )
+                        .permitAll()
 
-                        // Trang "Đăng ký chủ trọ": chỉ cần đăng nhập (bất kỳ vai trò nào
-                        // chưa phải Chủ trọ), KHÔNG cần đã là Chủ trọ như "/chu-tro/**".
+                        // ===================== OAUTH2 LOGIN (Google) =====================
+                        // /oauth2/authorization/google  -> khoi tao dang nhap Google
+                        // /login/oauth2/code/google     -> Google redirect ve sau khi xac thuc
+                        .requestMatchers(
+                                "/oauth2/**",
+                                "/login/oauth2/**"
+                        )
+                        .permitAll()
+
+                        // ===================== ĐĂNG KÝ CHỦ TRỌ =====================
                         .requestMatchers("/dang-ky-chu-tro")
                         .authenticated()
 
+                        // ===================== ADMIN PAGE =====================
                         .requestMatchers("/admin/**")
                         .permitAll()
 
+                        // ===================== CHỦ TRỌ PAGE =====================
                         .requestMatchers("/chu-tro/**")
-                        .hasAnyAuthority(CHU_TRO, ADMIN, "CHU_TRO", "ADMIN")
+                        .hasAnyAuthority(
+                                CHU_TRO,
+                                ADMIN,
+                                "CHU_TRO",
+                                "ADMIN"
+                        )
 
+                        // ===================== USER =====================
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/nguoi-dung"
-                        ).permitAll()
+                        )
+                        .permitAll()
 
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/lien-he"
-                        ).permitAll()
+                        )
+                        .permitAll()
 
+                        // ===================== ADMIN API =====================
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/admin/dashboard"
-                        ).hasAnyAuthority(ADMIN, "ADMIN")
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
 
                         .requestMatchers(
                                 "/api/admin/management/**"
-                        ).hasAnyAuthority(ADMIN, "ADMIN")
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
 
+                        // Trang "Quan ly nguoi dung" cua Admin: danh sach loc, tao/khoa/
+                        // mo khoa/doi vai tro/xoa tai khoan. Chi ADMIN duoc phep.
+                        .requestMatchers(
+                                "/api/admin/nguoi-dung/**"
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
+
+                        // Trang "Duyet bai dang" cua Admin: xem/duyet/tu choi bai dang.
+                        .requestMatchers(
+                                "/api/admin/dang-tin/**"
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
+
+                        // Trang "Kiem duyet danh gia & binh luan" cua Admin.
+                        .requestMatchers(
+                                "/api/admin/danh-gia/**"
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
+
+                        // ===================== PUBLIC GET API =====================
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/phong-tro/**",
@@ -124,8 +206,10 @@ public class SecurityConfig {
                                 "/api/danh-gia/**",
                                 "/api/goi-dich-vu/**",
                                 "/api/hinh-anh/**"
-                        ).permitAll()
+                        )
+                        .permitAll()
 
+                        // ===================== ADMIN ONLY =====================
                         .requestMatchers(
                                 "/api/phan-quyen/**",
                                 "/api/vai-tro/**",
@@ -135,71 +219,102 @@ public class SecurityConfig {
                                 "/api/bo-dieu-khien-ai/**",
                                 "/api/bao-cao/**",
                                 "/api/xac-thuc-ekyc/**"
-                        ).hasAuthority(ADMIN)
+                        )
+                        .hasAuthority(ADMIN)
 
-                        // Yeu cau dang ky Chu tro:
-                        // - Xem 1 yeu cau cu the (theo id) va gui yeu cau moi -> chi can dang nhap
-                        //   (kiem tra chinh chu/tu the o tang service/controller).
-                        // - Duyet / tu choi -> chi Admin.
-                        // - GET danh sach tat ca ("/api/yeu-cau-chu-tro" khong co path con) -> chi Admin.
+                        // ===================== YÊU CẦU CHỦ TRỌ =====================
+
+                        // Duyệt / từ chối -> ADMIN
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/yeu-cau-chu-tro/*/duyet",
                                 "/api/yeu-cau-chu-tro/*/tu-choi"
-                        ).hasAnyAuthority(ADMIN, "ADMIN")
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
 
+                        // Danh sách tất cả -> ADMIN
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/yeu-cau-chu-tro"
-                        ).hasAnyAuthority(ADMIN, "ADMIN")
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
 
-                        // "/**" o day khop ca chinh "/api/yeu-cau-chu-tro" (vd: POST gui yeu cau moi).
+                        // Các API yêu cầu chủ trọ còn lại
                         .requestMatchers(
                                 "/api/yeu-cau-chu-tro/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
+                        // ===================== PROFILE =====================
                         .requestMatchers(
                                 "/api/profile/**",
                                 "/api/phong-yeu-thich/**",
                                 "/api/lich-su-xem-phong/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
+                        // ===================== USER UPDATE =====================
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/nguoi-dung/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
+                        // ===================== USER DELETE =====================
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/nguoi-dung/**"
-                        ).hasAuthority(ADMIN)
+                        )
+                        .hasAuthority(ADMIN)
 
+                        // ===================== USER LIST =====================
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/nguoi-dung"
-                        ).hasAuthority(ADMIN)
+                        )
+                        .hasAuthority(ADMIN)
 
+                        // ===================== CHỦ TRỌ CRUD =====================
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/nha-tro/**",
                                 "/api/phong-tro/**",
                                 "/api/dang-tin/**"
-                        ).hasAnyAuthority(CHU_TRO, ADMIN)
+                        )
+                        .hasAnyAuthority(
+                                CHU_TRO,
+                                ADMIN
+                        )
 
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/nha-tro/**",
                                 "/api/phong-tro/**",
                                 "/api/dang-tin/**"
-                        ).hasAnyAuthority(CHU_TRO, ADMIN)
+                        )
+                        .hasAnyAuthority(
+                                CHU_TRO,
+                                ADMIN
+                        )
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/nha-tro/**",
                                 "/api/phong-tro/**",
                                 "/api/dang-tin/**"
-                        ).hasAnyAuthority(CHU_TRO, ADMIN)
+                        )
+                        .hasAnyAuthority(
+                                CHU_TRO,
+                                ADMIN
+                        )
 
+                        // ===================== CHỦ TRỌ SERVICES =====================
                         .requestMatchers(
                                 "/api/chi-so-dien-nuoc/**",
                                 "/api/hoa-don-thang/**",
@@ -207,67 +322,109 @@ public class SecurityConfig {
                                 "/api/hop-dong-premium/**",
                                 "/api/hoa-don-premium/**",
                                 "/api/gia-han-hop-dong/**"
-                        ).hasAnyAuthority(CHU_TRO, ADMIN)
+                        )
+                        .hasAnyAuthority(
+                                CHU_TRO,
+                                ADMIN
+                        )
 
+                        // ===================== THUÊ PHÒNG =====================
                         .requestMatchers(
                                 "/api/yeu-cau-thue/**",
                                 "/api/lich-hen/**"
-                        ).hasAnyAuthority(
+                        )
+                        .hasAnyAuthority(
                                 NGUOI_THUE,
                                 CHU_TRO,
                                 ADMIN
                         )
 
+                        // ===================== USER GET =====================
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/nguoi-dung/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        .anyRequest().authenticated()
+                        // ===================== EVERYTHING ELSE =====================
+                        .anyRequest()
+                        .authenticated()
                 )
 
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureUrl("/login?error=google_failed")
-                )
-
+                // =========================================================
+                // EXCEPTION HANDLING
+                // =========================================================
                 .exceptionHandling(exception -> exception
-                        // Chua dang nhap (khong co/ het han cookie "jwt"):
-                        // - Goi trang JSP (/chu-tro, /admin,...) -> redirect ve /login that
-                        // - Goi API (/api/**) -> tra 401 JSON, KHONG redirect (fetch() se tu xu ly)
+
+                        // ===================== 401 =====================
                         .authenticationEntryPoint((request, response, authException) -> {
+
                             String uri = request.getRequestURI();
-                            if (uri.startsWith(request.getContextPath() + "/api/")) {
+
+                            if (uri.startsWith(
+                                    request.getContextPath() + "/api/"
+                            )) {
+
                                 response.sendError(
                                         HttpServletResponse.SC_UNAUTHORIZED,
                                         "Chua dang nhap"
                                 );
+
                             } else {
+
+                                String redirect = URLEncoder.encode(
+                                        uri,
+                                        StandardCharsets.UTF_8
+                                );
+
                                 response.sendRedirect(
                                         request.getContextPath()
                                                 + "/login?redirect="
-                                                + java.net.URLEncoder.encode(uri, java.nio.charset.StandardCharsets.UTF_8)
+                                                + redirect
                                 );
                             }
                         })
-                        // Da dang nhap nhung sai vai tro (vd: nguoi thue vao /chu-tro):
-                        // tra 403 that thay vi permitAll ngam nhu truoc, tranh lo du lieu.
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            String uri = request.getRequestURI();
-                            if (uri.startsWith(request.getContextPath() + "/api/")) {
-                                response.sendError(
-                                        HttpServletResponse.SC_FORBIDDEN,
-                                        "Khong co quyen truy cap"
-                                );
-                            } else {
-                                response.sendRedirect(
-                                        request.getContextPath() + "/login?error=forbidden"
-                                );
-                            }
-                        })
+
+                        // ===================== 403 =====================
+                        .accessDeniedHandler(
+                                (request, response, accessDeniedException) -> {
+
+                                    String uri = request.getRequestURI();
+
+                                    if (uri.startsWith(
+                                            request.getContextPath() + "/api/"
+                                    )) {
+
+                                        response.sendError(
+                                                HttpServletResponse.SC_FORBIDDEN,
+                                                "Khong co quyen truy cap"
+                                        );
+
+                                    } else {
+
+                                        response.sendRedirect(
+                                                request.getContextPath()
+                                                        + "/login?error=forbidden"
+                                        );
+                                    }
+                                }
+                        )
                 )
 
+                // =========================================================
+                // OAUTH2 LOGIN (Dang nhap bang Google)
+                // =========================================================
+                // Sau khi Google xac thuc thanh cong, OAuth2LoginSuccessHandler se
+                // tim/tao NguoiDung tuong ung, phat JWT roi redirect ve /oauth2-redirect
+                // kem token (xem class do de biet chi tiet).
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureUrl("/login?error=google")
+                )
+
+                // =========================================================
+                // JWT FILTER
+                // =========================================================
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

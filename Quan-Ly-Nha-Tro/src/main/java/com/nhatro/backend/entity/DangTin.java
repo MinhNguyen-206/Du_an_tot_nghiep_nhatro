@@ -44,4 +44,24 @@ public class DangTin {
     @Column(name = "trangThai")
     @Builder.Default
     private Boolean trangThai = true;
+
+    // ===== Kiem duyet bai dang (Admin) =====
+    // CHO_DUYET | DA_DUYET | TU_CHOI. Mac dinh CHO_DUYET: bai dang moi tao
+    // (tu Chu tro) phai cho Admin xet duyet truoc khi hien thi cong khai
+    // (xem PhongChiTietService - chi lay DangTin da DA_DUYET).
+    @Column(name = "trangThaiDuyet", length = 20)
+    @Builder.Default
+    private String trangThaiDuyet = "CHO_DUYET";
+
+    // Ly do Admin tu choi bai dang (hien thi cho Chu tro biet de sua lai).
+    @Column(name = "lyDoTuChoi", length = 500)
+    private String lyDoTuChoi;
+
+    // Admin da xu ly duyet/tu choi bai dang nay.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "maNguoiDuyet")
+    private NguoiDung nguoiDuyet;
+
+    @Column(name = "ngayDuyet")
+    private LocalDateTime ngayDuyet;
 }

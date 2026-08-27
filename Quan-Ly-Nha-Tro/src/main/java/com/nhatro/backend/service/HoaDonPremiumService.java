@@ -2,6 +2,8 @@ package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.HoaDonPremium;
 import com.nhatro.backend.repository.HoaDonPremiumRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +31,11 @@ public class HoaDonPremiumService {
 
     public List<HoaDonPremium> getByHopDong(Integer maHopDongPremium) {
         return hoaDonPremiumRepository.findByHopDongPremium_MaHopDongPremium(maHopDongPremium);
+    }
+
+    /** Lấy tất cả hóa đơn sắp xếp mới nhất trước */
+    public Page<HoaDonPremium> getAllSorted(Pageable pageable) {
+        return hoaDonPremiumRepository.findAllByOrderByNgayLapDesc(pageable);
     }
 
     public HoaDonPremium create(HoaDonPremium hoaDon) {

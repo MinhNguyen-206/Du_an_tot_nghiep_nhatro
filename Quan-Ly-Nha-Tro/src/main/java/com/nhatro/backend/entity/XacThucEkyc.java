@@ -39,9 +39,13 @@ public class XacThucEkyc {
     @Column(name = "ketQua", length = 100)
     private String ketQua;
 
-    @Column(name = "trangThai")
+    // CHO_DUYET | DA_DUYET | TU_CHOI
+    @Column(name = "trangThai", length = 20)
     @Builder.Default
-    private Boolean trangThai = false;
+    private String trangThai = "CHO_DUYET";
+
+    @Column(name = "lyDoTuChoi", length = 500)
+    private String lyDoTuChoi;
 
     @CreationTimestamp
     @Column(name = "ngayGui", updatable = false)

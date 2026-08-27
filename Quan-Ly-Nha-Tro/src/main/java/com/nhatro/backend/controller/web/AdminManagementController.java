@@ -9,15 +9,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/admin")
 public class AdminManagementController {
 
-    @GetMapping("/users")
-    public String users(Model model) {
-        return management(model, "Người dùng", "Quản lý tài khoản và trạng thái người dùng", "/api/admin/management/users", "users");
-    }
+    // Da chuyen "/admin/users" sang mot trang JSP rieng, day du chuc nang
+    // (khong con dung template bang generic nay nua) - xem
+    // AdminDashboardController#userManagement() + userManagement.jsp +
+    // resources/js/user-management.js + AdminNguoiDungController.
 
-    @GetMapping("/posts")
-    public String posts(Model model) {
-        return management(model, "Bài đăng & phòng trọ", "Theo dõi bài đăng và phòng trọ trên hệ thống", "/api/admin/management/posts", "posts");
-    }
+    // Da chuyen "/admin/posts" sang mot trang JSP rieng, day du chuc nang
+    // duyet/tu choi bai dang - xem AdminDashboardController#postApproval()
+    // + postApproval.jsp + resources/js/post-approval.js + AdminDangTinController.
 
     @GetMapping("/appointments")
     public String appointments(Model model) {

@@ -43,6 +43,11 @@ public class AdminDashboardController {
     // KIỂM DUYỆT
     // =====================================================
 
+    @GetMapping("/posts")
+    public String postApproval() {
+        return "admin/postApproval";
+    }
+
     @GetMapping("/ekyc")
     public String ekycApproval() {
 
@@ -60,6 +65,11 @@ public class AdminDashboardController {
     // =====================================================
     // QUẢN LÝ
     // =====================================================
+
+    @GetMapping("/users")
+    public String userManagement() {
+        return "admin/userManagement";
+    }
 
     @GetMapping("/complaints")
     public String complaintManagement() {

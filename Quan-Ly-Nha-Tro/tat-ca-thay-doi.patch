@@ -1,0 +1,2234 @@
+diff --git a/Quan-Ly-Nha-Tro/db-migration/V2__them_kiem_duyet_bai_dang.sql b/Quan-Ly-Nha-Tro/db-migration/V2__them_kiem_duyet_bai_dang.sql
+new file mode 100644
+index 0000000..311ea77
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/db-migration/V2__them_kiem_duyet_bai_dang.sql
+@@ -0,0 +1,51 @@
++-- =====================================================================
++-- MIGRATION: Bo sung kiem duyet bai dang (DANG_TIN)
++-- Chay 1 lan tren SQL Server (project dung spring.jpa.hibernate.ddl-auto=none
++-- nen KHONG tu tao cot moi - phai chay script nay thu cong truoc khi dung
++-- chuc nang "Duyet bai dang" trong Admin).
++-- =====================================================================
++
++IF NOT EXISTS (
++    SELECT 1 FROM sys.columns
++    WHERE object_id = OBJECT_ID('DANG_TIN') AND name = 'trangThaiDuyet'
++)
++BEGIN
++    ALTER TABLE DANG_TIN ADD trangThaiDuyet VARCHAR(20) NOT NULL
++        CONSTRAINT DF_DANGTIN_TRANGTHAIDUYET DEFAULT 'CHO_DUYET';
++END
++GO
++
++IF NOT EXISTS (
++    SELECT 1 FROM sys.columns
++    WHERE object_id = OBJECT_ID('DANG_TIN') AND name = 'lyDoTuChoi'
++)
++BEGIN
++    ALTER TABLE DANG_TIN ADD lyDoTuChoi NVARCHAR(500) NULL;
++END
++GO
++
++IF NOT EXISTS (
++    SELECT 1 FROM sys.columns
++    WHERE object_id = OBJECT_ID('DANG_TIN') AND name = 'maNguoiDuyet'
++)
++BEGIN
++    ALTER TABLE DANG_TIN ADD maNguoiDuyet INT NULL;
++    ALTER TABLE DANG_TIN ADD CONSTRAINT FK_DANGTIN_NGUOIDUYET
++        FOREIGN KEY (maNguoiDuyet) REFERENCES NGUOI_DUNG(maNguoiDung);
++END
++GO
++
++IF NOT EXISTS (
++    SELECT 1 FROM sys.columns
++    WHERE object_id = OBJECT_ID('DANG_TIN') AND name = 'ngayDuyet'
++)
++BEGIN
++    ALTER TABLE DANG_TIN ADD ngayDuyet DATETIME2 NULL;
++END
++GO
++
++-- Cac bai dang da ton tai TRUOC khi co tinh nang kiem duyet nay: coi nhu
++-- da duyet san, tranh viec toan bo tin dang cu bi "an" khoi trang cong khai
++-- ngay sau khi migrate (PhongChiTietService moi chi lay bai DA_DUYET).
++UPDATE DANG_TIN SET trangThaiDuyet = 'DA_DUYET' WHERE trangThaiDuyet = 'CHO_DUYET';
++GO
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDangTinController.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDangTinController.java
+new file mode 100644
+index 0000000..64f0922
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDangTinController.java
+@@ -0,0 +1,94 @@
++package com.nhatro.backend.controller;
++
++import com.nhatro.backend.dto.DangTinDuyetDto;
++import com.nhatro.backend.entity.NguoiDung;
++import com.nhatro.backend.service.AdminDangTinService;
++import com.nhatro.backend.service.NguoiDungService;
++import io.swagger.v3.oas.annotations.Operation;
++import io.swagger.v3.oas.annotations.tags.Tag;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.security.core.Authentication;
++import org.springframework.web.bind.annotation.*;
++
++import java.util.List;
++import java.util.Map;
++import java.util.NoSuchElementException;
++
++/**
++ * API rieng cho man hinh "Duyet bai dang" cua Admin.
++ * Quyen truy cap: chi ADMIN (xem SecurityConfig - matcher /api/admin/dang-tin/**).
++ */
++@Tag(name = "Admin - Duyệt bài đăng", description = "Xem, duyệt, từ chối bài đăng cho thuê")
++@RestController
++@RequestMapping("/api/admin/dang-tin")
++public class AdminDangTinController {
++
++    private final AdminDangTinService adminDangTinService;
++    private final NguoiDungService nguoiDungService;
++
++    public AdminDangTinController(AdminDangTinService adminDangTinService, NguoiDungService nguoiDungService) {
++        this.adminDangTinService = adminDangTinService;
++        this.nguoiDungService = nguoiDungService;
++    }
++
++    @Operation(summary = "Danh sách bài đăng, lọc theo trạng thái duyệt / từ khóa")
++    @GetMapping
++    public ResponseEntity<List<DangTinDuyetDto>> danhSach(
++            @RequestParam(value = "trangThaiDuyet", required = false) String trangThaiDuyet,
++            @RequestParam(value = "q", required = false) String tuKhoa) {
++        return ResponseEntity.ok(adminDangTinService.danhSach(trangThaiDuyet, tuKhoa));
++    }
++
++    @Operation(summary = "Xem chi tiết 1 bài đăng (kèm toàn bộ hình ảnh)")
++    @GetMapping("/{id}")
++    public ResponseEntity<DangTinDuyetDto> chiTiet(@PathVariable Integer id) {
++        return adminDangTinService.chiTiet(id)
++                .map(ResponseEntity::ok)
++                .orElse(ResponseEntity.notFound().build());
++    }
++
++    @Operation(summary = "Duyệt bài đăng")
++    @PutMapping("/{id}/duyet")
++    public ResponseEntity<?> duyet(@PathVariable Integer id, Authentication authentication) {
++        try {
++            return ResponseEntity.ok(adminDangTinService.duyet(id, layMaNguoiDungHienTai(authentication)));
++        } catch (NoSuchElementException ex) {
++            return ResponseEntity.notFound().build();
++        }
++    }
++
++    @Operation(summary = "Từ chối bài đăng kèm lý do")
++    @PutMapping("/{id}/tu-choi")
++    public ResponseEntity<?> tuChoi(@PathVariable Integer id,
++                                     @RequestBody(required = false) Map<String, String> body,
++                                     Authentication authentication) {
++        String lyDo = body != null ? body.get("lyDo") : null;
++        try {
++            return ResponseEntity.ok(adminDangTinService.tuChoi(id, lyDo, layMaNguoiDungHienTai(authentication)));
++        } catch (NoSuchElementException ex) {
++            return ResponseEntity.notFound().build();
++        } catch (IllegalArgumentException ex) {
++            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
++        }
++    }
++
++    @Operation(summary = "Đặt lại trạng thái chờ duyệt (xét duyệt lại)")
++    @PutMapping("/{id}/cho-duyet-lai")
++    public ResponseEntity<?> datLaiChoDuyet(@PathVariable Integer id, Authentication authentication) {
++        try {
++            return ResponseEntity.ok(adminDangTinService.datLaiChoDuyet(id, layMaNguoiDungHienTai(authentication)));
++        } catch (NoSuchElementException ex) {
++            return ResponseEntity.notFound().build();
++        }
++    }
++
++    private Integer layMaNguoiDungHienTai(Authentication authentication) {
++        if (authentication == null) {
++            return null;
++        }
++        return nguoiDungService.getByEmail(authentication.getName())
++                .map(NguoiDung::getMaNguoiDung)
++                .orElse(null);
++    }
++}
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java
+index 51440a1..b345f78 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java
+@@ -43,6 +43,11 @@ public class AdminDashboardController {
+     // KIỂM DUYỆT
+     // =====================================================
+ 
++    @GetMapping("/posts")
++    public String postApproval() {
++        return "admin/postApproval";
++    }
++
+     @GetMapping("/ekyc")
+     public String ekycApproval() {
+ 
+@@ -61,6 +66,11 @@ public class AdminDashboardController {
+     // QUẢN LÝ
+     // =====================================================
+ 
++    @GetMapping("/users")
++    public String userManagement() {
++        return "admin/userManagement";
++    }
++
+     @GetMapping("/complaints")
+     public String complaintManagement() {
+ 
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminNguoiDungController.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminNguoiDungController.java
+new file mode 100644
+index 0000000..ae0feb9
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminNguoiDungController.java
+@@ -0,0 +1,134 @@
++package com.nhatro.backend.controller;
++
++import com.nhatro.backend.dto.NguoiDungQuanLyDto;
++import com.nhatro.backend.entity.NguoiDung;
++import com.nhatro.backend.entity.VaiTro;
++import com.nhatro.backend.service.AdminNguoiDungService;
++import com.nhatro.backend.service.NguoiDungService;
++import io.swagger.v3.oas.annotations.Operation;
++import io.swagger.v3.oas.annotations.tags.Tag;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.security.core.Authentication;
++import org.springframework.web.bind.annotation.*;
++
++import java.util.List;
++import java.util.Map;
++import java.util.NoSuchElementException;
++
++/**
++ * API rieng cho man hinh "Quan ly nguoi dung" cua Admin
++ * (khac voi /api/nguoi-dung dung chung cho dang ky/profile va
++ * /api/admin/management/users chi tra ve bang tom tat cho dashboard).
++ *
++ * Quyen truy cap: chi ADMIN (xem SecurityConfig - matcher /api/admin/nguoi-dung/**).
++ */
++@Tag(name = "Admin - Người dùng", description = "Quản trị tài khoản người dùng: danh sách, tạo mới, khóa/mở khóa, đổi vai trò, xóa")
++@RestController
++@RequestMapping("/api/admin/nguoi-dung")
++public class AdminNguoiDungController {
++
++    private final AdminNguoiDungService adminNguoiDungService;
++    private final NguoiDungService nguoiDungService;
++
++    public AdminNguoiDungController(AdminNguoiDungService adminNguoiDungService, NguoiDungService nguoiDungService) {
++        this.adminNguoiDungService = adminNguoiDungService;
++        this.nguoiDungService = nguoiDungService;
++    }
++
++    @Operation(summary = "Danh sách người dùng có lọc theo từ khóa / vai trò / trạng thái")
++    @GetMapping
++    public ResponseEntity<List<NguoiDungQuanLyDto>> danhSach(
++            @RequestParam(value = "q", required = false) String tuKhoa,
++            @RequestParam(value = "maVaiTro", required = false) Integer maVaiTro,
++            @RequestParam(value = "trangThai", required = false) Boolean trangThai) {
++        return ResponseEntity.ok(adminNguoiDungService.danhSach(tuKhoa, maVaiTro, trangThai));
++    }
++
++    @Operation(summary = "Danh sách vai trò để hiển thị bộ lọc / form thêm-sửa")
++    @GetMapping("/vai-tro")
++    public ResponseEntity<List<VaiTro>> danhSachVaiTro() {
++        return ResponseEntity.ok(adminNguoiDungService.danhSachVaiTro());
++    }
++
++    @Operation(summary = "Xem chi tiết 1 người dùng (kèm trạng thái eKYC, số lượt vi phạm)")
++    @GetMapping("/{id}")
++    public ResponseEntity<NguoiDungQuanLyDto> chiTiet(@PathVariable Integer id) {
++        return adminNguoiDungService.chiTiet(id)
++                .map(ResponseEntity::ok)
++                .orElse(ResponseEntity.notFound().build());
++    }
++
++    @Operation(summary = "Admin tạo tài khoản mới với vai trò tùy chọn")
++    @PostMapping
++    public ResponseEntity<?> taoTaiKhoan(@RequestBody NguoiDung duLieu, Authentication authentication) {
++        try {
++            NguoiDung daTao = adminNguoiDungService.taoTaiKhoan(duLieu, layMaNguoiDungHienTai(authentication));
++            return ResponseEntity.status(HttpStatus.CREATED).body(daTao);
++        } catch (IllegalArgumentException | IllegalStateException ex) {
++            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
++        }
++    }
++
++    @Operation(summary = "Khóa hoặc mở khóa tài khoản")
++    @PutMapping("/{id}/trang-thai")
++    public ResponseEntity<?> capNhatTrangThai(@PathVariable Integer id,
++                                               @RequestBody Map<String, Boolean> body,
++                                               Authentication authentication) {
++        Boolean trangThai = body == null ? null : body.get("trangThai");
++        if (trangThai == null) {
++            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu trường trangThai"));
++        }
++        try {
++            NguoiDung daLuu = adminNguoiDungService.capNhatTrangThai(id, trangThai, layMaNguoiDungHienTai(authentication));
++            return ResponseEntity.ok(daLuu);
++        } catch (NoSuchElementException ex) {
++            return ResponseEntity.notFound().build();
++        } catch (IllegalStateException ex) {
++            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
++        }
++    }
++
++    @Operation(summary = "Đổi vai trò của một người dùng")
++    @PutMapping("/{id}/vai-tro")
++    public ResponseEntity<?> capNhatVaiTro(@PathVariable Integer id,
++                                            @RequestBody Map<String, Integer> body,
++                                            Authentication authentication) {
++        Integer maVaiTro = body == null ? null : body.get("maVaiTro");
++        if (maVaiTro == null) {
++            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu trường maVaiTro"));
++        }
++        try {
++            NguoiDung daLuu = adminNguoiDungService.capNhatVaiTro(id, maVaiTro, layMaNguoiDungHienTai(authentication));
++            return ResponseEntity.ok(daLuu);
++        } catch (NoSuchElementException ex) {
++            return ResponseEntity.notFound().build();
++        } catch (IllegalArgumentException ex) {
++            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
++        } catch (IllegalStateException ex) {
++            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
++        }
++    }
++
++    @Operation(summary = "Xóa tài khoản người dùng")
++    @DeleteMapping("/{id}")
++    public ResponseEntity<?> xoa(@PathVariable Integer id, Authentication authentication) {
++        try {
++            adminNguoiDungService.xoa(id, layMaNguoiDungHienTai(authentication));
++            return ResponseEntity.noContent().build();
++        } catch (NoSuchElementException ex) {
++            return ResponseEntity.notFound().build();
++        } catch (IllegalStateException ex) {
++            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
++        }
++    }
++
++    private Integer layMaNguoiDungHienTai(Authentication authentication) {
++        if (authentication == null) {
++            return null;
++        }
++        return nguoiDungService.getByEmail(authentication.getName())
++                .map(NguoiDung::getMaNguoiDung)
++                .orElse(null);
++    }
++}
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java
+index 8b962f9..d2890aa 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java
+@@ -9,15 +9,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
+ @RequestMapping("/admin")
+ public class AdminManagementController {
+ 
+-    @GetMapping("/users")
+-    public String users(Model model) {
+-        return management(model, "Người dùng", "Quản lý tài khoản và trạng thái người dùng", "/api/admin/management/users", "users");
+-    }
+-
+-    @GetMapping("/posts")
+-    public String posts(Model model) {
+-        return management(model, "Bài đăng & phòng trọ", "Theo dõi bài đăng và phòng trọ trên hệ thống", "/api/admin/management/posts", "posts");
+-    }
++    // Da chuyen "/admin/users" sang mot trang JSP rieng, day du chuc nang
++    // (khong con dung template bang generic nay nua) - xem
++    // AdminDashboardController#userManagement() + userManagement.jsp +
++    // resources/js/user-management.js + AdminNguoiDungController.
++
++    // Da chuyen "/admin/posts" sang mot trang JSP rieng, day du chuc nang
++    // duyet/tu choi bai dang - xem AdminDashboardController#postApproval()
++    // + postApproval.jsp + resources/js/post-approval.js + AdminDangTinController.
+ 
+     @GetMapping("/appointments")
+     public String appointments(Model model) {
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/dto/DangTinDuyetDto.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/dto/DangTinDuyetDto.java
+new file mode 100644
+index 0000000..4c5f376
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/dto/DangTinDuyetDto.java
+@@ -0,0 +1,46 @@
++package com.nhatro.backend.dto;
++
++import java.math.BigDecimal;
++import java.time.LocalDateTime;
++import java.util.List;
++
++/**
++ * Du lieu 1 bai dang hien thi cho Admin trong man hinh "Duyet bai dang"
++ * (WEB-INF/jsp/admin/postApproval.jsp + /api/admin/dang-tin/**).
++ * Gop thong tin DANG_TIN + nguoi dang (Chu tro) + phong/nha tro + anh dai dien,
++ * de FE khong phai goi nhieu API rieng le cho 1 dong bang.
++ */
++public record DangTinDuyetDto(
++        Integer maDangTin,
++        String tieuDe,
++        String noiDung,
++        LocalDateTime ngayDang,
++        LocalDateTime ngayHetHan,
++        Boolean trangThai,
++        // CHO_DUYET | DA_DUYET | TU_CHOI
++        String trangThaiDuyet,
++        String lyDoTuChoi,
++        LocalDateTime ngayDuyet,
++        Integer maNguoiDuyet,
++        String tenNguoiDuyet,
++
++        Integer maNguoiDang,
++        String tenNguoiDang,
++        String emailNguoiDang,
++        String soDienThoaiNguoiDang,
++        String avatarNguoiDang,
++
++        Integer maPhong,
++        String tenPhong,
++        BigDecimal dienTich,
++        String loaiPhong,
++        BigDecimal giaPhong,
++
++        Integer maNhaTro,
++        String tenNhaTro,
++        String diaChiNhaTro,
++
++        String anhDaiDien,
++        List<String> danhSachAnh
++) {
++}
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/dto/NguoiDungQuanLyDto.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/dto/NguoiDungQuanLyDto.java
+new file mode 100644
+index 0000000..ff73aee
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/dto/NguoiDungQuanLyDto.java
+@@ -0,0 +1,29 @@
++package com.nhatro.backend.dto;
++
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++
++/**
++ * Du lieu hien thi 1 dong trong bang "Quan ly nguoi dung" cua Admin.
++ * Gom thong tin co ban tu NGUOI_DUNG + trang thai eKYC moi nhat +
++ * so luot bi bao cao (vi pham), de FE khong phai goi nhieu API rieng le.
++ */
++public record NguoiDungQuanLyDto(
++        Integer maNguoiDung,
++        String hoTen,
++        String email,
++        String soDienThoai,
++        String avatar,
++        Integer maVaiTro,
++        String tenVaiTro,
++        Boolean gioiTinh,
++        LocalDate ngaySinh,
++        String diaChi,
++        Boolean trangThai,
++        LocalDateTime ngayDangKy,
++        LocalDateTime ngayCapNhat,
++        // CHUA_GUI | CHO_DUYET | DA_XAC_MINH
++        String trangThaiEkyc,
++        long soLuotViPham
++) {
++}
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/entity/DangTin.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/entity/DangTin.java
+index 4a85f47..025b654 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/entity/DangTin.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/entity/DangTin.java
+@@ -44,4 +44,24 @@ public class DangTin {
+     @Column(name = "trangThai")
+     @Builder.Default
+     private Boolean trangThai = true;
++
++    // ===== Kiem duyet bai dang (Admin) =====
++    // CHO_DUYET | DA_DUYET | TU_CHOI. Mac dinh CHO_DUYET: bai dang moi tao
++    // (tu Chu tro) phai cho Admin xet duyet truoc khi hien thi cong khai
++    // (xem PhongChiTietService - chi lay DangTin da DA_DUYET).
++    @Column(name = "trangThaiDuyet", length = 20)
++    @Builder.Default
++    private String trangThaiDuyet = "CHO_DUYET";
++
++    // Ly do Admin tu choi bai dang (hien thi cho Chu tro biet de sua lai).
++    @Column(name = "lyDoTuChoi", length = 500)
++    private String lyDoTuChoi;
++
++    // Admin da xu ly duyet/tu choi bai dang nay.
++    @ManyToOne(fetch = FetchType.LAZY)
++    @JoinColumn(name = "maNguoiDuyet")
++    private NguoiDung nguoiDuyet;
++
++    @Column(name = "ngayDuyet")
++    private LocalDateTime ngayDuyet;
+ }
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/BaoCaoRepository.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/BaoCaoRepository.java
+index df0dc77..f4ef1ef 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/BaoCaoRepository.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/BaoCaoRepository.java
+@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
+ import org.springframework.data.jpa.repository.EntityGraph;
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Query;
+ import org.springframework.stereotype.Repository;
+ 
+ import java.util.List;
+@@ -16,6 +17,16 @@ public interface BaoCaoRepository extends JpaRepository<BaoCao, Integer> {
+ 
+     List<BaoCao> findByTrangThai(String trangThai);
+ 
++    // Dung cho trang Quan ly nguoi dung (Admin): dem so lan 1 nguoi dung
++    // bi nguoi khac bao cao/khieu nai, de hien cot "Vi pham".
++    long countByNguoiBiBaoCao_MaNguoiDung(Integer maNguoiDung);
++
++    // Gom nhom (tranh N+1) de tinh so vi pham cho CA danh sach nguoi dung
++    // cung luc: tra ve mang [maNguoiDung, soLuotBaoCao].
++    @Query("SELECT b.nguoiBiBaoCao.maNguoiDung, COUNT(b) FROM BaoCao b " +
++            "WHERE b.nguoiBiBaoCao IS NOT NULL GROUP BY b.nguoiBiBaoCao.maNguoiDung")
++    List<Object[]> demSoBaoCaoTheoNguoiBiBaoCao();
++
+     // Pagination + EntityGraph to avoid N+1 and allow efficient paging
+     @EntityGraph(attributePaths = { "nguoiGui" })
+     Page<BaoCao> findByNguoiGui_MaNguoiDung(Integer maNguoiDung, Pageable pageable);
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/DangTinRepository.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/DangTinRepository.java
+index 4282950..0833324 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/DangTinRepository.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/DangTinRepository.java
+@@ -1,6 +1,7 @@
+ package com.nhatro.backend.repository;
+ 
+ import com.nhatro.backend.entity.DangTin;
++import org.springframework.data.jpa.repository.EntityGraph;
+ import org.springframework.data.jpa.repository.JpaRepository;
+ import org.springframework.stereotype.Repository;
+ 
+@@ -11,4 +12,15 @@ public interface DangTinRepository extends JpaRepository<DangTin, Integer> {
+     List<DangTin> findByTrangThai(Boolean trangThai);
+     List<DangTin> findByNguoiDung_MaNguoiDung(Integer maNguoiDung);
+     List<DangTin> findByPhong_MaPhong(Integer maPhong);
++
++    // Dung cho trang "Duyet bai dang" cua Admin: lay ca danh sach kem san
++    // thong tin nguoi dang + phong + nha tro, tranh N+1 khi hien thi bang.
++    @EntityGraph(attributePaths = { "nguoiDung", "phong", "phong.nhaTro" })
++    List<DangTin> findAllByOrderByNgayDangDesc();
++
++    @EntityGraph(attributePaths = { "nguoiDung", "phong", "phong.nhaTro" })
++    List<DangTin> findByTrangThaiDuyetOrderByNgayDangDesc(String trangThaiDuyet);
++
++    @EntityGraph(attributePaths = { "nguoiDung", "phong", "phong.nhaTro", "nguoiDuyet" })
++    java.util.Optional<DangTin> findByMaDangTin(Integer maDangTin);
+ }
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/XacThucEkycRepository.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/XacThucEkycRepository.java
+index 224dfe9..a5155cb 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/XacThucEkycRepository.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/repository/XacThucEkycRepository.java
+@@ -11,4 +11,9 @@ import java.util.Optional;
+ public interface XacThucEkycRepository extends JpaRepository<XacThucEkyc, Integer> {
+     List<XacThucEkyc> findByNguoiDung_MaNguoiDung(Integer maNguoiDung);
+     Optional<XacThucEkyc> findTopByNguoiDung_MaNguoiDungOrderByNgayGuiDesc(Integer maNguoiDung);
++
++    // Dung de tinh trang thai eKYC moi nhat cho CA danh sach nguoi dung cung
++    // luc (trang Quan ly nguoi dung): sap xep giam dan theo ngay gui, ban ghi
++    // dau tien gap duoc cho moi maNguoiDung chinh la ban ghi moi nhat.
++    List<XacThucEkyc> findAllByOrderByNgayGuiDesc();
+ }
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/security/SecurityConfig.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/security/SecurityConfig.java
+index 62efffd..c420d04 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/security/SecurityConfig.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/security/SecurityConfig.java
+@@ -116,6 +116,17 @@ public class SecurityConfig {
+                                 "/api/admin/management/**"
+                         ).hasAnyAuthority(ADMIN, "ADMIN")
+ 
++                        // Trang "Quan ly nguoi dung" cua Admin: danh sach loc, tao/khoa/
++                        // mo khoa/doi vai tro/xoa tai khoan. Chi ADMIN duoc phep.
++                        .requestMatchers(
++                                "/api/admin/nguoi-dung/**"
++                        ).hasAnyAuthority(ADMIN, "ADMIN")
++
++                        // Trang "Duyet bai dang" cua Admin: xem/duyet/tu choi bai dang.
++                        .requestMatchers(
++                                "/api/admin/dang-tin/**"
++                        ).hasAnyAuthority(ADMIN, "ADMIN")
++
+                         .requestMatchers(
+                                 HttpMethod.GET,
+                                 "/api/phong-tro/**",
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/AdminDangTinService.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/AdminDangTinService.java
+new file mode 100644
+index 0000000..c0fa6ec
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/AdminDangTinService.java
+@@ -0,0 +1,203 @@
++package com.nhatro.backend.service;
++
++import com.nhatro.backend.dto.DangTinDuyetDto;
++import com.nhatro.backend.entity.DangTin;
++import com.nhatro.backend.entity.HinhAnh;
++import com.nhatro.backend.entity.NguoiDung;
++import com.nhatro.backend.entity.NhaTro;
++import com.nhatro.backend.entity.NhatKyHoatDong;
++import com.nhatro.backend.entity.PhongTro;
++import com.nhatro.backend.repository.DangTinRepository;
++import com.nhatro.backend.repository.HinhAnhRepository;
++import com.nhatro.backend.repository.NguoiDungRepository;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.time.LocalDateTime;
++import java.util.Comparator;
++import java.util.List;
++import java.util.NoSuchElementException;
++import java.util.Objects;
++import java.util.Optional;
++
++/**
++ * Nghiep vu rieng cho man hinh "Duyet bai dang" cua Admin.
++ * Chu tro tao bai dang -> mac dinh CHO_DUYET (xem DangTin#trangThaiDuyet) ->
++ * Admin xem, DUYET hoac TU_CHOI (kem ly do) tai day. Chi bai DA_DUYET moi
++ * duoc hien thi cong khai (xem PhongChiTietService).
++ */
++@Service
++public class AdminDangTinService {
++
++    public static final String CHO_DUYET = "CHO_DUYET";
++    public static final String DA_DUYET = "DA_DUYET";
++    public static final String TU_CHOI = "TU_CHOI";
++
++    private final DangTinRepository dangTinRepository;
++    private final HinhAnhRepository hinhAnhRepository;
++    private final NguoiDungRepository nguoiDungRepository;
++    private final NhatKyHoatDongService nhatKyHoatDongService;
++
++    public AdminDangTinService(DangTinRepository dangTinRepository,
++                                HinhAnhRepository hinhAnhRepository,
++                                NguoiDungRepository nguoiDungRepository,
++                                NhatKyHoatDongService nhatKyHoatDongService) {
++        this.dangTinRepository = Objects.requireNonNull(dangTinRepository, "dangTinRepository must not be null");
++        this.hinhAnhRepository = Objects.requireNonNull(hinhAnhRepository, "hinhAnhRepository must not be null");
++        this.nguoiDungRepository = Objects.requireNonNull(nguoiDungRepository, "nguoiDungRepository must not be null");
++        this.nhatKyHoatDongService = Objects.requireNonNull(nhatKyHoatDongService, "nhatKyHoatDongService must not be null");
++    }
++
++    @Transactional(readOnly = true)
++    public List<DangTinDuyetDto> danhSach(String trangThaiDuyet, String tuKhoa) {
++        List<DangTin> nguon = (trangThaiDuyet == null || trangThaiDuyet.isBlank())
++                ? dangTinRepository.findAllByOrderByNgayDangDesc()
++                : dangTinRepository.findByTrangThaiDuyetOrderByNgayDangDesc(trangThaiDuyet.trim().toUpperCase());
++
++        String keyword = (tuKhoa == null || tuKhoa.isBlank()) ? null : tuKhoa.trim().toLowerCase();
++
++        return nguon.stream()
++                .filter(dt -> keyword == null || khopTuKhoa(dt, keyword))
++                .map(dt -> toDto(dt, false))
++                .toList();
++    }
++
++    @Transactional(readOnly = true)
++    public Optional<DangTinDuyetDto> chiTiet(Integer id) {
++        Objects.requireNonNull(id, "id must not be null");
++        return dangTinRepository.findByMaDangTin(id).map(dt -> toDto(dt, true));
++    }
++
++    @Transactional
++    public DangTinDuyetDto duyet(Integer id, Integer maAdminThucHien) {
++        DangTin dt = layDeCapNhat(id);
++        dt.setTrangThaiDuyet(DA_DUYET);
++        dt.setLyDoTuChoi(null);
++        dt.setNgayDuyet(LocalDateTime.now());
++        dt.setNguoiDuyet(layAdmin(maAdminThucHien));
++        DangTin daLuu = dangTinRepository.save(dt);
++        ghiNhat(maAdminThucHien, "Duyệt bài đăng", "Bài đăng #" + id + " - " + safe(dt.getTieuDe()));
++        return toDto(daLuu, true);
++    }
++
++    @Transactional
++    public DangTinDuyetDto tuChoi(Integer id, String lyDo, Integer maAdminThucHien) {
++        if (lyDo == null || lyDo.isBlank()) {
++            throw new IllegalArgumentException("Vui lòng nhập lý do từ chối để chủ trọ biết cách chỉnh sửa");
++        }
++        DangTin dt = layDeCapNhat(id);
++        dt.setTrangThaiDuyet(TU_CHOI);
++        dt.setLyDoTuChoi(lyDo.trim());
++        dt.setNgayDuyet(LocalDateTime.now());
++        dt.setNguoiDuyet(layAdmin(maAdminThucHien));
++        DangTin daLuu = dangTinRepository.save(dt);
++        ghiNhat(maAdminThucHien, "Từ chối bài đăng", "Bài đăng #" + id + " - " + safe(dt.getTieuDe()));
++        return toDto(daLuu, true);
++    }
++
++    // Dua bai dang tu DA_DUYET/TU_CHOI ve lai CHO_DUYET de xet duyet lai
++    // (VD: Admin bam nham, hoac muon xem xet lai truong hop bi khieu nai).
++    @Transactional
++    public DangTinDuyetDto datLaiChoDuyet(Integer id, Integer maAdminThucHien) {
++        DangTin dt = layDeCapNhat(id);
++        dt.setTrangThaiDuyet(CHO_DUYET);
++        dt.setLyDoTuChoi(null);
++        dt.setNgayDuyet(null);
++        dt.setNguoiDuyet(null);
++        DangTin daLuu = dangTinRepository.save(dt);
++        ghiNhat(maAdminThucHien, "Đặt lại chờ duyệt", "Bài đăng #" + id + " - " + safe(dt.getTieuDe()));
++        return toDto(daLuu, true);
++    }
++
++    // ===================== HELPER =====================
++
++    private DangTin layDeCapNhat(Integer id) {
++        Objects.requireNonNull(id, "id must not be null");
++        return dangTinRepository.findById(id)
++                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy bài đăng"));
++    }
++
++    private NguoiDung layAdmin(Integer maAdminThucHien) {
++        return maAdminThucHien == null ? null : nguoiDungRepository.findById(maAdminThucHien).orElse(null);
++    }
++
++    private void ghiNhat(Integer maAdminThucHien, String hanhDong, String doiTuong) {
++        try {
++            nhatKyHoatDongService.create(NhatKyHoatDong.builder()
++                    .nguoiDung(layAdmin(maAdminThucHien))
++                    .hanhDong(hanhDong)
++                    .doiTuong(doiTuong)
++                    .build());
++        } catch (RuntimeException ignored) {
++            // Ghi nhat ky la thao tac phu, khong duoc phep lam hong thao tac chinh.
++        }
++    }
++
++    private boolean khopTuKhoa(DangTin dt, String keyword) {
++        NguoiDung nguoiDung = dt.getNguoiDung();
++        PhongTro phong = dt.getPhong();
++        NhaTro nhaTro = phong == null ? null : phong.getNhaTro();
++        return chua(dt.getTieuDe(), keyword)
++                || chua(nguoiDung == null ? null : nguoiDung.getHoTen(), keyword)
++                || chua(nguoiDung == null ? null : nguoiDung.getEmail(), keyword)
++                || chua(nhaTro == null ? null : nhaTro.getTenNhaTro(), keyword)
++                || chua(phong == null ? null : phong.getTenPhong(), keyword);
++    }
++
++    private boolean chua(String value, String keyword) {
++        return value != null && value.toLowerCase().contains(keyword);
++    }
++
++    private String safe(String value) {
++        return value == null ? "" : value;
++    }
++
++    private DangTinDuyetDto toDto(DangTin dt, boolean kemAnh) {
++        NguoiDung nguoiDung = dt.getNguoiDung();
++        PhongTro phong = dt.getPhong();
++        NhaTro nhaTro = phong == null ? null : phong.getNhaTro();
++        NguoiDung nguoiDuyet = dt.getNguoiDuyet();
++
++        List<HinhAnh> anh = kemAnh
++                ? hinhAnhRepository.findByDangTin_MaDangTinOrderByThuTuHienThi(dt.getMaDangTin())
++                : List.of();
++        List<String> duongDanAnh = anh.stream()
++                .sorted(Comparator.comparing(HinhAnh::getThuTuHienThi, Comparator.nullsLast(Comparator.naturalOrder())))
++                .map(HinhAnh::getDuongDan)
++                .filter(Objects::nonNull)
++                .toList();
++        String anhDaiDien = duongDanAnh.isEmpty() ? (nhaTro == null ? null : nhaTro.getHinhAnh()) : duongDanAnh.get(0);
++
++        return new DangTinDuyetDto(
++                dt.getMaDangTin(),
++                dt.getTieuDe(),
++                dt.getNoiDung(),
++                dt.getNgayDang(),
++                dt.getNgayHetHan(),
++                dt.getTrangThai(),
++                dt.getTrangThaiDuyet(),
++                dt.getLyDoTuChoi(),
++                dt.getNgayDuyet(),
++                nguoiDuyet == null ? null : nguoiDuyet.getMaNguoiDung(),
++                nguoiDuyet == null ? null : nguoiDuyet.getHoTen(),
++
++                nguoiDung == null ? null : nguoiDung.getMaNguoiDung(),
++                nguoiDung == null ? null : nguoiDung.getHoTen(),
++                nguoiDung == null ? null : nguoiDung.getEmail(),
++                nguoiDung == null ? null : nguoiDung.getSoDienThoai(),
++                nguoiDung == null ? null : nguoiDung.getAvatar(),
++
++                phong == null ? null : phong.getMaPhong(),
++                phong == null ? null : phong.getTenPhong(),
++                phong == null ? null : phong.getDienTich(),
++                phong == null ? null : phong.getLoaiPhong(),
++                phong == null ? null : phong.getGiaPhong(),
++
++                nhaTro == null ? null : nhaTro.getMaNhaTro(),
++                nhaTro == null ? null : nhaTro.getTenNhaTro(),
++                nhaTro == null ? null : nhaTro.getDiaChi(),
++
++                anhDaiDien,
++                duongDanAnh);
++    }
++}
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/AdminNguoiDungService.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/AdminNguoiDungService.java
+new file mode 100644
+index 0000000..0f134cf
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/AdminNguoiDungService.java
+@@ -0,0 +1,240 @@
++package com.nhatro.backend.service;
++
++import com.nhatro.backend.dto.NguoiDungQuanLyDto;
++import com.nhatro.backend.entity.NguoiDung;
++import com.nhatro.backend.entity.NhatKyHoatDong;
++import com.nhatro.backend.entity.VaiTro;
++import com.nhatro.backend.entity.XacThucEkyc;
++import com.nhatro.backend.repository.BaoCaoRepository;
++import com.nhatro.backend.repository.NguoiDungRepository;
++import com.nhatro.backend.repository.VaiTroRepository;
++import com.nhatro.backend.repository.XacThucEkycRepository;
++import org.springframework.security.crypto.password.PasswordEncoder;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.time.LocalDateTime;
++import java.util.Comparator;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.NoSuchElementException;
++import java.util.Objects;
++import java.util.Optional;
++
++/**
++ * Nghiep vu rieng cho man hinh "Quan ly nguoi dung" cua Admin
++ * (WEB-INF/jsp/admin/userManagement.jsp + /api/admin/nguoi-dung/**).
++ *
++ * Tach rieng khoi NguoiDungService (dung chung cho dang ky/profile...) vi
++ * o day can gop them du lieu tu nhieu bang (eKYC, bao cao vi pham) va co
++ * cac hanh dong dac thu cua Admin (khoa/mo khoa, doi vai tro, admin tu tao
++ * tai khoan voi vai tro tuy chon) - khac voi luong dang ky cong khai.
++ */
++@Service
++public class AdminNguoiDungService {
++
++    private static final String TRANG_THAI_CHUA_GUI = "CHUA_GUI";
++    private static final String TRANG_THAI_CHO_DUYET = "CHO_DUYET";
++    private static final String TRANG_THAI_DA_XAC_MINH = "DA_XAC_MINH";
++
++    private final NguoiDungRepository nguoiDungRepository;
++    private final VaiTroRepository vaiTroRepository;
++    private final XacThucEkycRepository xacThucEkycRepository;
++    private final BaoCaoRepository baoCaoRepository;
++    private final PasswordEncoder passwordEncoder;
++    private final NhatKyHoatDongService nhatKyHoatDongService;
++
++    public AdminNguoiDungService(NguoiDungRepository nguoiDungRepository,
++                                  VaiTroRepository vaiTroRepository,
++                                  XacThucEkycRepository xacThucEkycRepository,
++                                  BaoCaoRepository baoCaoRepository,
++                                  PasswordEncoder passwordEncoder,
++                                  NhatKyHoatDongService nhatKyHoatDongService) {
++        this.nguoiDungRepository = Objects.requireNonNull(nguoiDungRepository, "nguoiDungRepository must not be null");
++        this.vaiTroRepository = Objects.requireNonNull(vaiTroRepository, "vaiTroRepository must not be null");
++        this.xacThucEkycRepository = Objects.requireNonNull(xacThucEkycRepository, "xacThucEkycRepository must not be null");
++        this.baoCaoRepository = Objects.requireNonNull(baoCaoRepository, "baoCaoRepository must not be null");
++        this.passwordEncoder = Objects.requireNonNull(passwordEncoder, "passwordEncoder must not be null");
++        this.nhatKyHoatDongService = Objects.requireNonNull(nhatKyHoatDongService, "nhatKyHoatDongService must not be null");
++    }
++
++    @Transactional(readOnly = true)
++    public List<NguoiDungQuanLyDto> danhSach(String tuKhoa, Integer maVaiTro, Boolean trangThai) {
++        Map<Integer, String> ekycTheoNguoiDung = layTrangThaiEkycMoiNhat();
++        Map<Integer, Long> viPhamTheoNguoiDung = laySoLuotViPham();
++        String keyword = (tuKhoa == null || tuKhoa.isBlank()) ? null : tuKhoa.trim().toLowerCase();
++
++        return nguoiDungRepository.findAll().stream()
++                .filter(nd -> maVaiTro == null || (nd.getVaiTro() != null && maVaiTro.equals(nd.getVaiTro().getMaVaiTro())))
++                .filter(nd -> trangThai == null || trangThai.equals(nd.getTrangThai()))
++                .filter(nd -> keyword == null || khopTuKhoa(nd, keyword))
++                .sorted(Comparator.comparing(NguoiDung::getMaNguoiDung, Comparator.nullsLast(Comparator.reverseOrder())))
++                .map(nd -> toDto(nd, ekycTheoNguoiDung, viPhamTheoNguoiDung))
++                .toList();
++    }
++
++    @Transactional(readOnly = true)
++    public Optional<NguoiDungQuanLyDto> chiTiet(Integer id) {
++        Objects.requireNonNull(id, "id must not be null");
++        Map<Integer, String> ekycTheoNguoiDung = layTrangThaiEkycMoiNhat();
++        Map<Integer, Long> viPhamTheoNguoiDung = laySoLuotViPham();
++        return nguoiDungRepository.findById(id).map(nd -> toDto(nd, ekycTheoNguoiDung, viPhamTheoNguoiDung));
++    }
++
++    @Transactional(readOnly = true)
++    public List<VaiTro> danhSachVaiTro() {
++        return vaiTroRepository.findAll();
++    }
++
++    // Admin tu tao 1 tai khoan MOI voi vai tro tuy chon (khac voi
++    // POST /api/nguoi-dung cong khai luon ep vai tro "Nguoi thue").
++    @Transactional
++    public NguoiDung taoTaiKhoan(NguoiDung duLieu, Integer maAdminThucHien) {
++        Objects.requireNonNull(duLieu, "duLieu must not be null");
++        if (duLieu.getHoTen() == null || duLieu.getHoTen().isBlank()) {
++            throw new IllegalArgumentException("Họ tên không được để trống");
++        }
++        if (duLieu.getEmail() == null || duLieu.getEmail().isBlank()) {
++            throw new IllegalArgumentException("Email không được để trống");
++        }
++        if (nguoiDungRepository.existsByEmail(duLieu.getEmail())) {
++            throw new IllegalArgumentException("Email đã được sử dụng");
++        }
++        if (duLieu.getSoDienThoai() != null && !duLieu.getSoDienThoai().isBlank()
++                && nguoiDungRepository.existsBySoDienThoai(duLieu.getSoDienThoai())) {
++            throw new IllegalArgumentException("Số điện thoại đã được sử dụng");
++        }
++        if (duLieu.getMatKhau() == null || duLieu.getMatKhau().isBlank()) {
++            throw new IllegalArgumentException("Mật khẩu không được để trống");
++        }
++
++        Integer maVaiTroMongMuon = duLieu.getVaiTro() != null ? duLieu.getVaiTro().getMaVaiTro() : null;
++        VaiTro vaiTro = maVaiTroMongMuon != null
++                ? vaiTroRepository.findById(maVaiTroMongMuon)
++                        .orElseThrow(() -> new IllegalArgumentException("Vai trò không tồn tại"))
++                : vaiTroRepository.findByTenVaiTro("Người thuê")
++                        .orElseThrow(() -> new IllegalStateException("Không tìm thấy vai trò mặc định 'Người thuê'"));
++
++        duLieu.setMaNguoiDung(null);
++        duLieu.setVaiTro(vaiTro);
++        duLieu.setMatKhau(passwordEncoder.encode(duLieu.getMatKhau()));
++        duLieu.setTrangThai(duLieu.getTrangThai() == null ? Boolean.TRUE : duLieu.getTrangThai());
++
++        NguoiDung daTao = nguoiDungRepository.save(duLieu);
++        ghiNhat(maAdminThucHien, "Tạo tài khoản người dùng", "Người dùng #" + daTao.getMaNguoiDung());
++        return daTao;
++    }
++
++    // Khoa / mo khoa tai khoan (cot "Trang thai" trong bang).
++    @Transactional
++    public NguoiDung capNhatTrangThai(Integer id, boolean trangThaiMoi, Integer maAdminThucHien) {
++        Objects.requireNonNull(id, "id must not be null");
++        if (id.equals(maAdminThucHien) && !trangThaiMoi) {
++            throw new IllegalStateException("Không thể tự khóa tài khoản đang đăng nhập");
++        }
++        NguoiDung nd = nguoiDungRepository.findById(id)
++                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy người dùng"));
++        nd.setTrangThai(trangThaiMoi);
++        nd.setNgayCapNhat(LocalDateTime.now());
++        NguoiDung daLuu = nguoiDungRepository.save(nd);
++        ghiNhat(maAdminThucHien, trangThaiMoi ? "Mở khóa tài khoản" : "Khóa tài khoản", "Người dùng #" + id);
++        return daLuu;
++    }
++
++    // Doi vai tro (VD: nang/ha quyen giua Nguoi thue - Chu tro - Admin).
++    @Transactional
++    public NguoiDung capNhatVaiTro(Integer id, Integer maVaiTroMoi, Integer maAdminThucHien) {
++        Objects.requireNonNull(id, "id must not be null");
++        Objects.requireNonNull(maVaiTroMoi, "maVaiTroMoi must not be null");
++        if (id.equals(maAdminThucHien)) {
++            throw new IllegalStateException("Không thể tự đổi vai trò của chính mình");
++        }
++        NguoiDung nd = nguoiDungRepository.findById(id)
++                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy người dùng"));
++        VaiTro vaiTro = vaiTroRepository.findById(maVaiTroMoi)
++                .orElseThrow(() -> new IllegalArgumentException("Vai trò không tồn tại"));
++        nd.setVaiTro(vaiTro);
++        nd.setNgayCapNhat(LocalDateTime.now());
++        NguoiDung daLuu = nguoiDungRepository.save(nd);
++        ghiNhat(maAdminThucHien, "Đổi vai trò thành " + vaiTro.getTenVaiTro(), "Người dùng #" + id);
++        return daLuu;
++    }
++
++    @Transactional
++    public void xoa(Integer id, Integer maAdminThucHien) {
++        Objects.requireNonNull(id, "id must not be null");
++        if (id.equals(maAdminThucHien)) {
++            throw new IllegalStateException("Không thể tự xóa tài khoản đang đăng nhập");
++        }
++        if (!nguoiDungRepository.existsById(id)) {
++            throw new NoSuchElementException("Không tìm thấy người dùng");
++        }
++        nguoiDungRepository.deleteById(id);
++        ghiNhat(maAdminThucHien, "Xóa tài khoản người dùng", "Người dùng #" + id);
++    }
++
++    // ===================== HELPER =====================
++
++    private void ghiNhat(Integer maAdminThucHien, String hanhDong, String doiTuong) {
++        try {
++            NguoiDung admin = maAdminThucHien == null ? null : nguoiDungRepository.findById(maAdminThucHien).orElse(null);
++            nhatKyHoatDongService.create(NhatKyHoatDong.builder()
++                    .nguoiDung(admin)
++                    .hanhDong(hanhDong)
++                    .doiTuong(doiTuong)
++                    .build());
++        } catch (RuntimeException ignored) {
++            // Ghi nhat ky la thao tac phu, khong duoc phep lam hong thao tac chinh.
++        }
++    }
++
++    private boolean khopTuKhoa(NguoiDung nd, String keyword) {
++        return chua(nd.getHoTen(), keyword) || chua(nd.getEmail(), keyword) || chua(nd.getSoDienThoai(), keyword);
++    }
++
++    private boolean chua(String value, String keyword) {
++        return value != null && value.toLowerCase().contains(keyword);
++    }
++
++    private Map<Integer, String> layTrangThaiEkycMoiNhat() {
++        Map<Integer, String> result = new HashMap<>();
++        for (XacThucEkyc ekyc : xacThucEkycRepository.findAllByOrderByNgayGuiDesc()) {
++            if (ekyc.getNguoiDung() == null || ekyc.getNguoiDung().getMaNguoiDung() == null) {
++                continue;
++            }
++            Integer maNguoiDung = ekyc.getNguoiDung().getMaNguoiDung();
++            // Da sap xep giam dan theo ngayGui -> ban ghi dau tien gap cho
++            // moi maNguoiDung chinh la ban ghi moi nhat, cac ban ghi cu hon bo qua.
++            result.putIfAbsent(maNguoiDung, Boolean.TRUE.equals(ekyc.getTrangThai()) ? TRANG_THAI_DA_XAC_MINH : TRANG_THAI_CHO_DUYET);
++        }
++        return result;
++    }
++
++    private Map<Integer, Long> laySoLuotViPham() {
++        Map<Integer, Long> result = new HashMap<>();
++        for (Object[] row : baoCaoRepository.demSoBaoCaoTheoNguoiBiBaoCao()) {
++            result.put((Integer) row[0], (Long) row[1]);
++        }
++        return result;
++    }
++
++    private NguoiDungQuanLyDto toDto(NguoiDung nd, Map<Integer, String> ekycMap, Map<Integer, Long> viPhamMap) {
++        return new NguoiDungQuanLyDto(
++                nd.getMaNguoiDung(),
++                nd.getHoTen(),
++                nd.getEmail(),
++                nd.getSoDienThoai(),
++                nd.getAvatar(),
++                nd.getVaiTro() == null ? null : nd.getVaiTro().getMaVaiTro(),
++                nd.getVaiTro() == null ? null : nd.getVaiTro().getTenVaiTro(),
++                nd.getGioiTinh(),
++                nd.getNgaySinh(),
++                nd.getDiaChi(),
++                nd.getTrangThai(),
++                nd.getNgayDangKy(),
++                nd.getNgayCapNhat(),
++                ekycMap.getOrDefault(nd.getMaNguoiDung(), TRANG_THAI_CHUA_GUI),
++                viPhamMap.getOrDefault(nd.getMaNguoiDung(), 0L));
++    }
++}
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/PhongChiTietService.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/PhongChiTietService.java
+index abd2740..a29830b 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/PhongChiTietService.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/service/PhongChiTietService.java
+@@ -82,9 +82,12 @@ public class PhongChiTietService {
+         NhaTro nhaTro = phong.getNhaTro();
+         NguoiDung chuTro = nhaTro != null ? nhaTro.getNguoiDung() : null;
+ 
+-        // Tin đăng còn hiệu lực mới nhất của phòng này (để lấy tiêu đề/nội dung/ảnh)
++        // Tin đăng còn hiệu lực mới nhất của phòng này (để lấy tiêu đề/nội dung/ảnh).
++        // Chỉ lấy bài đã được Admin DUYỆT; bài trangThaiDuyet=null (tạo trước khi
++        // có tính năng kiểm duyệt) vẫn coi là hợp lệ để không ẩn mất dữ liệu cũ.
+         DangTin dangTin = dangTinRepository.findByPhong_MaPhong(maPhong).stream()
+                 .filter(dt -> Boolean.TRUE.equals(dt.getTrangThai()))
++                .filter(dt -> dt.getTrangThaiDuyet() == null || "DA_DUYET".equals(dt.getTrangThaiDuyet()))
+                 .max(Comparator.comparing(DangTin::getNgayDang, Comparator.nullsFirst(Comparator.naturalOrder())))
+                 .orElse(null);
+ 
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/postApproval.jsp b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/postApproval.jsp
+index 46d04ec..c0a1827 100644
+--- a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/postApproval.jsp
++++ b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/postApproval.jsp
+@@ -1,12 +1,86 @@
+ <%@ page pageEncoding="UTF-8" contentType="text/html;charset=UTF-8" language="java" %>
+ <%@ include file="includes/header.jspf" %>
+-<div class="page-head"><div><h1>Phê duyệt bài đăng trọ</h1><p>Giao diện demo — dữ liệu hiện tại là mock, sẵn sàng nối Controller / Service / JPA / SQL.</p></div></div>
+-
+-<div class="card"><div class="toolbar"><input class="input" placeholder="Tìm tiêu đề, chủ trọ..."><select class="select"><option>Tất cả trạng thái</option><option>Chờ duyệt</option><option>Đã duyệt</option><option>Từ chối</option></select><button class="btn btn-primary">Tìm kiếm</button></div>
+-<div class="table-wrap"><table class="table"><tr><th>ID</th><th>Bài đăng</th><th>Chủ trọ</th><th>Giá</th><th>Ngày gửi</th><th>Trạng thái</th><th>Thao tác</th></tr>
+-<tr><td>#POST1024</td><td>Phòng full nội thất gần FPT</td><td>Nguyễn Văn A</td><td>3.2M</td><td>19/08/2026</td><td><span class="pill wait">Chờ duyệt</span></td><td><button class="btn btn-success">Duyệt</button> <button class="btn btn-danger">Từ chối</button></td></tr>
+-<tr><td>#POST1025</td><td>Studio ban công Quận 9</td><td>Trần Minh B</td><td>4.5M</td><td>19/08/2026</td><td><span class="pill wait">Chờ duyệt</span></td><td><button class="btn btn-success">Duyệt</button> <button class="btn btn-danger">Từ chối</button></td></tr>
+-<tr><td>#POST1026</td><td>KTX giá sinh viên</td><td>Lê C</td><td>1.5M</td><td>18/08/2026</td><td><span class="pill ok">Đã duyệt</span></td><td><button class="btn btn-light">Xem</button></td></tr>
+-</table></div></div>
++
++<div class="page-head">
++    <div>
++        <h1>Phê duyệt bài đăng trọ</h1>
++        <p>Xem chi tiết, duyệt hoặc từ chối (kèm lý do) các bài đăng cho thuê từ Chủ trọ.</p>
++    </div>
++</div>
++
++<div class="card">
++    <div class="toolbar">
++        <input class="input" id="paSearch" placeholder="Tiêu đề, chủ trọ, nhà trọ...">
++        <select class="select" id="paStatusFilter">
++            <option value="">Tất cả trạng thái</option>
++            <option value="CHO_DUYET" selected>Chờ duyệt</option>
++            <option value="DA_DUYET">Đã duyệt</option>
++            <option value="TU_CHOI">Từ chối</option>
++        </select>
++        <button class="btn btn-primary" id="paSearchBtn"><i class="bi bi-search"></i>&nbsp;Tìm kiếm</button>
++        <div class="um-toolbar-right">
++            <button class="btn btn-light" id="paRefreshBtn" title="Tải lại"><i class="bi bi-arrow-clockwise"></i></button>
++        </div>
++    </div>
++
++    <p class="um-status" id="paStatus">Đang tải dữ liệu...</p>
++
++    <div class="table-wrap">
++        <table class="table">
++            <thead>
++            <tr>
++                <th>Bài đăng</th>
++                <th>Chủ trọ</th>
++                <th>Giá phòng</th>
++                <th>Ngày gửi</th>
++                <th>Trạng thái</th>
++                <th>Thao tác</th>
++            </tr>
++            </thead>
++            <tbody id="paTableBody">
++            <tr class="table-empty-row"><td colspan="6">Đang tải dữ liệu...</td></tr>
++            </tbody>
++        </table>
++    </div>
++</div>
++
++<%-- ── Modal: Chi tiết / Duyệt / Từ chối ── --%>
++<div class="modal-backdrop" id="paDetailModal">
++    <div class="modal-box" style="max-width:680px">
++        <div class="modal-head">
++            <h3>Chi tiết bài đăng</h3>
++            <button class="modal-close" data-close="paDetailModal"><i class="bi bi-x-lg"></i></button>
++        </div>
++        <div class="modal-body" id="paDetailBody">
++            <p class="um-status">Đang tải...</p>
++        </div>
++    </div>
++</div>
++
++<%-- ── Modal: Nhập lý do từ chối ── --%>
++<div class="modal-backdrop" id="paRejectModal">
++    <div class="modal-box">
++        <div class="modal-head">
++            <h3>Từ chối bài đăng</h3>
++            <button class="modal-close" data-close="paRejectModal"><i class="bi bi-x-lg"></i></button>
++        </div>
++        <div class="modal-body">
++            <div class="form-error" id="paRejectError"></div>
++            <div class="form-row">
++                <label>Lý do từ chối *</label>
++                <textarea class="textarea" id="paRejectReason" rows="4" style="width:100%;box-sizing:border-box"
++                          placeholder="VD: Ảnh không rõ ràng, giá không khớp mô tả, thiếu thông tin địa chỉ..."></textarea>
++                <small>Lý do này sẽ hiển thị cho Chủ trọ để họ chỉnh sửa lại bài đăng.</small>
++            </div>
++        </div>
++        <div class="modal-foot">
++            <button class="btn btn-light" data-close="paRejectModal">Hủy</button>
++            <button class="btn btn-danger" id="paRejectSubmit"><i class="bi bi-x-lg"></i>&nbsp;Xác nhận từ chối</button>
++        </div>
++    </div>
++</div>
++
++<script>window.ADMIN_DANG_TIN_ENDPOINT = '${pageContext.request.contextPath}/api/admin/dang-tin';</script>
++<script src="${pageContext.request.contextPath}/resources/js/post-approval.js"></script>
+ 
+ <%@ include file="includes/footer.jspf" %>
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/userManagement.jsp b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/userManagement.jsp
+index 97db98b..d6b76e2 100644
+--- a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/userManagement.jsp
++++ b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/userManagement.jsp
+@@ -1,11 +1,112 @@
+ <%@ page pageEncoding="UTF-8" contentType="text/html;charset=UTF-8" language="java" %>
+ <%@ include file="includes/header.jspf" %>
+-<div class="page-head"><div><h1>Quản lý người dùng</h1><p>Giao diện demo — dữ liệu hiện tại là mock, sẵn sàng nối Controller / Service / JPA / SQL.</p></div></div>
+ 
+-<div class="card"><div class="toolbar"><input class="input" placeholder="Tên / Email / SĐT"><select class="select"><option>Tất cả vai trò</option><option>Người thuê</option><option>Chủ trọ</option><option>Admin</option></select><select class="select"><option>Tất cả trạng thái</option><option>Hoạt động</option><option>Bị khóa</option></select><button class="btn btn-primary">Tìm kiếm</button></div>
+-<table class="table"><tr><th>User</th><th>Email</th><th>Vai trò</th><th>eKYC</th><th>Vi phạm</th><th>Trạng thái</th><th>Thao tác</th></tr>
+-<tr><td>Nguyễn Văn A</td><td>vana@gmail.com</td><td>Chủ trọ</td><td><span class="pill ok">Đã xác minh</span></td><td>0</td><td><span class="pill ok">Hoạt động</span></td><td><button class="btn btn-light">Chi tiết</button> <button class="btn btn-danger">Khóa</button></td></tr>
+-<tr><td>Trần Thị B</td><td>thib@gmail.com</td><td>Người thuê</td><td><span class="pill wait">Chờ duyệt</span></td><td>1</td><td><span class="pill ok">Hoạt động</span></td><td><button class="btn btn-light">Chi tiết</button> <button class="btn btn-danger">Khóa</button></td></tr>
+-</table></div>
++<div class="page-head">
++    <div>
++        <h1>Quản lý người dùng</h1>
++        <p>Danh sách, tìm kiếm/lọc, phân quyền, khóa &amp; mở khóa, tạo và xóa tài khoản người dùng.</p>
++    </div>
++</div>
++
++<div class="card">
++    <div class="toolbar">
++        <input class="input" id="umSearch" placeholder="Tên / Email / SĐT">
++        <select class="select" id="umRoleFilter">
++            <option value="">Tất cả vai trò</option>
++        </select>
++        <select class="select" id="umStatusFilter">
++            <option value="">Tất cả trạng thái</option>
++            <option value="true">Hoạt động</option>
++            <option value="false">Bị khóa</option>
++        </select>
++        <button class="btn btn-primary" id="umSearchBtn"><i class="bi bi-search"></i>&nbsp;Tìm kiếm</button>
++        <div class="um-toolbar-right">
++            <button class="btn btn-light" id="umRefreshBtn" title="Tải lại"><i class="bi bi-arrow-clockwise"></i></button>
++            <button class="btn btn-success" id="umAddBtn"><i class="bi bi-person-plus"></i>&nbsp;Thêm người dùng</button>
++        </div>
++    </div>
++
++    <p class="um-status" id="umStatus">Đang tải dữ liệu...</p>
++
++    <div class="table-wrap">
++        <table class="table">
++            <thead>
++            <tr>
++                <th>User</th>
++                <th>Email</th>
++                <th>SĐT</th>
++                <th>Vai trò</th>
++                <th>eKYC</th>
++                <th>Vi phạm</th>
++                <th>Trạng thái</th>
++                <th>Thao tác</th>
++            </tr>
++            </thead>
++            <tbody id="umTableBody">
++            <tr class="table-empty-row"><td colspan="8">Đang tải dữ liệu...</td></tr>
++            </tbody>
++        </table>
++    </div>
++</div>
++
++<%-- ── Modal: Chi tiết / phân quyền / khóa-mở khóa ── --%>
++<div class="modal-backdrop" id="umDetailModal">
++    <div class="modal-box">
++        <div class="modal-head">
++            <h3>Chi tiết người dùng</h3>
++            <button class="modal-close" data-close="umDetailModal"><i class="bi bi-x-lg"></i></button>
++        </div>
++        <div class="modal-body" id="umDetailBody">
++            <p class="um-status">Đang tải...</p>
++        </div>
++    </div>
++</div>
++
++<%-- ── Modal: Thêm người dùng mới ── --%>
++<div class="modal-backdrop" id="umAddModal">
++    <div class="modal-box">
++        <div class="modal-head">
++            <h3>Thêm người dùng mới</h3>
++            <button class="modal-close" data-close="umAddModal"><i class="bi bi-x-lg"></i></button>
++        </div>
++        <div class="modal-body">
++            <div class="form-error" id="umAddError"></div>
++            <form id="umAddForm" autocomplete="off">
++                <div class="form-row">
++                    <label>Họ tên *</label>
++                    <input class="input" name="hoTen" required>
++                </div>
++                <div class="form-row">
++                    <label>Email *</label>
++                    <input class="input" type="email" name="email" required>
++                </div>
++                <div class="form-row">
++                    <label>Số điện thoại</label>
++                    <input class="input" name="soDienThoai">
++                </div>
++                <div class="form-row">
++                    <label>Mật khẩu *</label>
++                    <input class="input" type="password" name="matKhau" required minlength="6">
++                    <small>Tối thiểu 6 ký tự. Admin cấp mật khẩu ban đầu, người dùng có thể đổi lại sau.</small>
++                </div>
++                <div class="form-row">
++                    <label>Vai trò *</label>
++                    <select class="select" name="maVaiTro" id="umAddRoleSelect" required></select>
++                </div>
++                <div class="form-row">
++                    <label>Địa chỉ</label>
++                    <input class="input" name="diaChi">
++                </div>
++            </form>
++        </div>
++        <div class="modal-foot">
++            <button class="btn btn-light" data-close="umAddModal">Hủy</button>
++            <button class="btn btn-primary" id="umAddSubmit"><i class="bi bi-check-lg"></i>&nbsp;Tạo tài khoản</button>
++        </div>
++    </div>
++</div>
++
++<script>window.ADMIN_NGUOI_DUNG_ENDPOINT = '${pageContext.request.contextPath}/api/admin/nguoi-dung';</script>
++<script src="${pageContext.request.contextPath}/resources/js/user-management.js"></script>
+ 
+ <%@ include file="includes/footer.jspf" %>
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/resources/css/admin.css b/Quan-Ly-Nha-Tro/src/main/webapp/resources/css/admin.css
+index e862932..ddc00a3 100644
+--- a/Quan-Ly-Nha-Tro/src/main/webapp/resources/css/admin.css
++++ b/Quan-Ly-Nha-Tro/src/main/webapp/resources/css/admin.css
+@@ -815,6 +815,7 @@ textarea {
+ .wait{ background: #fef3c7; color: #d97706; }
+ .bad { background: #fee2e2; color: #dc2626; }
+ .info{ background: #dbeafe; color: #2563eb; }
++.muted{ background: #f1f5f9; color: #64748b; }
+ 
+ 
+ /* =========================================================
+@@ -1960,4 +1961,201 @@ body {
+ .card.management-panel {
+     padding: 0;
+     overflow: hidden;
+-}
+\ No newline at end of file
++}
++
++/* =========================================================
++   USER MANAGEMENT (userManagement.jsp)
++   ========================================================= */
++
++.user-cell {
++    display: flex;
++    align-items: center;
++    gap: 10px;
++}
++
++.user-cell img {
++    width: 34px;
++    height: 34px;
++    border-radius: 50%;
++    object-fit: cover;
++    border: 1px solid #e2e8f0;
++    flex-shrink: 0;
++}
++
++.user-cell .user-cell-name {
++    font-weight: 600;
++    color: #0f172a;
++    font-size: 13px;
++}
++
++.user-cell .user-cell-sub {
++    font-size: 11px;
++    color: #94a3b8;
++}
++
++.violation-count {
++    font-weight: 700;
++}
++
++.violation-count.zero { color: #94a3b8; }
++.violation-count.some { color: #d97706; }
++.violation-count.many { color: #dc2626; }
++
++.role-select-inline {
++    border: 1px solid #e2e8f0;
++    border-radius: 8px;
++    padding: 5px 8px;
++    font-size: 12px;
++    background: #f8fafc;
++    color: #0f172a;
++    cursor: pointer;
++}
++
++.table-empty-row td {
++    text-align: center;
++    color: #94a3b8;
++    padding: 30px 10px !important;
++}
++
++.um-toolbar-right {
++    margin-left: auto;
++    display: flex;
++    gap: 9px;
++}
++
++.um-status {
++    font-size: 12px;
++    color: #94a3b8;
++    margin: 0 0 10px;
++}
++
++.um-status.error { color: #dc2626; }
++
++/* ---- Modal ---- */
++.modal-backdrop {
++    position: fixed;
++    inset: 0;
++    background: rgba(15, 23, 42, 0.55);
++    display: none;
++    align-items: flex-start;
++    justify-content: center;
++    padding: 40px 16px;
++    overflow-y: auto;
++    z-index: 1000;
++}
++
++.modal-backdrop.show {
++    display: flex;
++}
++
++.modal-box {
++    background: #fff;
++    border-radius: 16px;
++    width: 100%;
++    max-width: 560px;
++    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
++    overflow: hidden;
++}
++
++.modal-head {
++    display: flex;
++    align-items: center;
++    justify-content: space-between;
++    padding: 16px 20px;
++    border-bottom: 1px solid #f0f0f0;
++}
++
++.modal-head h3 {
++    margin: 0;
++    font-size: 15px;
++    color: #0f172a;
++}
++
++.modal-close {
++    border: none;
++    background: #f1f5f9;
++    width: 30px;
++    height: 30px;
++    border-radius: 8px;
++    cursor: pointer;
++    color: #64748b;
++    font-size: 14px;
++}
++
++.modal-close:hover { background: #e2e8f0; }
++
++.modal-body {
++    padding: 20px;
++    max-height: 70vh;
++    overflow-y: auto;
++}
++
++.modal-foot {
++    display: flex;
++    justify-content: flex-end;
++    gap: 8px;
++    padding: 14px 20px;
++    border-top: 1px solid #f0f0f0;
++    background: #f8fafc;
++}
++
++.form-row {
++    margin-bottom: 14px;
++}
++
++.form-row label {
++    display: block;
++    font-size: 12px;
++    font-weight: 700;
++    color: #475569;
++    margin-bottom: 6px;
++}
++
++.form-row .input,
++.form-row .select {
++    width: 100%;
++    min-width: 0;
++    box-sizing: border-box;
++}
++
++.form-row small {
++    display: block;
++    margin-top: 4px;
++    color: #94a3b8;
++    font-size: 11px;
++}
++
++.detail-grid {
++    display: grid;
++    grid-template-columns: 1fr 1fr;
++    gap: 12px 18px;
++    margin-bottom: 16px;
++}
++
++.detail-grid .full { grid-column: 1 / -1; }
++
++.detail-item span.label {
++    display: block;
++    font-size: 11px;
++    color: #94a3b8;
++    margin-bottom: 3px;
++}
++
++.detail-item span.value {
++    font-size: 13px;
++    font-weight: 600;
++    color: #0f172a;
++}
++
++.form-error {
++    background: #fef2f2;
++    color: #dc2626;
++    border: 1px solid #fecaca;
++    border-radius: 9px;
++    padding: 9px 12px;
++    font-size: 12px;
++    margin-bottom: 14px;
++    display: none;
++}
++
++.form-error.show { display: block; }
+\ No newline at end of file
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/resources/js/post-approval.js b/Quan-Ly-Nha-Tro/src/main/webapp/resources/js/post-approval.js
+new file mode 100644
+index 0000000..6a0d0ad
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/webapp/resources/js/post-approval.js
+@@ -0,0 +1,320 @@
++(function () {
++    'use strict';
++
++    var API = window.ADMIN_DANG_TIN_ENDPOINT;
++    var pendingRejectId = null;
++
++    var STATUS_LABEL = {
++        CHO_DUYET: { text: 'Chờ duyệt', cls: 'wait' },
++        DA_DUYET: { text: 'Đã duyệt', cls: 'ok' },
++        TU_CHOI: { text: 'Từ chối', cls: 'bad' }
++    };
++
++    document.addEventListener('DOMContentLoaded', init);
++
++    function init() {
++        bindStaticEvents();
++        loadPosts();
++    }
++
++    function authHeaders(json) {
++        var token = localStorage.getItem('token');
++        var headers = token ? { Authorization: 'Bearer ' + token } : {};
++        if (json) headers['Content-Type'] = 'application/json';
++        return headers;
++    }
++
++    function handleAuthError(response) {
++        if (response.status === 401) {
++            window.location.href = (window.CONTEXT_PATH || '') + '/login';
++            return true;
++        }
++        return false;
++    }
++
++    // ===================== LOAD =====================
++
++    function loadPosts() {
++        var status = document.getElementById('paStatus');
++        var body = document.getElementById('paTableBody');
++        status.textContent = 'Đang tải dữ liệu...';
++        status.classList.remove('error');
++
++        var q = document.getElementById('paSearch').value.trim();
++        var trangThaiDuyet = document.getElementById('paStatusFilter').value;
++
++        var params = new URLSearchParams();
++        if (q) params.set('q', q);
++        if (trangThaiDuyet) params.set('trangThaiDuyet', trangThaiDuyet);
++
++        fetch(API + (params.toString() ? '?' + params.toString() : ''), { headers: authHeaders() })
++            .then(function (res) {
++                if (handleAuthError(res)) return null;
++                if (res.status === 403) {
++                    status.textContent = 'Tài khoản không có quyền xem dữ liệu này.';
++                    status.classList.add('error');
++                    body.innerHTML = '<tr class="table-empty-row"><td colspan="6">Không có quyền truy cập</td></tr>';
++                    return null;
++                }
++                if (!res.ok) throw new Error('HTTP ' + res.status);
++                return res.json();
++            })
++            .then(function (data) {
++                if (data === null) return;
++                renderTable(data);
++                status.textContent = data.length + ' bài đăng · cập nhật từ hệ thống';
++            })
++            .catch(function (err) {
++                status.textContent = 'Không thể tải dữ liệu. Vui lòng thử lại sau.';
++                status.classList.add('error');
++                body.innerHTML = '<tr class="table-empty-row"><td colspan="6">Lỗi tải dữ liệu</td></tr>';
++                console.error('Load posts error:', err);
++            });
++    }
++
++    // ===================== RENDER =====================
++
++    function renderTable(posts) {
++        var body = document.getElementById('paTableBody');
++        if (!posts || !posts.length) {
++            body.innerHTML = '<tr class="table-empty-row"><td colspan="6">Không tìm thấy bài đăng nào</td></tr>';
++            return;
++        }
++
++        body.innerHTML = posts.map(function (p) {
++            var st = STATUS_LABEL[p.trangThaiDuyet] || STATUS_LABEL.CHO_DUYET;
++            var quickActions = '<button class="btn btn-light" data-action="detail" data-id="' + p.maDangTin + '">Chi tiết</button>';
++            if (p.trangThaiDuyet === 'CHO_DUYET') {
++                quickActions += ' <button class="btn btn-success" data-action="approve" data-id="' + p.maDangTin + '">Duyệt</button>' +
++                    ' <button class="btn btn-danger" data-action="reject" data-id="' + p.maDangTin + '">Từ chối</button>';
++            }
++            return '' +
++                '<tr>' +
++                '<td><div class="user-cell-name">' + escapeHtml(p.tieuDe) + '</div><div class="user-cell-sub">#' + p.maDangTin + ' · ' + escapeHtml(p.tenNhaTro || '—') + '</div></td>' +
++                '<td>' + escapeHtml(p.tenNguoiDang || '—') + '</td>' +
++                '<td>' + formatPrice(p.giaPhong) + '</td>' +
++                '<td>' + formatDateTime(p.ngayDang) + '</td>' +
++                '<td><span class="pill ' + st.cls + '">' + st.text + '</span></td>' +
++                '<td>' + quickActions + '</td>' +
++                '</tr>';
++        }).join('');
++    }
++
++    function formatPrice(value) {
++        if (value === null || value === undefined) return '—';
++        var n = Number(value);
++        if (isNaN(n)) return '—';
++        return n.toLocaleString('vi-VN') + ' đ';
++    }
++
++    function formatDateTime(value) {
++        if (!value) return '—';
++        try {
++            var d = new Date(value);
++            if (isNaN(d.getTime())) return value;
++            return d.toLocaleString('vi-VN');
++        } catch (e) { return value; }
++    }
++
++    function escapeHtml(value) {
++        if (value === null || value === undefined) return '';
++        return String(value)
++            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
++            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
++    }
++
++    // ===================== EVENTS =====================
++
++    function bindStaticEvents() {
++        document.getElementById('paSearchBtn').addEventListener('click', loadPosts);
++        document.getElementById('paRefreshBtn').addEventListener('click', loadPosts);
++        document.getElementById('paSearch').addEventListener('keydown', function (e) {
++            if (e.key === 'Enter') { e.preventDefault(); loadPosts(); }
++        });
++        document.getElementById('paStatusFilter').addEventListener('change', loadPosts);
++
++        document.querySelectorAll('[data-close]').forEach(function (btn) {
++            btn.addEventListener('click', function () { closeModal(btn.getAttribute('data-close')); });
++        });
++        document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
++            backdrop.addEventListener('click', function (e) {
++                if (e.target === backdrop) closeModal(backdrop.id);
++            });
++        });
++
++        document.getElementById('paTableBody').addEventListener('click', function (e) {
++            var btn = e.target.closest('button[data-action]');
++            if (!btn) return;
++            var id = btn.getAttribute('data-id');
++            var action = btn.getAttribute('data-action');
++            if (action === 'detail') openDetail(id);
++            else if (action === 'approve') approve(id);
++            else if (action === 'reject') openRejectModal(id);
++        });
++
++        document.getElementById('paRejectSubmit').addEventListener('click', submitReject);
++    }
++
++    function openModal(id) { document.getElementById(id).classList.add('show'); }
++    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
++
++    // ===================== DETAIL =====================
++
++    function openDetail(id) {
++        var bodyEl = document.getElementById('paDetailBody');
++        bodyEl.innerHTML = '<p class="um-status">Đang tải...</p>';
++        openModal('paDetailModal');
++
++        fetch(API + '/' + id, { headers: authHeaders() })
++            .then(function (res) {
++                if (handleAuthError(res)) return null;
++                if (!res.ok) throw new Error('HTTP ' + res.status);
++                return res.json();
++            })
++            .then(function (p) {
++                if (!p) return;
++                renderDetail(p);
++            })
++            .catch(function (err) {
++                bodyEl.innerHTML = '<p class="um-status error">Không tải được chi tiết bài đăng.</p>';
++                console.error('Detail error:', err);
++            });
++    }
++
++    function renderDetail(p) {
++        var bodyEl = document.getElementById('paDetailBody');
++        var st = STATUS_LABEL[p.trangThaiDuyet] || STATUS_LABEL.CHO_DUYET;
++
++        var gallery = (p.danhSachAnh && p.danhSachAnh.length)
++            ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
++                p.danhSachAnh.map(function (src) {
++                    return '<img src="' + escapeHtml(src) + '" alt="" style="width:110px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0">';
++                }).join('') +
++              '</div>'
++            : '<p class="um-status">Bài đăng chưa có hình ảnh.</p>';
++
++        var rejectReasonBlock = p.trangThaiDuyet === 'TU_CHOI' && p.lyDoTuChoi
++            ? '<div class="form-error show" style="margin-top:0">Lý do từ chối: ' + escapeHtml(p.lyDoTuChoi) + '</div>'
++            : '';
++
++        bodyEl.innerHTML = '' +
++            '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px">' +
++            '<div><h3 style="margin:0 0 4px;font-size:16px">' + escapeHtml(p.tieuDe) + '</h3>' +
++            '<div class="user-cell-sub">#' + p.maDangTin + '</div></div>' +
++            '<span class="pill ' + st.cls + '">' + st.text + '</span>' +
++            '</div>' +
++            rejectReasonBlock +
++            gallery +
++            '<div class="detail-grid">' +
++            detailItem('Chủ trọ', escapeHtml(p.tenNguoiDang || '—')) +
++            detailItem('Email / SĐT', escapeHtml((p.emailNguoiDang || '—') + ' · ' + (p.soDienThoaiNguoiDang || '—'))) +
++            detailItem('Nhà trọ', escapeHtml(p.tenNhaTro || '—')) +
++            detailItem('Địa chỉ', escapeHtml(p.diaChiNhaTro || '—')) +
++            detailItem('Phòng', escapeHtml((p.tenPhong || '—') + (p.loaiPhong ? ' · ' + p.loaiPhong : ''))) +
++            detailItem('Giá phòng', formatPrice(p.giaPhong)) +
++            detailItem('Ngày đăng', formatDateTime(p.ngayDang)) +
++            detailItem('Ngày hết hạn', formatDateTime(p.ngayHetHan)) +
++            '</div>' +
++            '<div class="form-row full"><label>Nội dung mô tả</label><div class="value" style="font-weight:400;white-space:pre-wrap">' + escapeHtml(p.noiDung || 'Không có mô tả.') + '</div></div>' +
++            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">' +
++            (p.trangThaiDuyet !== 'DA_DUYET' ? '<button class="btn btn-success" id="paDetailApprove">Duyệt bài đăng</button>' : '') +
++            (p.trangThaiDuyet !== 'TU_CHOI' ? '<button class="btn btn-danger" id="paDetailReject">Từ chối</button>' : '') +
++            (p.trangThaiDuyet !== 'CHO_DUYET' ? '<button class="btn btn-light" id="paDetailReset">Đặt lại chờ duyệt</button>' : '') +
++            '</div>';
++
++        var approveBtn = document.getElementById('paDetailApprove');
++        if (approveBtn) approveBtn.addEventListener('click', function () { approve(p.maDangTin, true); });
++        var rejectBtn = document.getElementById('paDetailReject');
++        if (rejectBtn) rejectBtn.addEventListener('click', function () { openRejectModal(p.maDangTin); });
++        var resetBtn = document.getElementById('paDetailReset');
++        if (resetBtn) resetBtn.addEventListener('click', function () { resetToPending(p.maDangTin); });
++    }
++
++    function detailItem(label, value) {
++        return '<div class="detail-item"><span class="label">' + label + '</span><span class="value">' + value + '</span></div>';
++    }
++
++    // ===================== ACTIONS =====================
++
++    function approve(id, fromDetail) {
++        if (!window.confirm('Xác nhận duyệt bài đăng #' + id + '?')) return;
++        fetch(API + '/' + id + '/duyet', { method: 'PUT', headers: authHeaders() })
++            .then(function (res) { return handleWriteResponse(res); })
++            .then(function (result) {
++                if (result.silent) return;
++                if (!result.ok) { window.alert(result.message); return; }
++                loadPosts();
++                if (fromDetail) openDetail(id); else closeModal('paDetailModal');
++            })
++            .catch(function (err) {
++                window.alert('Không thể duyệt bài đăng. Vui lòng thử lại.');
++                console.error(err);
++            });
++    }
++
++    function resetToPending(id) {
++        if (!window.confirm('Đặt bài đăng #' + id + ' về trạng thái chờ duyệt?')) return;
++        fetch(API + '/' + id + '/cho-duyet-lai', { method: 'PUT', headers: authHeaders() })
++            .then(function (res) { return handleWriteResponse(res); })
++            .then(function (result) {
++                if (result.silent) return;
++                if (!result.ok) { window.alert(result.message); return; }
++                loadPosts();
++                openDetail(id);
++            })
++            .catch(function (err) {
++                window.alert('Không thể cập nhật trạng thái. Vui lòng thử lại.');
++                console.error(err);
++            });
++    }
++
++    function openRejectModal(id) {
++        pendingRejectId = id;
++        document.getElementById('paRejectReason').value = '';
++        var err = document.getElementById('paRejectError');
++        err.textContent = '';
++        err.classList.remove('show');
++        openModal('paRejectModal');
++    }
++
++    function submitReject() {
++        var reason = document.getElementById('paRejectReason').value.trim();
++        var errEl = document.getElementById('paRejectError');
++        if (!reason) {
++            errEl.textContent = 'Vui lòng nhập lý do từ chối.';
++            errEl.classList.add('show');
++            return;
++        }
++        var submitBtn = document.getElementById('paRejectSubmit');
++        submitBtn.disabled = true;
++
++        fetch(API + '/' + pendingRejectId + '/tu-choi', {
++            method: 'PUT',
++            headers: authHeaders(true),
++            body: JSON.stringify({ lyDo: reason })
++        })
++            .then(function (res) { return handleWriteResponse(res); })
++            .then(function (result) {
++                submitBtn.disabled = false;
++                if (result.silent) return;
++                if (!result.ok) { errEl.textContent = result.message; errEl.classList.add('show'); return; }
++                closeModal('paRejectModal');
++                closeModal('paDetailModal');
++                loadPosts();
++            })
++            .catch(function (err) {
++                submitBtn.disabled = false;
++                errEl.textContent = 'Không thể từ chối bài đăng. Vui lòng thử lại.';
++                errEl.classList.add('show');
++                console.error(err);
++            });
++    }
++
++    function handleWriteResponse(res) {
++        if (handleAuthError(res)) return { ok: false, silent: true };
++        if (res.ok) return res.json().then(function () { return { ok: true }; }).catch(function () { return { ok: true }; });
++        return res.json().catch(function () { return {}; }).then(function (body) {
++            return { ok: false, message: body.message || ('Thao tác thất bại (HTTP ' + res.status + ')') };
++        });
++    }
++})();
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/resources/js/user-management.js b/Quan-Ly-Nha-Tro/src/main/webapp/resources/js/user-management.js
+new file mode 100644
+index 0000000..07eef15
+--- /dev/null
++++ b/Quan-Ly-Nha-Tro/src/main/webapp/resources/js/user-management.js
+@@ -0,0 +1,428 @@
++(function () {
++    'use strict';
++
++    var API = window.ADMIN_NGUOI_DUNG_ENDPOINT;
++
++    var roles = [];
++    var currentUserId = null;
++
++    var EKYC_LABEL = {
++        DA_XAC_MINH: { text: 'Đã xác minh', cls: 'ok' },
++        CHO_DUYET: { text: 'Chờ duyệt', cls: 'wait' },
++        CHUA_GUI: { text: 'Chưa gửi', cls: 'muted' }
++    };
++
++    document.addEventListener('DOMContentLoaded', init);
++
++    function init() {
++        try {
++            var user = JSON.parse(localStorage.getItem('user') || 'null');
++            currentUserId = user ? (user.maNguoiDung || null) : null;
++        } catch (e) { currentUserId = null; }
++
++        bindStaticEvents();
++        loadRoles().then(function () {
++            loadUsers();
++        });
++    }
++
++    function authHeaders(json) {
++        var token = localStorage.getItem('token');
++        var headers = token ? { Authorization: 'Bearer ' + token } : {};
++        if (json) headers['Content-Type'] = 'application/json';
++        return headers;
++    }
++
++    function handleAuthError(response) {
++        if (response.status === 401) {
++            window.location.href = (window.CONTEXT_PATH || '') + '/login';
++            return true;
++        }
++        return false;
++    }
++
++    // ===================== LOAD DATA =====================
++
++    function loadRoles() {
++        return fetch(API + '/vai-tro', { headers: authHeaders() })
++            .then(function (res) {
++                if (handleAuthError(res)) return [];
++                if (!res.ok) throw new Error('HTTP ' + res.status);
++                return res.json();
++            })
++            .then(function (data) {
++                roles = Array.isArray(data) ? data : [];
++                fillRoleSelect(document.getElementById('umRoleFilter'), true);
++                fillRoleSelect(document.getElementById('umAddRoleSelect'), false);
++            })
++            .catch(function (err) {
++                console.error('Không tải được danh sách vai trò:', err);
++            });
++    }
++
++    function fillRoleSelect(select, withAllOption) {
++        if (!select) return;
++        var current = select.value;
++        select.innerHTML = '';
++        if (withAllOption) {
++            var optAll = document.createElement('option');
++            optAll.value = '';
++            optAll.textContent = 'Tất cả vai trò';
++            select.appendChild(optAll);
++        }
++        roles.forEach(function (role) {
++            var opt = document.createElement('option');
++            opt.value = role.maVaiTro;
++            opt.textContent = role.tenVaiTro;
++            select.appendChild(opt);
++        });
++        if (current) select.value = current;
++    }
++
++    function loadUsers() {
++        var status = document.getElementById('umStatus');
++        var body = document.getElementById('umTableBody');
++        status.textContent = 'Đang tải dữ liệu...';
++        status.classList.remove('error');
++
++        var q = document.getElementById('umSearch').value.trim();
++        var maVaiTro = document.getElementById('umRoleFilter').value;
++        var trangThai = document.getElementById('umStatusFilter').value;
++
++        var params = new URLSearchParams();
++        if (q) params.set('q', q);
++        if (maVaiTro) params.set('maVaiTro', maVaiTro);
++        if (trangThai !== '') params.set('trangThai', trangThai);
++
++        fetch(API + (params.toString() ? '?' + params.toString() : ''), { headers: authHeaders() })
++            .then(function (res) {
++                if (handleAuthError(res)) return null;
++                if (res.status === 403) {
++                    status.textContent = 'Tài khoản không có quyền xem dữ liệu này.';
++                    status.classList.add('error');
++                    body.innerHTML = '<tr class="table-empty-row"><td colspan="8">Không có quyền truy cập</td></tr>';
++                    return null;
++                }
++                if (!res.ok) throw new Error('HTTP ' + res.status);
++                return res.json();
++            })
++            .then(function (data) {
++                if (data === null) return;
++                renderTable(data);
++                status.textContent = data.length + ' người dùng được tìm thấy · cập nhật từ hệ thống';
++            })
++            .catch(function (err) {
++                status.textContent = 'Không thể tải dữ liệu. Vui lòng thử lại sau.';
++                status.classList.add('error');
++                body.innerHTML = '<tr class="table-empty-row"><td colspan="8">Lỗi tải dữ liệu</td></tr>';
++                console.error('Load users error:', err);
++            });
++    }
++
++    // ===================== RENDER =====================
++
++    function renderTable(users) {
++        var body = document.getElementById('umTableBody');
++        if (!users || !users.length) {
++            body.innerHTML = '<tr class="table-empty-row"><td colspan="8">Không tìm thấy người dùng nào</td></tr>';
++            return;
++        }
++
++        body.innerHTML = users.map(function (u) {
++            var ekyc = EKYC_LABEL[u.trangThaiEkyc] || EKYC_LABEL.CHUA_GUI;
++            var violationCls = u.soLuotViPham === 0 ? 'zero' : (u.soLuotViPham < 3 ? 'some' : 'many');
++            var statusPill = u.trangThai
++                ? '<span class="pill ok">Hoạt động</span>'
++                : '<span class="pill bad">Bị khóa</span>';
++            var avatar = u.avatar
++                ? escapeAttr(u.avatar)
++                : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.hoTen || '?') + '&background=6366f1&color=fff&size=64';
++            var isSelf = currentUserId && String(currentUserId) === String(u.maNguoiDung);
++
++            var lockBtn = u.trangThai
++                ? '<button class="btn btn-danger" data-action="lock" data-id="' + u.maNguoiDung + '"' + (isSelf ? ' disabled title="Không thể tự khóa"' : '') + '>Khóa</button>'
++                : '<button class="btn btn-success" data-action="unlock" data-id="' + u.maNguoiDung + '">Mở khóa</button>';
++
++            return '' +
++                '<tr>' +
++                '<td><div class="user-cell"><img src="' + avatar + '" alt=""><div><div class="user-cell-name">' + escapeHtml(u.hoTen) + '</div><div class="user-cell-sub">#' + u.maNguoiDung + (isSelf ? ' · bạn' : '') + '</div></div></div></td>' +
++                '<td>' + escapeHtml(u.email) + '</td>' +
++                '<td>' + escapeHtml(u.soDienThoai || '—') + '</td>' +
++                '<td><span class="pill info">' + escapeHtml(u.tenVaiTro || '—') + '</span></td>' +
++                '<td><span class="pill ' + ekyc.cls + '">' + ekyc.text + '</span></td>' +
++                '<td><span class="violation-count ' + violationCls + '">' + u.soLuotViPham + '</span></td>' +
++                '<td>' + statusPill + '</td>' +
++                '<td>' +
++                '<button class="btn btn-light" data-action="detail" data-id="' + u.maNguoiDung + '">Chi tiết</button> ' +
++                lockBtn +
++                '</td>' +
++                '</tr>';
++        }).join('');
++    }
++
++    function escapeHtml(value) {
++        if (value === null || value === undefined) return '';
++        return String(value)
++            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
++            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
++    }
++
++    function escapeAttr(value) { return escapeHtml(value); }
++
++    // ===================== EVENTS =====================
++
++    function bindStaticEvents() {
++        document.getElementById('umSearchBtn').addEventListener('click', loadUsers);
++        document.getElementById('umRefreshBtn').addEventListener('click', loadUsers);
++        document.getElementById('umSearch').addEventListener('keydown', function (e) {
++            if (e.key === 'Enter') { e.preventDefault(); loadUsers(); }
++        });
++        document.getElementById('umRoleFilter').addEventListener('change', loadUsers);
++        document.getElementById('umStatusFilter').addEventListener('change', loadUsers);
++
++        document.getElementById('umAddBtn').addEventListener('click', openAddModal);
++        document.getElementById('umAddSubmit').addEventListener('click', submitAdd);
++
++        document.querySelectorAll('[data-close]').forEach(function (btn) {
++            btn.addEventListener('click', function () { closeModal(btn.getAttribute('data-close')); });
++        });
++        document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
++            backdrop.addEventListener('click', function (e) {
++                if (e.target === backdrop) closeModal(backdrop.id);
++            });
++        });
++
++        document.getElementById('umTableBody').addEventListener('click', function (e) {
++            var btn = e.target.closest('button[data-action]');
++            if (!btn) return;
++            var id = btn.getAttribute('data-id');
++            var action = btn.getAttribute('data-action');
++            if (action === 'detail') openDetail(id);
++            else if (action === 'lock') setTrangThai(id, false);
++            else if (action === 'unlock') setTrangThai(id, true);
++        });
++    }
++
++    function openModal(id) { document.getElementById(id).classList.add('show'); }
++    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
++
++    // ===================== DETAIL / ROLE / LOCK / DELETE =====================
++
++    function openDetail(id) {
++        var bodyEl = document.getElementById('umDetailBody');
++        bodyEl.innerHTML = '<p class="um-status">Đang tải...</p>';
++        openModal('umDetailModal');
++
++        fetch(API + '/' + id, { headers: authHeaders() })
++            .then(function (res) {
++                if (handleAuthError(res)) return null;
++                if (!res.ok) throw new Error('HTTP ' + res.status);
++                return res.json();
++            })
++            .then(function (u) {
++                if (!u) return;
++                renderDetail(u);
++            })
++            .catch(function (err) {
++                bodyEl.innerHTML = '<p class="um-status error">Không tải được chi tiết người dùng.</p>';
++                console.error('Detail error:', err);
++            });
++    }
++
++    function renderDetail(u) {
++        var bodyEl = document.getElementById('umDetailBody');
++        var ekyc = EKYC_LABEL[u.trangThaiEkyc] || EKYC_LABEL.CHUA_GUI;
++        var isSelf = currentUserId && String(currentUserId) === String(u.maNguoiDung);
++        var avatar = u.avatar
++            ? escapeAttr(u.avatar)
++            : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.hoTen || '?') + '&background=6366f1&color=fff&size=96';
++
++        var roleOptions = roles.map(function (r) {
++            return '<option value="' + r.maVaiTro + '"' + (String(r.maVaiTro) === String(u.maVaiTro) ? ' selected' : '') + '>' + escapeHtml(r.tenVaiTro) + '</option>';
++        }).join('');
++
++        bodyEl.innerHTML = '' +
++            '<div class="user-cell" style="margin-bottom:18px">' +
++            '<img src="' + avatar + '" style="width:56px;height:56px" alt="">' +
++            '<div><div class="user-cell-name" style="font-size:15px">' + escapeHtml(u.hoTen) + '</div>' +
++            '<div class="user-cell-sub">#' + u.maNguoiDung + (isSelf ? ' · Tài khoản đang đăng nhập' : '') + '</div></div>' +
++            '</div>' +
++            '<div class="form-error" id="umDetailError"></div>' +
++            '<div class="detail-grid">' +
++            detailItem('Email', u.email) +
++            detailItem('Số điện thoại', u.soDienThoai || '—') +
++            detailItem('Địa chỉ', u.diaChi || '—') +
++            detailItem('Giới tính', u.gioiTinh === true ? 'Nam' : (u.gioiTinh === false ? 'Nữ' : '—')) +
++            detailItem('Ngày sinh', u.ngaySinh || '—') +
++            detailItem('Ngày đăng ký', formatDateTime(u.ngayDangKy)) +
++            detailItem('eKYC', '<span class="pill ' + ekyc.cls + '">' + ekyc.text + '</span>', true) +
++            detailItem('Số lượt bị báo cáo / vi phạm', String(u.soLuotViPham), true) +
++            '</div>' +
++            '<div class="form-row">' +
++            '<label>Vai trò</label>' +
++            '<select class="select" id="umDetailRoleSelect"' + (isSelf ? ' disabled' : '') + '>' + roleOptions + '</select>' +
++            (isSelf ? '<small>Không thể tự đổi vai trò của chính mình.</small>' : '') +
++            '</div>' +
++            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">' +
++            '<button class="btn btn-primary" id="umDetailSaveRole">Lưu vai trò</button>' +
++            (u.trangThai
++                ? '<button class="btn btn-danger" id="umDetailToggleStatus"' + (isSelf ? ' disabled title="Không thể tự khóa"' : '') + '>Khóa tài khoản</button>'
++                : '<button class="btn btn-success" id="umDetailToggleStatus">Mở khóa tài khoản</button>') +
++            '<button class="btn btn-danger" id="umDetailDelete"' + (isSelf ? ' disabled title="Không thể tự xóa"' : '') + '>Xóa tài khoản</button>' +
++            '</div>';
++
++        document.getElementById('umDetailSaveRole').addEventListener('click', function () {
++            var maVaiTro = document.getElementById('umDetailRoleSelect').value;
++            changeRole(u.maNguoiDung, maVaiTro);
++        });
++        var toggleBtn = document.getElementById('umDetailToggleStatus');
++        if (toggleBtn) {
++            toggleBtn.addEventListener('click', function () {
++                setTrangThai(u.maNguoiDung, !u.trangThai, true);
++            });
++        }
++        document.getElementById('umDetailDelete').addEventListener('click', function () {
++            deleteUser(u.maNguoiDung);
++        });
++    }
++
++    function detailItem(label, value, full) {
++        return '<div class="detail-item' + (full ? ' full' : '') + '"><span class="label">' + label + '</span><span class="value">' + value + '</span></div>';
++    }
++
++    function formatDateTime(value) {
++        if (!value) return '—';
++        try {
++            var d = new Date(value);
++            if (isNaN(d.getTime())) return value;
++            return d.toLocaleString('vi-VN');
++        } catch (e) { return value; }
++    }
++
++    function setTrangThai(id, trangThai, fromDetail) {
++        var actionLabel = trangThai ? 'mở khóa' : 'khóa';
++        if (!window.confirm('Xác nhận ' + actionLabel + ' tài khoản #' + id + '?')) return;
++
++        fetch(API + '/' + id + '/trang-thai', {
++            method: 'PUT',
++            headers: authHeaders(true),
++            body: JSON.stringify({ trangThai: trangThai })
++        })
++            .then(function (res) { return handleWriteResponse(res); })
++            .then(function (result) {
++                if (!result.ok) { showError(result.message, fromDetail); return; }
++                loadUsers();
++                if (fromDetail) openDetail(id); else closeModal('umDetailModal');
++            })
++            .catch(function (err) {
++                showError('Không thể cập nhật trạng thái. Vui lòng thử lại.', fromDetail);
++                console.error(err);
++            });
++    }
++
++    function changeRole(id, maVaiTro) {
++        if (!maVaiTro) return;
++        fetch(API + '/' + id + '/vai-tro', {
++            method: 'PUT',
++            headers: authHeaders(true),
++            body: JSON.stringify({ maVaiTro: Number(maVaiTro) })
++        })
++            .then(function (res) { return handleWriteResponse(res); })
++            .then(function (result) {
++                if (!result.ok) { showError(result.message, true); return; }
++                loadUsers();
++                openDetail(id);
++            })
++            .catch(function (err) {
++                showError('Không thể đổi vai trò. Vui lòng thử lại.', true);
++                console.error(err);
++            });
++    }
++
++    function deleteUser(id) {
++        if (!window.confirm('Xóa vĩnh viễn tài khoản #' + id + '? Hành động này không thể hoàn tác.')) return;
++
++        fetch(API + '/' + id, { method: 'DELETE', headers: authHeaders() })
++            .then(function (res) {
++                if (handleAuthError(res)) return { ok: false, silent: true };
++                if (res.status === 204) return { ok: true };
++                return res.json().catch(function () { return {}; }).then(function (body) {
++                    return { ok: false, message: body.message || ('HTTP ' + res.status) };
++                });
++            })
++            .then(function (result) {
++                if (result.silent) return;
++                if (!result.ok) { showError(result.message, true); return; }
++                closeModal('umDetailModal');
++                loadUsers();
++            })
++            .catch(function (err) {
++                showError('Không thể xóa tài khoản. Vui lòng thử lại.', true);
++                console.error(err);
++            });
++    }
++
++    function handleWriteResponse(res) {
++        if (handleAuthError(res)) return { ok: false, silent: true };
++        if (res.ok) return res.json().then(function () { return { ok: true }; }).catch(function () { return { ok: true }; });
++        return res.json().catch(function () { return {}; }).then(function (body) {
++            return { ok: false, message: body.message || ('Thao tác thất bại (HTTP ' + res.status + ')') };
++        });
++    }
++
++    function showError(message, inDetail) {
++        var el = document.getElementById(inDetail ? 'umDetailError' : 'umAddError');
++        if (!el) { window.alert(message || 'Đã xảy ra lỗi.'); return; }
++        el.textContent = message || 'Đã xảy ra lỗi.';
++        el.classList.add('show');
++    }
++
++    // ===================== ADD USER =====================
++
++    function openAddModal() {
++        document.getElementById('umAddForm').reset();
++        var err = document.getElementById('umAddError');
++        err.textContent = '';
++        err.classList.remove('show');
++        openModal('umAddModal');
++    }
++
++    function submitAdd() {
++        var form = document.getElementById('umAddForm');
++        if (!form.reportValidity()) return;
++
++        var formData = new FormData(form);
++        var payload = {
++            hoTen: (formData.get('hoTen') || '').trim(),
++            email: (formData.get('email') || '').trim(),
++            soDienThoai: (formData.get('soDienThoai') || '').trim() || null,
++            matKhau: formData.get('matKhau'),
++            diaChi: (formData.get('diaChi') || '').trim() || null,
++            vaiTro: { maVaiTro: Number(formData.get('maVaiTro')) }
++        };
++
++        var submitBtn = document.getElementById('umAddSubmit');
++        submitBtn.disabled = true;
++
++        fetch(API, { method: 'POST', headers: authHeaders(true), body: JSON.stringify(payload) })
++            .then(function (res) {
++                if (handleAuthError(res)) return { ok: false, silent: true };
++                if (res.status === 201) return { ok: true };
++                return res.json().catch(function () { return {}; }).then(function (body) {
++                    return { ok: false, message: body.message || ('Tạo tài khoản thất bại (HTTP ' + res.status + ')') };
++                });
++            })
++            .then(function (result) {
++                submitBtn.disabled = false;
++                if (result.silent) return;
++                if (!result.ok) { showError(result.message, false); return; }
++                closeModal('umAddModal');
++                loadUsers();
++            })
++            .catch(function (err) {
++                submitBtn.disabled = false;
++                showError('Không thể tạo tài khoản. Vui lòng thử lại.', false);
++                console.error(err);
++            });
++    }
++})();
