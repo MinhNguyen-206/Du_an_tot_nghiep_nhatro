@@ -1,0 +1,409 @@
+.ai-page {
+    padding: 30px;
+    background: #f6f7f9;
+    min-height: calc(100vh - 70px);
+}
+
+.ai-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.ai-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8b5e34;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+
+.ai-header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #222;
+}
+
+.ai-header p {
+    margin-top: 8px;
+    color: #777;
+}
+
+.ai-button {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 20px;
+    background: #222;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ai-button:hover {
+    opacity: .9;
+}
+
+.ai-button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+.ai-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.ai-stat {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+
+.ai-stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: #f1eee9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.ai-stat span {
+    display: block;
+    color: #777;
+    font-size: 13px;
+}
+
+.ai-stat strong {
+    display: block;
+    font-size: 24px;
+    margin-top: 4px;
+}
+
+.ai-online {
+    color: #198754;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.ai-status {
+    background: white;
+    padding: 15px 18px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.ai-status.success {
+    border-left: 4px solid #198754;
+}
+
+.ai-status.error {
+    border-left: 4px solid #dc3545;
+}
+
+.ai-status.loading {
+    border-left: 4px solid #d39e00;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.ai-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+
+.ai-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ai-card-header h2 {
+    margin: 0;
+}
+
+.ai-card-header p {
+    color: #777;
+    margin: 5px 0 0;
+}
+
+.result-count {
+    background: #f2f2f2;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+.ai-loading {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 50px;
+    color: #777;
+}
+
+.spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid #ddd;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================
+   EMPTY
+========================= */
+
+.ai-empty {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px;
+    color: #999;
+}
+
+.ai-empty i {
+    font-size: 45px;
+    margin-bottom: 10px;
+}
+
+.ai-empty h3 {
+    margin: 5px;
+}
+
+
+/* =========================
+   RESULT
+========================= */
+
+.ai-results {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.ai-result {
+    display: flex;
+    gap: 20px;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 20px;
+    transition: .2s;
+}
+
+.ai-result:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,.08);
+    transform: translateY(-1px);
+}
+
+
+/* SCORE */
+
+.ai-result-score {
+    width: 80px;
+    min-width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-result-score strong {
+    font-size: 24px;
+}
+
+.ai-result-score span {
+    font-size: 11px;
+}
+
+.ai-result-score.high {
+    background: #e7f7ed;
+    color: #198754;
+}
+
+.ai-result-score.medium {
+    background: #fff5d6;
+    color: #b77900;
+}
+
+.ai-result-score.low {
+    background: #f1f1f1;
+    color: #777;
+}
+
+
+/* MAIN */
+
+.ai-result-main {
+    flex: 1;
+}
+
+.ai-result-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-result-title h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.ai-level {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ai-level.high {
+    background: #e7f7ed;
+    color: #198754;
+}
+
+.ai-level.medium {
+    background: #fff5d6;
+    color: #b77900;
+}
+
+.ai-level.low {
+    background: #f1f1f1;
+    color: #777;
+}
+
+
+/* INFO */
+
+.ai-result-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 12px 0;
+    color: #777;
+    font-size: 13px;
+}
+
+.ai-result-info i {
+    margin-right: 4px;
+}
+
+
+/* DATA */
+
+.ai-result-data {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 35px;
+    padding: 15px 0;
+    border-top: 1px solid #eee;
+}
+
+.ai-result-data small {
+    display: block;
+    color: #999;
+    font-size: 11px;
+}
+
+.ai-result-data strong {
+    display: block;
+    margin-top: 3px;
+}
+
+
+/* AI ANALYSIS */
+
+.ai-analysis {
+    display: flex;
+    gap: 10px;
+    padding: 13px;
+    border-radius: 10px;
+    background: #f8f7f4;
+}
+
+.ai-analysis > i {
+    font-size: 18px;
+}
+
+.ai-analysis strong {
+    font-size: 13px;
+}
+
+.ai-analysis p {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 13px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+    .ai-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .ai-page {
+        padding: 15px;
+    }
+
+    .ai-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .ai-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-result {
+        flex-direction: column;
+    }
+
+}
