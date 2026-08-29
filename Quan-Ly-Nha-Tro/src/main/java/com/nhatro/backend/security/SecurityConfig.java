@@ -197,6 +197,24 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
+                        // Trang "Nhat ky hoat dong" cua Admin (chi doc).
+                        .requestMatchers(
+                                "/api/admin/nhat-ky/**"
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
+
+                        // Trang "Giao dich & hoa don" cua Admin (chi doc).
+                        .requestMatchers(
+                                "/api/admin/giao-dich/**"
+                        )
+                        .hasAnyAuthority(
+                                ADMIN,
+                                "ADMIN"
+                        )
+
                         // ===================== PUBLIC GET API =====================
                         .requestMatchers(
                                 HttpMethod.GET,
