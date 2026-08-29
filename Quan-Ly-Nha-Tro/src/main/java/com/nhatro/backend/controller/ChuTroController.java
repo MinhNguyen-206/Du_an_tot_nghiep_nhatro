@@ -477,9 +477,6 @@ public class ChuTroController {
     // FORM SỬA NHÀ TRỌ
     // =========================================================
 
-    // FIX: Transaction được giữ trong lúc truy cập
-    // nhaTro.getNguoiDung() khi spring.jpa.open-in-view=false
-    @Transactional
     @GetMapping("/properties/edit/{id}")
     public String editProperty(
             @PathVariable Integer id,
@@ -1193,11 +1190,11 @@ public class ChuTroController {
             HttpSession session
     ) {
 
-        // SecurityConfig đã bắt buộc /chu-tro/** phải có
-        // ROLE_CHU_TRO hoặc ROLE_ADMIN mới tới được đây.
-        //
-        // Không còn fallback âm thầm về tài khoản demo.
-
+        // SecurityConfig da bat buoc /chu-tro/** phai co ROLE_CHU_TRO hoac
+        // ROLE_ADMIN moi toi duoc day, nen auth o day luon la mot chu tro
+        // that su - KHONG con fallback am tham ve tai khoan demo nua.
+        // Neu roi vao truong hop nay (ly thuyet khong the xay ra vi Security
+        // da chan truoc), bao loi ro rang thay vi tra du lieu sai chu tro.
         Authentication auth =
                 SecurityContextHolder
                         .getContext()
@@ -1212,69 +1209,34 @@ public class ChuTroController {
                         : null;
 
         if (email == null) {
-
             throw new IllegalStateException(
-                    "Chưa xác thực được chủ trọ - phiên đăng nhập không hợp lệ"
+                    "Chua xac thuc duoc chu tro - phien dang nhap khong hop le"
             );
         }
-
 
         NguoiDung user =
                 nguoiDungService
                         .getByEmail(email)
                         .orElseThrow(
                                 () -> new IllegalStateException(
-                                        "Không tìm thấy tài khoản: " + email
+                                        "Khong tim thay tai khoan: " + email
                                 )
                         );
 
-
-        // Không kiểm tra cứng maVaiTro == 1/2 vì dữ liệu SQL có thể
-        // được cập nhật lại ID. SecurityConfig đã xác thực ROLE_CHU_TRO/ROLE_ADMIN,
-        // nên ở đây ưu tiên kiểm tra tên vai trò thực tế trong bảng VAI_TRO.
-        if (user.getVaiTro() == null) {
+        if (
+                user.getVaiTro() == null
+                        || (user.getVaiTro().getMaVaiTro() != 2
+                        && user.getVaiTro().getMaVaiTro() != 1)
+        ) {
             throw new IllegalStateException(
-                    "Tài khoản " + email + " chưa được gán vai trò."
+                    "Tai khoan " + email + " khong co quyen chu tro"
             );
         }
-
-        String roleName = user.getVaiTro().getTenVaiTro();
-        String normalizedRole = roleName == null
-                ? ""
-                : roleName.trim()
-                .toUpperCase(Locale.ROOT)
-                .replace('Đ', 'D')
-                .replace(' ', '_');
-
-        boolean isChuTro =
-                normalizedRole.contains("CHU_TRO")
-                        || normalizedRole.contains("CHU-TRO")
-                        || normalizedRole.contains("CHUTRO");
-
-        boolean isAdmin =
-                normalizedRole.contains("ADMIN")
-                        || normalizedRole.contains("QUAN_TRI")
-                        || normalizedRole.contains("QUAN-TRI");
-
-        // Giữ fallback theo ID cũ để tương thích database hiện tại.
-        Integer roleId = user.getVaiTro().getMaVaiTro();
-        isChuTro = isChuTro || Integer.valueOf(2).equals(roleId);
-        isAdmin = isAdmin || Integer.valueOf(1).equals(roleId);
-
-        if (!isChuTro && !isAdmin) {
-            throw new IllegalStateException(
-                    "Tài khoản " + email
-                            + " không có quyền Chủ trọ. Vai trò hiện tại: "
-                            + roleName
-            );
-        }
-
 
         session.setAttribute(
                 "landlordEmail",
                 user.getEmail()
         );
-
 
         return user;
     }
@@ -1437,239 +1399,19 @@ public class ChuTroController {
     // CÁC ROUTE KHÁC
     // =========================================================
 
-    @Transactional
     @GetMapping("/rooms")
     public String rooms(
             Model model,
             HttpSession session
     ) {
 
-        NguoiDung landlord = currentLandlord(session);
-
-        List<NhaTro> properties =
-                nhaTroService.getByNguoiDung(
-                        landlord.getMaNguoiDung()
-                );
-
-        List<Map<String, Object>> roomCards =
-                new ArrayList<>();
-
-        int totalRooms = 0;
-        int occupiedRooms = 0;
-
-        for (NhaTro property : properties) {
-
-            List<PhongTro> rooms =
-                    phongTroService.getByNhaTro(
-                            property.getMaNhaTro()
-                    );
-
-            for (PhongTro room : rooms) {
-
-                boolean available =
-                        room.getTrangThai() == null
-                                || Boolean.TRUE.equals(room.getTrangThai());
-
-                if (available) {
-                    // true = còn trống
-                } else {
-                    occupiedRooms++;
-                }
-
-                totalRooms++;
-
-                Map<String, Object> card =
-                        new LinkedHashMap<>();
-
-                card.put("id", room.getMaPhong());
-                card.put("name", room.getTenPhong());
-                card.put("propertyId", property.getMaNhaTro());
-                card.put("propertyName", property.getTenNhaTro());
-                card.put("price", room.getGiaPhong());
-                card.put("area", room.getDienTich());
-                card.put("roomType", room.getLoaiPhong());
-                card.put("maxPeople", room.getSoLuongNguoi());
-                card.put("available", available);
-                card.put("status", available ? "available" : "occupied");
-
-                roomCards.add(card);
-            }
-        }
-
-        model.addAttribute("userName", landlord.getHoTen());
-        model.addAttribute("userEmail", landlord.getEmail());
-        model.addAttribute("roomCards", roomCards);
-        model.addAttribute("roomProperties", properties);
-        model.addAttribute("roomTotal", totalRooms);
-        model.addAttribute("roomOccupied", occupiedRooms);
         model.addAttribute(
-                "roomAvailable",
-                Math.max(0, totalRooms - occupiedRooms)
+                "userName",
+                currentLandlord(session)
+                        .getHoTen()
         );
 
         return "chu-tro/rooms";
-    }
-
-
-    // =========================================================
-    // THÊM PHÒNG
-    // =========================================================
-
-    @PostMapping("/rooms/save")
-    @Transactional
-    public String saveRoom(
-
-            @RequestParam("maNhaTro")
-            Integer maNhaTro,
-
-            @RequestParam("tenPhong")
-            String tenPhong,
-
-            @RequestParam(
-                    value = "giaPhong",
-                    required = false
-            )
-            BigDecimal giaPhong,
-
-            @RequestParam(
-                    value = "dienTich",
-                    required = false
-            )
-            BigDecimal dienTich,
-
-            @RequestParam(
-                    value = "loaiPhong",
-                    required = false
-            )
-            String loaiPhong,
-
-            @RequestParam(
-                    value = "soLuongNguoi",
-                    required = false
-            )
-            Integer soLuongNguoi,
-
-            @RequestParam(
-                    value = "giaDien",
-                    required = false
-            )
-            BigDecimal giaDien,
-
-            @RequestParam(
-                    value = "giaNuoc",
-                    required = false
-            )
-            BigDecimal giaNuoc,
-
-            @RequestParam(
-                    value = "giaGuiXe",
-                    required = false
-            )
-            BigDecimal giaGuiXe,
-
-            @RequestParam(
-                    value = "giaInternet",
-                    required = false
-            )
-            BigDecimal giaInternet,
-
-            @RequestParam(
-                    value = "trangThai",
-                    defaultValue = "true"
-            )
-            Boolean trangThai,
-
-            HttpSession session,
-
-            Model model
-    ) {
-
-        NguoiDung landlord = currentLandlord(session);
-
-        try {
-
-            phongTroService.createForOwner(
-                    maNhaTro,
-                    tenPhong,
-                    dienTich,
-                    loaiPhong,
-                    soLuongNguoi,
-                    giaPhong,
-                    giaDien,
-                    giaNuoc,
-                    giaGuiXe,
-                    giaInternet,
-                    trangThai,
-                    landlord
-            );
-
-            return "redirect:/chu-tro/rooms?success=1";
-
-        } catch (IllegalArgumentException e) {
-
-            // Hiển thị lại đúng trang để người dùng biết lý do.
-            List<NhaTro> properties =
-                    nhaTroService.getByNguoiDung(
-                            landlord.getMaNguoiDung()
-                    );
-
-            List<Map<String, Object>> roomCards =
-                    new ArrayList<>();
-
-            int totalRooms = 0;
-            int occupiedRooms = 0;
-
-            for (NhaTro property : properties) {
-
-                List<PhongTro> rooms =
-                        phongTroService.getByNhaTro(
-                                property.getMaNhaTro()
-                        );
-
-                for (PhongTro room : rooms) {
-
-                    boolean available =
-                            room.getTrangThai() == null
-                                    || Boolean.TRUE.equals(room.getTrangThai());
-
-                    if (!available) {
-                        occupiedRooms++;
-                    }
-
-                    totalRooms++;
-
-                    Map<String, Object> card =
-                            new LinkedHashMap<>();
-
-                    card.put("id", room.getMaPhong());
-                    card.put("name", room.getTenPhong());
-                    card.put("propertyId", property.getMaNhaTro());
-                    card.put("propertyName", property.getTenNhaTro());
-                    card.put("price", room.getGiaPhong());
-                    card.put("area", room.getDienTich());
-                    card.put("roomType", room.getLoaiPhong());
-                    card.put("maxPeople", room.getSoLuongNguoi());
-                    card.put("available", available);
-                    card.put("status", available ? "available" : "occupied");
-
-                    roomCards.add(card);
-                }
-            }
-
-            model.addAttribute("userName", landlord.getHoTen());
-            model.addAttribute("userEmail", landlord.getEmail());
-            model.addAttribute("roomCards", roomCards);
-            model.addAttribute("roomProperties", properties);
-            model.addAttribute("roomTotal", totalRooms);
-            model.addAttribute("roomOccupied", occupiedRooms);
-            model.addAttribute(
-                    "roomAvailable",
-                    Math.max(0, totalRooms - occupiedRooms)
-            );
-            model.addAttribute("roomError", e.getMessage());
-
-            return "chu-tro/rooms";
-        }
     }
 
 
@@ -1769,37 +1511,17 @@ public class ChuTroController {
     }
 
 
-    @Transactional
     @GetMapping("/appointments")
     public String appointments(
             Model model,
             HttpSession session
     ) {
 
-        NguoiDung landlord = currentLandlord(session);
-
         model.addAttribute(
                 "userName",
-                landlord.getHoTen()
+                currentLandlord(session)
+                        .getHoTen()
         );
-        model.addAttribute(
-                "userEmail",
-                landlord.getEmail()
-        );
-        List<com.nhatro.backend.dto.LichHenChuTroDto> appointments =
-                lichHenService.getByChuTro(landlord.getMaNguoiDung());
-
-        long pendingAppointments = appointments.stream()
-                .filter(a -> "Đang xử lý".equals(a.getTrangThai()))
-                .count();
-        long confirmedAppointments = appointments.stream()
-                .filter(a -> "Đã xác nhận".equals(a.getTrangThai()))
-                .count();
-
-        model.addAttribute("appointments", appointments);
-        model.addAttribute("appointmentCount", appointments == null ? 0 : appointments.size());
-        model.addAttribute("pendingAppointments", pendingAppointments);
-        model.addAttribute("confirmedAppointments", confirmedAppointments);
 
         return "chu-tro/appointments";
     }

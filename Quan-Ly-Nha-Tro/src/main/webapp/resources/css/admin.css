@@ -815,6 +815,10 @@ textarea {
 .wait{ background: #fef3c7; color: #d97706; }
 .bad { background: #fee2e2; color: #dc2626; }
 .info{ background: #dbeafe; color: #2563eb; }
+<<<<<<< HEAD
+.muted{ background: #f1f5f9; color: #64748b; }
+=======
+>>>>>>> origin/main
 
 
 /* =========================================================
@@ -1960,4 +1964,205 @@ body {
 .card.management-panel {
     padding: 0;
     overflow: hidden;
+<<<<<<< HEAD
 }
+
+/* =========================================================
+   USER MANAGEMENT (userManagement.jsp)
+   ========================================================= */
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-cell img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.user-cell .user-cell-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 13px;
+}
+
+.user-cell .user-cell-sub {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.violation-count {
+    font-weight: 700;
+}
+
+.violation-count.zero { color: #94a3b8; }
+.violation-count.some { color: #d97706; }
+.violation-count.many { color: #dc2626; }
+
+.role-select-inline {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-size: 12px;
+    background: #f8fafc;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+.table-empty-row td {
+    text-align: center;
+    color: #94a3b8;
+    padding: 30px 10px !important;
+}
+
+.um-toolbar-right {
+    margin-left: auto;
+    display: flex;
+    gap: 9px;
+}
+
+.um-status {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0 0 10px;
+}
+
+.um-status.error { color: #dc2626; }
+
+/* ---- Modal ---- */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.modal-backdrop.show {
+    display: flex;
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-head h3 {
+    margin: 0;
+    font-size: 15px;
+    color: #0f172a;
+}
+
+.modal-close {
+    border: none;
+    background: #f1f5f9;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.modal-close:hover { background: #e2e8f0; }
+
+.modal-body {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 20px;
+    border-top: 1px solid #f0f0f0;
+    background: #f8fafc;
+}
+
+.form-row {
+    margin-bottom: 14px;
+}
+
+.form-row label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.form-row .input,
+.form-row .select {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.form-row small {
+    display: block;
+    margin-top: 4px;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 18px;
+    margin-bottom: 16px;
+}
+
+.detail-grid .full { grid-column: 1 / -1; }
+
+.detail-item span.label {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 3px;
+}
+
+.detail-item span.value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.form-error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+    padding: 9px 12px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    display: none;
+}
+
+.form-error.show { display: block; }
+=======
+}
+>>>>>>> origin/main

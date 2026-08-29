@@ -82,9 +82,12 @@ public class PhongChiTietService {
         NhaTro nhaTro = phong.getNhaTro();
         NguoiDung chuTro = nhaTro != null ? nhaTro.getNguoiDung() : null;
 
-        // Tin đăng còn hiệu lực mới nhất của phòng này (để lấy tiêu đề/nội dung/ảnh)
+        // Tin đăng còn hiệu lực mới nhất của phòng này (để lấy tiêu đề/nội dung/ảnh).
+        // Chỉ lấy bài đã được Admin DUYỆT; bài trangThaiDuyet=null (tạo trước khi
+        // có tính năng kiểm duyệt) vẫn coi là hợp lệ để không ẩn mất dữ liệu cũ.
         DangTin dangTin = dangTinRepository.findByPhong_MaPhong(maPhong).stream()
                 .filter(dt -> Boolean.TRUE.equals(dt.getTrangThai()))
+                .filter(dt -> dt.getTrangThaiDuyet() == null || "DA_DUYET".equals(dt.getTrangThaiDuyet()))
                 .max(Comparator.comparing(DangTin::getNgayDang, Comparator.nullsFirst(Comparator.naturalOrder())))
                 .orElse(null);
 

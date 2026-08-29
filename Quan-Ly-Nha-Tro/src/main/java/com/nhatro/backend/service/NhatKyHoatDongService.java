@@ -2,6 +2,8 @@ package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.NhatKyHoatDong;
 import com.nhatro.backend.repository.NhatKyHoatDongRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +37,11 @@ public class NhatKyHoatDongService {
     public NhatKyHoatDong create(NhatKyHoatDong nhatKy) {
         Objects.requireNonNull(nhatKy, "nhatKy must not be null");
         return nhatKyRepository.save(nhatKy);
+    }
+
+    /** Lấy tất cả nhật ký, phân trang, mới nhất trước */
+    public Page<NhatKyHoatDong> getAllPaged(Pageable pageable) {
+        return nhatKyRepository.findAllByOrderByThoiGianDesc(pageable);
     }
 
     public Optional<NhatKyHoatDong> update(Integer id, NhatKyHoatDong duLieuMoi) {

@@ -46,7 +46,7 @@ public class YeuCauThueService {
 
     public List<YeuCauThue> getByChuTro(Integer maChuTro) {
         Objects.requireNonNull(maChuTro, "maChuTro must not be null");
-        return yeuCauThueRepository.findByChuTroWithChiTiet(maChuTro);
+        return yeuCauThueRepository.findByPhong_NhaTro_NguoiDung_MaNguoiDungOrderByNgayGuiDesc(maChuTro);
     }
 
     public Optional<YeuCauThue> duyet(Integer id) {

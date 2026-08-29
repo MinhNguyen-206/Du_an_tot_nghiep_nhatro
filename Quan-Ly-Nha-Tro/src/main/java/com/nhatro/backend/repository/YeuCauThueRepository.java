@@ -15,21 +15,14 @@ public interface YeuCauThueRepository extends JpaRepository<YeuCauThue, Integer>
     List<YeuCauThue> findByNguoiThue_MaNguoiDung(Integer maNguoiDung);
     List<YeuCauThue> findByPhong_MaPhong(Integer maPhong);
     List<YeuCauThue> findByTrangThai(String trangThai);
-    @Query("SELECT y FROM YeuCauThue y " +
-            "JOIN FETCH y.phong p " +
-            "JOIN FETCH p.nhaTro n " +
-            "JOIN FETCH n.nguoiDung chuTro " +
-            "JOIN FETCH y.nguoiThue " +
-            "WHERE chuTro.maNguoiDung = :maChuTro " +
-            "ORDER BY y.ngayGui DESC")
-    List<YeuCauThue> findByChuTroWithChiTiet(@Param("maChuTro") Integer maChuTro);
+    List<YeuCauThue> findByPhong_NhaTro_NguoiDung_MaNguoiDungOrderByNgayGuiDesc(Integer maChuTro);
 
 
     @Query("SELECT y FROM YeuCauThue y " +
-            "JOIN FETCH y.phong p " +
-            "JOIN FETCH p.nhaTro n " +
-            "JOIN FETCH n.nguoiDung " +
-            "JOIN FETCH y.nguoiThue " +
-            "WHERE y.maYeuCau = :id")
+           "JOIN FETCH y.phong p " +
+           "JOIN FETCH p.nhaTro n " +
+           "JOIN FETCH n.nguoiDung " +
+           "JOIN FETCH y.nguoiThue " +
+           "WHERE y.maYeuCau = :id")
     Optional<YeuCauThue> findByIdWithChiTiet(@Param("id") Integer id);
 }

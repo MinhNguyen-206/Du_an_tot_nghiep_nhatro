@@ -32,15 +32,43 @@ public class XacThucEkycService {
         return ekycRepository.findByNguoiDung_MaNguoiDung(maNguoiDung);
     }
 
+    /** Lấy danh sách hồ sơ chờ duyệt */
+    public List<XacThucEkyc> getPending() {
+        return ekycRepository.findAllByOrderByNgayGuiDesc()
+                .stream()
+                .filter(e -> "CHO_DUYET".equals(e.getTrangThai()))
+                .toList();
+    }
+
+    public long countPending() {
+        return ekycRepository.findAllByOrderByNgayGuiDesc()
+                .stream()
+                .filter(e -> "CHO_DUYET".equals(e.getTrangThai()))
+                .count();
+    }
+
     public XacThucEkyc create(XacThucEkyc ekyc) {
         Objects.requireNonNull(ekyc, "ekyc must not be null");
         return ekycRepository.save(ekyc);
     }
 
+    /** Admin xác minh eKYC */
     public Optional<XacThucEkyc> duyet(Integer id) {
         Objects.requireNonNull(id, "id must not be null");
         return ekycRepository.findById(id).map(e -> {
-            e.setTrangThai(true);
+            e.setTrangThai("DA_DUYET");
+            e.setLyDoTuChoi(null);
+            e.setNgayDuyet(java.time.LocalDateTime.now());
+            return ekycRepository.save(e);
+        });
+    }
+
+    /** Admin từ chối eKYC với lý do */
+    public Optional<XacThucEkyc> tuChoi(Integer id, String lyDo) {
+        Objects.requireNonNull(id, "id must not be null");
+        return ekycRepository.findById(id).map(e -> {
+            e.setTrangThai("TU_CHOI");
+            e.setLyDoTuChoi(lyDo);
             e.setNgayDuyet(java.time.LocalDateTime.now());
             return ekycRepository.save(e);
         });

@@ -2,6 +2,8 @@ package com.nhatro.backend.service;
 
 import com.nhatro.backend.entity.BaoCao;
 import com.nhatro.backend.repository.BaoCaoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +37,26 @@ public class BaoCaoService {
     public List<BaoCao> getByTrangThai(String trangThai) {
         Objects.requireNonNull(trangThai, "trangThai must not be null");
         return baoCaoRepository.findByTrangThai(trangThai);
+    }
+
+    /** Lấy tất cả báo cáo, sắp xếp mới nhất trước */
+    public Page<BaoCao> getAllPaged(Pageable pageable) {
+        return baoCaoRepository.findAll(pageable);
+    }
+
+    public Page<BaoCao> getByTrangThaiPaged(String trangThai, Pageable pageable) {
+        Objects.requireNonNull(trangThai, "trangThai must not be null");
+        return baoCaoRepository.findByTrangThai(trangThai, pageable);
+    }
+
+    /** Admin cập nhật trạng thái xử lý báo cáo */
+    public Optional<BaoCao> capNhatTrangThai(Integer id, String trangThai) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(trangThai, "trangThai must not be null");
+        return baoCaoRepository.findById(id).map(bc -> {
+            bc.setTrangThai(trangThai);
+            return baoCaoRepository.save(bc);
+        });
     }
 
     public BaoCao create(BaoCao baoCao) {
