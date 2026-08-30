@@ -815,10 +815,7 @@ textarea {
 .wait{ background: #fef3c7; color: #d97706; }
 .bad { background: #fee2e2; color: #dc2626; }
 .info{ background: #dbeafe; color: #2563eb; }
-<<<<<<< HEAD
 .muted{ background: #f1f5f9; color: #64748b; }
-=======
->>>>>>> origin/main
 
 
 /* =========================================================
@@ -1964,7 +1961,6 @@ body {
 .card.management-panel {
     padding: 0;
     overflow: hidden;
-<<<<<<< HEAD
 }
 
 /* =========================================================
@@ -2163,6 +2159,3 @@ body {
 }
 
 .form-error.show { display: block; }
-=======
-}
->>>>>>> origin/main
