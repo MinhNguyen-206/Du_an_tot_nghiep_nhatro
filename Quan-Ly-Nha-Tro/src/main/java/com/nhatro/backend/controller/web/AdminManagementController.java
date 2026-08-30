@@ -28,11 +28,6 @@ public class AdminManagementController {
         return management(model, "Hợp đồng", "Quản lý hợp đồng điện tử", "/api/admin/management/contracts", "contracts");
     }
 
-    @GetMapping("/payments")
-    public String payments(Model model) {
-        return management(model, "Thanh toán", "Theo dõi giao dịch thanh toán", "/api/admin/management/payments", "payments");
-    }
-
     @GetMapping("/reports")
     public String reports(Model model) {
         return management(model, "Báo cáo vi phạm", "Kiểm tra và xử lý báo cáo từ người dùng", "/api/admin/management/reports", "reports");

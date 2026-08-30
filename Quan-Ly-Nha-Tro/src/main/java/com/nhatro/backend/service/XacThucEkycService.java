@@ -47,6 +47,13 @@ public class XacThucEkycService {
                 .count();
     }
 
+    /** Đếm hồ sơ theo trạng thái bất kỳ */
+    public long countByTrangThai(String trangThai) {
+        return ekycRepository.findAll().stream()
+                .filter(e -> trangThai.equals(e.getTrangThai()))
+                .count();
+    }
+
     public XacThucEkyc create(XacThucEkyc ekyc) {
         Objects.requireNonNull(ekyc, "ekyc must not be null");
         return ekycRepository.save(ekyc);
@@ -74,6 +81,17 @@ public class XacThucEkycService {
         });
     }
 
+    /** Admin đặt lại hồ sơ về trạng thái chờ duyệt */
+    public Optional<XacThucEkyc> datLaiChoDuyet(Integer id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return ekycRepository.findById(id).map(e -> {
+            e.setTrangThai("CHO_DUYET");
+            e.setLyDoTuChoi(null);
+            e.setNgayDuyet(null);
+            return ekycRepository.save(e);
+        });
+    }
+
     public boolean delete(Integer id) {
         Objects.requireNonNull(id, "id must not be null");
         if (ekycRepository.existsById(id)) {
@@ -83,3 +101,4 @@ public class XacThucEkycService {
         return false;
     }
 }
+
