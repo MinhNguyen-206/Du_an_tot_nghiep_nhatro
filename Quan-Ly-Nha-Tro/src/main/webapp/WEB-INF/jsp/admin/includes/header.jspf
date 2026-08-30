@@ -168,29 +168,16 @@
        href="${pageContext.request.contextPath}/admin/users">
         <i class="bi bi-people"></i><span>Người dùng</span>
     </a>
-    <a class="side-link <%= currentPath.equals("/admin/complaints") ? "active" : "" %>"
-       href="${pageContext.request.contextPath}/admin/complaints">
-        <i class="bi bi-flag"></i><span>Khiếu nại</span>
-        <span class="badge-menu">5</span>
+    <a class="side-link <%= currentPath.equals("/admin/reports") ? "active" : "" %>"
+       href="${pageContext.request.contextPath}/admin/reports">
+        <i class="bi bi-flag"></i><span>Khiếu nại &amp; báo cáo vi phạm</span>
     </a>
     <a class="side-link <%= currentPath.equals("/admin/categories") ? "active" : "" %>"
        href="${pageContext.request.contextPath}/admin/categories">
         <i class="bi bi-tags"></i><span>Danh mục</span>
     </a>
-    <a class="side-link <%= currentPath.equals("/admin/blog") ? "active" : "" %>"
-       href="${pageContext.request.contextPath}/admin/blog">
-        <i class="bi bi-newspaper"></i><span>Blog</span>
-    </a>
 
     <div class="nav-title">Tài chính & hệ thống</div>
-    <a class="side-link <%= currentPath.equals("/admin/statistics") ? "active" : "" %>"
-       href="${pageContext.request.contextPath}/admin/statistics">
-        <i class="bi bi-bar-chart"></i><span>Thống kê</span>
-    </a>
-    <a class="side-link <%= currentPath.equals("/admin/revenue") ? "active" : "" %>"
-       href="${pageContext.request.contextPath}/admin/revenue">
-        <i class="bi bi-cash-stack"></i><span>Doanh thu</span>
-    </a>
     <a class="side-link <%= currentPath.equals("/admin/transactions") ? "active" : "" %>"
        href="${pageContext.request.contextPath}/admin/transactions">
         <i class="bi bi-receipt"></i><span>Giao dịch & hóa đơn</span>
@@ -202,10 +189,6 @@
     <a class="side-link <%= currentPath.equals("/admin/notifications") ? "active" : "" %>"
        href="${pageContext.request.contextPath}/admin/notifications">
         <i class="bi bi-bell"></i><span>Thông báo</span>
-    </a>
-    <a class="side-link <%= currentPath.equals("/admin/activity-log") ? "active" : "" %>"
-       href="${pageContext.request.contextPath}/admin/activity-log">
-        <i class="bi bi-clipboard-data"></i><span>Audit Log</span>
     </a>
 
     <div class="nav-title">AI Admin</div>

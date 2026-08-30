@@ -20,7 +20,7 @@ public class XacThucEkyc {
     @Column(name = "maEKYC")
     private Integer maEKYC;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "maNguoiDung", nullable = false)
     private NguoiDung nguoiDung;
 

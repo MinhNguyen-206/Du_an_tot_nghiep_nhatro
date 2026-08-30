@@ -6,9 +6,7 @@ WEB-INF/jsp/admin/
 ├── postApproval.jsp
 ├── ekycApproval.jsp
 ├── userManagement.jsp
-├── complaintManagement.jsp
 ├── categoryManagement.jsp
-├── blogManagement.jsp
 ├── statistics.jsp
 ├── revenue.jsp
 ├── transactions.jsp

@@ -58,4 +58,9 @@ public class GoiDichVuService {
         }
         return false;
     }
+
+    public GoiDichVu save(GoiDichVu goi) {
+        Objects.requireNonNull(goi, "goi must not be null");
+        return goiDichVuRepository.save(goi);
+    }
 }

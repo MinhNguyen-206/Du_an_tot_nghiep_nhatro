@@ -1,5 +1,6 @@
 package com.nhatro.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "DANG_KY_GOI_CHU_TRO")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,11 +22,11 @@ public class DangKyGoiChuTro {
     @Column(name = "maDangKy")
     private Integer maDangKy;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "maChuTro", nullable = false)
     private NguoiDung chuTro;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "maGoi", nullable = false)
     private GoiDichVu goi;
 

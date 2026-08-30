@@ -71,24 +71,10 @@ public class AdminDashboardController {
         return "admin/userManagement";
     }
 
-    @GetMapping("/complaints")
-    public String complaintManagement() {
-
-        return "admin/complaintManagement";
-    }
-
-
     @GetMapping("/categories")
     public String categoryManagement() {
 
         return "admin/categoryManagement";
-    }
-
-
-    @GetMapping("/blog")
-    public String blogManagement() {
-
-        return "admin/blogManagement";
     }
 
 

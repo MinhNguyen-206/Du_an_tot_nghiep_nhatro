@@ -1,0 +1,173 @@
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java
+index b345f78..76b0599 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminDashboardController.java
+@@ -71,13 +71,6 @@ public class AdminDashboardController {
+         return "admin/userManagement";
+     }
+ 
+-    @GetMapping("/complaints")
+-    public String complaintManagement() {
+-
+-        return "admin/complaintManagement";
+-    }
+-
+-
+     @GetMapping("/categories")
+     public String categoryManagement() {
+ 
+@@ -85,13 +78,6 @@ public class AdminDashboardController {
+     }
+ 
+ 
+-    @GetMapping("/blog")
+-    public String blogManagement() {
+-
+-        return "admin/blogManagement";
+-    }
+-
+-
+     // =====================================================
+     // THỐNG KÊ
+     // =====================================================
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminManagementApiController.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminManagementApiController.java
+index 44fcd09..d5fae64 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminManagementApiController.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/AdminManagementApiController.java
+@@ -3,7 +3,6 @@ package com.nhatro.backend.controller;
+ import com.nhatro.backend.service.BaoCaoService;
+ import com.nhatro.backend.service.BoDieuKhienAiService;
+ import com.nhatro.backend.service.DangTinService;
+-import com.nhatro.backend.service.GiaoDichThanhToanService;
+ import com.nhatro.backend.service.HopDongDienTuService;
+ import com.nhatro.backend.service.LichHenService;
+ import com.nhatro.backend.service.NguoiDungService;
+@@ -24,7 +23,6 @@ public class AdminManagementApiController {
+     private final DangTinService dangTinService;
+     private final LichHenService lichHenService;
+     private final HopDongDienTuService hopDongDienTuService;
+-    private final GiaoDichThanhToanService giaoDichThanhToanService;
+     private final BaoCaoService baoCaoService;
+     private final BoDieuKhienAiService boDieuKhienAiService;
+ 
+@@ -32,14 +30,12 @@ public class AdminManagementApiController {
+                                         DangTinService dangTinService,
+                                         LichHenService lichHenService,
+                                         HopDongDienTuService hopDongDienTuService,
+-                                        GiaoDichThanhToanService giaoDichThanhToanService,
+                                         BaoCaoService baoCaoService,
+                                         BoDieuKhienAiService boDieuKhienAiService) {
+         this.nguoiDungService = nguoiDungService;
+         this.dangTinService = dangTinService;
+         this.lichHenService = lichHenService;
+         this.hopDongDienTuService = hopDongDienTuService;
+-        this.giaoDichThanhToanService = giaoDichThanhToanService;
+         this.baoCaoService = baoCaoService;
+         this.boDieuKhienAiService = boDieuKhienAiService;
+     }
+@@ -79,14 +75,6 @@ public class AdminManagementApiController {
+                 "trangThai", contract.getTrangThai())).toList();
+     }
+ 
+-    @GetMapping("/payments")
+-    @Transactional(readOnly = true)
+-    public List<Map<String, Object>> payments() {
+-        return giaoDichThanhToanService.getAll().stream().map(payment -> row(
+-                "maGiaoDich", payment.getMaGiaoDich(), "nganHang", payment.getNganHang(),
+-                "ngayGiaoDich", payment.getNgayGiaoDich(), "trangThai", payment.getTrangThai())).toList();
+-    }
+-
+     @GetMapping("/reports")
+     @Transactional(readOnly = true)
+     public List<Map<String, Object>> reports() {
+diff --git a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java
+index d2890aa..24b1a3a 100644
+--- a/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java
++++ b/Quan-Ly-Nha-Tro/src/main/java/com/nhatro/backend/controller/web/AdminManagementController.java
+@@ -28,11 +28,6 @@ public class AdminManagementController {
+         return management(model, "Hợp đồng", "Quản lý hợp đồng điện tử", "/api/admin/management/contracts", "contracts");
+     }
+ 
+-    @GetMapping("/payments")
+-    public String payments(Model model) {
+-        return management(model, "Thanh toán", "Theo dõi giao dịch thanh toán", "/api/admin/management/payments", "payments");
+-    }
+-
+     @GetMapping("/reports")
+     public String reports(Model model) {
+         return management(model, "Báo cáo vi phạm", "Kiểm tra và xử lý báo cáo từ người dùng", "/api/admin/management/reports", "reports");
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/README.md b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/README.md
+index 45ccdc3..2ff7efb 100644
+--- a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/README.md
++++ b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/README.md
+@@ -6,9 +6,7 @@ WEB-INF/jsp/admin/
+ ├── postApproval.jsp
+ ├── ekycApproval.jsp
+ ├── userManagement.jsp
+-├── complaintManagement.jsp
+ ├── categoryManagement.jsp
+-├── blogManagement.jsp
+ ├── statistics.jsp
+ ├── revenue.jsp
+ ├── transactions.jsp
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/blogManagement.jsp b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/blogManagement.jsp
+deleted file mode 100644
+index 31d6240..0000000
+--- a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/blogManagement.jsp
++++ /dev/null
+@@ -1,11 +0,0 @@
+-<%@ page pageEncoding="UTF-8" contentType="text/html;charset=UTF-8" language="java" %>
+-<%@ include file="includes/header.jspf" %>
+-<div class="page-head"><div><h1>Quản lý Blog</h1><p>Giao diện demo — dữ liệu hiện tại là mock, sẵn sàng nối Controller / Service / JPA / SQL.</p></div></div>
+-
+-<div class="card"><div class="page-head"><div><h1 style="font-size:18px">Bài viết</h1><p>Quản lý nội dung chia sẻ kinh nghiệm thuê trọ.</p></div><button class="btn btn-primary">+ Viết bài mới</button></div>
+-<table class="table"><tr><th>Tiêu đề</th><th>Tác giả</th><th>Ngày</th><th>Trạng thái</th><th></th></tr>
+-<tr><td>5 lưu ý khi thuê phòng trọ</td><td>Admin</td><td>18/08/2026</td><td><span class="pill ok">Đã xuất bản</span></td><td><button class="btn btn-light">Sửa</button></td></tr>
+-<tr><td>Cách kiểm tra phòng trước khi thuê</td><td>Admin</td><td>15/08/2026</td><td><span class="pill wait">Bản nháp</span></td><td><button class="btn btn-light">Chỉnh sửa</button></td></tr>
+-</table></div>
+-
+-<%@ include file="includes/footer.jspf" %>
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/complaintManagement.jsp b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/complaintManagement.jsp
+deleted file mode 100644
+index 0b29879..0000000
+--- a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/complaintManagement.jsp
++++ /dev/null
+@@ -1,11 +0,0 @@
+-<%@ page pageEncoding="UTF-8" contentType="text/html;charset=UTF-8" language="java" %>
+-<%@ include file="includes/header.jspf" %>
+-<div class="page-head"><div><h1>Khiếu nại & báo cáo vi phạm</h1><p>Giao diện demo — dữ liệu hiện tại là mock, sẵn sàng nối Controller / Service / JPA / SQL.</p></div></div>
+-
+-<div class="cards"><div class="stat"><div class="icon"><i class="bi bi-flag"></i></div><h3>5</h3><p>Ticket mới</p></div><div class="stat"><div class="icon"><i class="bi bi-hourglass"></i></div><h3>8</h3><p>Đang xử lý</p></div><div class="stat"><div class="icon"><i class="bi bi-check-circle"></i></div><h3>42</h3><p>Đã giải quyết</p></div><div class="stat"><div class="icon"><i class="bi bi-exclamation-triangle"></i></div><h3>3</h3><p>Mức độ nghiêm trọng cao</p></div></div>
+-<div class="card"><table class="table"><tr><th>Ticket</th><th>Người báo cáo</th><th>Nội dung</th><th>Mức độ</th><th>Trạng thái</th><th>Thao tác</th></tr>
+-<tr><td>#TK001</td><td>Nguyễn A</td><td>Tin đăng có dấu hiệu lừa đảo</td><td><span class="pill bad">Cao</span></td><td><span class="pill wait">Mới</span></td><td><button class="btn btn-primary">Xử lý</button></td></tr>
+-<tr><td>#TK002</td><td>Trần B</td><td>Thông tin phòng không đúng</td><td><span class="pill wait">Trung bình</span></td><td><span class="pill info">Đang xử lý</span></td><td><button class="btn btn-light">Xem</button></td></tr>
+-</table></div>
+-
+-<%@ include file="includes/footer.jspf" %>
+diff --git a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/includes/header.jspf b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/includes/header.jspf
+index 747a2a8..2812925 100644
+--- a/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/includes/header.jspf
++++ b/Quan-Ly-Nha-Tro/src/main/webapp/WEB-INF/jsp/admin/includes/header.jspf
+@@ -168,19 +168,14 @@
+        href="${pageContext.request.contextPath}/admin/users">
+         <i class="bi bi-people"></i><span>Người dùng</span>
+     </a>
+-    <a class="side-link <%= currentPath.equals("/admin/complaints") ? "active" : "" %>"
+-       href="${pageContext.request.contextPath}/admin/complaints">
+-        <i class="bi bi-flag"></i><span>Khiếu nại</span>
+-        <span class="badge-menu">5</span>
++    <a class="side-link <%= currentPath.equals("/admin/reports") ? "active" : "" %>"
++       href="${pageContext.request.contextPath}/admin/reports">
++        <i class="bi bi-flag"></i><span>Khiếu nại &amp; báo cáo vi phạm</span>
+     </a>
+     <a class="side-link <%= currentPath.equals("/admin/categories") ? "active" : "" %>"
+        href="${pageContext.request.contextPath}/admin/categories">
+         <i class="bi bi-tags"></i><span>Danh mục</span>
+     </a>
+-    <a class="side-link <%= currentPath.equals("/admin/blog") ? "active" : "" %>"
+-       href="${pageContext.request.contextPath}/admin/blog">
+-        <i class="bi bi-newspaper"></i><span>Blog</span>
+-    </a>
+ 
+     <div class="nav-title">Tài chính & hệ thống</div>
+     <a class="side-link <%= currentPath.equals("/admin/statistics") ? "active" : "" %>"

@@ -3,7 +3,6 @@ package com.nhatro.backend.controller;
 import com.nhatro.backend.service.BaoCaoService;
 import com.nhatro.backend.service.BoDieuKhienAiService;
 import com.nhatro.backend.service.DangTinService;
-import com.nhatro.backend.service.GiaoDichThanhToanService;
 import com.nhatro.backend.service.HopDongDienTuService;
 import com.nhatro.backend.service.LichHenService;
 import com.nhatro.backend.service.NguoiDungService;
@@ -24,7 +23,6 @@ public class AdminManagementApiController {
     private final DangTinService dangTinService;
     private final LichHenService lichHenService;
     private final HopDongDienTuService hopDongDienTuService;
-    private final GiaoDichThanhToanService giaoDichThanhToanService;
     private final BaoCaoService baoCaoService;
     private final BoDieuKhienAiService boDieuKhienAiService;
 
@@ -32,14 +30,12 @@ public class AdminManagementApiController {
                                         DangTinService dangTinService,
                                         LichHenService lichHenService,
                                         HopDongDienTuService hopDongDienTuService,
-                                        GiaoDichThanhToanService giaoDichThanhToanService,
                                         BaoCaoService baoCaoService,
                                         BoDieuKhienAiService boDieuKhienAiService) {
         this.nguoiDungService = nguoiDungService;
         this.dangTinService = dangTinService;
         this.lichHenService = lichHenService;
         this.hopDongDienTuService = hopDongDienTuService;
-        this.giaoDichThanhToanService = giaoDichThanhToanService;
         this.baoCaoService = baoCaoService;
         this.boDieuKhienAiService = boDieuKhienAiService;
     }
@@ -77,14 +73,6 @@ public class AdminManagementApiController {
                 "maHopDong", contract.getMaHopDong(), "ngayBatDau", contract.getNgayBatDau(),
                 "ngayKetThuc", contract.getNgayKetThuc(), "giaThue", contract.getGiaThue(),
                 "trangThai", contract.getTrangThai())).toList();
-    }
-
-    @GetMapping("/payments")
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> payments() {
-        return giaoDichThanhToanService.getAll().stream().map(payment -> row(
-                "maGiaoDich", payment.getMaGiaoDich(), "nganHang", payment.getNganHang(),
-                "ngayGiaoDich", payment.getNgayGiaoDich(), "trangThai", payment.getTrangThai())).toList();
     }
 
     @GetMapping("/reports")

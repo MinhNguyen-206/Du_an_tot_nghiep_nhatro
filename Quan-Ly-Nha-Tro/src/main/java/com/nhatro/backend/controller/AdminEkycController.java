@@ -29,14 +29,21 @@ public class AdminEkycController {
     @GetMapping
     public ResponseEntity<Page<XacThucEkyc>> danhSach(
             @RequestParam(value = "trangThai", required = false) String trangThai,
+            @RequestParam(value = "q", required = false) String tuKhoa,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<XacThucEkyc> all = (trangThai == null || trangThai.isBlank())
-                ? ekycService.getAll()
-                : ekycService.getAll().stream()
-                    .filter(e -> trangThai.equals(e.getTrangThai()))
-                    .toList();
+        List<XacThucEkyc> all = ekycService.getAll().stream()
+                .filter(e -> trangThai == null || trangThai.isBlank() || trangThai.equals(e.getTrangThai()))
+                .filter(e -> {
+                    if (tuKhoa == null || tuKhoa.isBlank()) return true;
+                    String kw = tuKhoa.toLowerCase();
+                    String hoTen = e.getNguoiDung() != null && e.getNguoiDung().getHoTen() != null
+                            ? e.getNguoiDung().getHoTen().toLowerCase() : "";
+                    String cccd = e.getSoCCCD() != null ? e.getSoCCCD().toLowerCase() : "";
+                    return hoTen.contains(kw) || cccd.contains(kw);
+                })
+                .toList();
         int start = (int) pageable.getOffset();
         int end   = Math.min(start + pageable.getPageSize(), all.size());
         List<XacThucEkyc> pageContent = (start > all.size()) ? List.of() : all.subList(start, end);
@@ -69,12 +76,22 @@ public class AdminEkycController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Dat lai trang thai ve CHO_DUYET (xem xet lai)")
+    @PutMapping("/{id}/dat-lai")
+    public ResponseEntity<?> datLai(@PathVariable Integer id) {
+        return ekycService.datLaiChoDuyet(id)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "Dem ho so theo trang thai")
     @GetMapping("/count")
     public ResponseEntity<Map<String, Long>> count() {
         return ResponseEntity.ok(Map.of(
-                "choDuyet", ekycService.countPending(),
-                "tatCa",    (long) ekycService.getAll().size()
+                "choDuyet",  ekycService.countPending(),
+                "daDuyet",   ekycService.countByTrangThai("DA_DUYET"),
+                "tuChoi",    ekycService.countByTrangThai("TU_CHOI"),
+                "tatCa",     (long) ekycService.getAll().size()
         ));
     }
 }
